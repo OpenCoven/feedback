@@ -27,7 +27,14 @@ export function pickOnboardingStep({ session, state }: PickStepInput): Onboardin
 
   if (state.needsInvitation) return '/auth/login'
 
-  if (state.setupState?.steps?.workspace) return '/onboarding/boards'
-  if (state.setupState?.useCase) return '/onboarding/workspace'
-  return '/onboarding/usecase'
+  // Route to the FIRST incomplete step in wizard order. Earlier versions
+  // jumped to /onboarding/boards as soon as setupState.steps.workspace
+  // was true — fine when both got filled in by the same wizard pass, but
+  // the cloud control plane can pre-seed the workspace step alone (via
+  // /api/v1/admin/setup) without a useCase, and the user then needs to
+  // pick one. Skipping it left useCase silently false-checkmarked in
+  // the dynamic stepper.
+  if (!state.setupState?.useCase) return '/onboarding/usecase'
+  if (!state.setupState?.steps?.workspace) return '/onboarding/workspace'
+  return '/onboarding/boards'
 }
