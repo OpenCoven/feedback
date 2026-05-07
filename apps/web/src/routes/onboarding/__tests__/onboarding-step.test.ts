@@ -48,12 +48,12 @@ describe('pickOnboardingStep', () => {
   })
 
   it('routes pre-seeded workspace WITHOUT useCase back to /onboarding/usecase', () => {
-    // Regression: when an external orchestrator pre-seeds
-    // setupState.steps.workspace via /api/v1/admin/setup without a
-    // useCase, the wizard's dynamic stepper still shows Use case as
-    // a remaining step. pickOnboardingStep used to drop the user
-    // straight on /onboarding/boards — silently checking off Use
-    // case. First-incomplete ordering keeps stepper + router agreed.
+    // Regression: when /api/v1/admin/setup pre-seeds
+    // setupState.steps.workspace without a useCase, the wizard's
+    // dynamic stepper still shows Use case as a remaining step.
+    // pickOnboardingStep used to drop the user straight on
+    // /onboarding/boards — silently checking off Use case. First-
+    // incomplete ordering keeps stepper + router agreed.
     expect(
       pickOnboardingStep({
         session: { userId: 'u1' },

@@ -9,12 +9,12 @@ import { authenticateAdminToken } from '@/lib/server/domains/api-keys/admin-toke
 /**
  * POST /api/v1/admin/setup
  *
- * One-shot provisioning seed. An external orchestrator calls this
- * right after the pod becomes healthy to populate the workspace name
- * + use case + tier limits in a single hit, so the user lands in the
- * onboarding wizard past whatever steps the orchestrator already
- * answered on its own signup form. Whatever isn't pre-stamped here
- * still has to be filled in via the wizard.
+ * One-shot provisioning seed. An admin tool calls this right after
+ * the pod becomes healthy to populate the workspace name + use case
+ * + tier limits in a single hit, so the user lands in the onboarding
+ * wizard past whatever steps the tool already answered on its own
+ * signup form. Whatever isn't pre-stamped here still has to be
+ * filled in via the wizard.
  *
  * Body:
  *   {
@@ -26,7 +26,7 @@ import { authenticateAdminToken } from '@/lib/server/domains/api-keys/admin-toke
  *
  * The `admin: {email, name}` payload is intentionally absent — user
  * provisioning is the responsibility of whatever sign-in path the
- * operator wires up (e.g. an env-baked SSO_OIDC_* OAuth provider).
+ * operator wires up (e.g. the env-baked SSO_OIDC_* OAuth provider).
  *
  * Idempotent: re-running with the same payload is a no-op-ish
  * overwrite. Workspace name/slug + useCase only seed on the first

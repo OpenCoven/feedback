@@ -17,9 +17,9 @@ export const ALL_ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
 
 /**
  * Pick the steps the wizard should *display* given current state.
- * Steps an external orchestrator already filled in via
- * /api/v1/admin/setup are hidden — the user shouldn't see "Step 4
- * of 4" with three pre-checked boxes for things they didn't do.
+ * Steps an admin tool already filled in via /api/v1/admin/setup
+ * are hidden — the user shouldn't see "Step 4 of 4" with three
+ * pre-checked boxes for things they didn't do.
  *
  * Account is always shown when the user has no session: it's the
  * only step that creates the principal record. Other steps are

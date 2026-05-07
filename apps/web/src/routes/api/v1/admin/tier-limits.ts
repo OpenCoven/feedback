@@ -10,9 +10,10 @@ import { authenticateAdminToken } from '@/lib/server/domains/api-keys/admin-toke
 /**
  * POST /api/v1/admin/tier-limits
  *
- * Trusted endpoint for writing this workspace's tier limits. Used by
- * an external orchestrator to cap features and counts on a per-
- * workspace basis. Body is the JSON-encoded TierLimits shape
+ * Trusted endpoint for writing this workspace's tier limits. Used
+ * by an admin tool or deploy automation to cap features and counts
+ * on a per-workspace basis. Body is the JSON-encoded TierLimits
+ * shape
  * (see apps/web/src/lib/server/domains/settings/tier-limits.types.ts).
  * No deep validation — the caller is authenticated by ADMIN_API_TOKEN
  * and treated as a trusted writer.

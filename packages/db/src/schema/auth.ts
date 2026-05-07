@@ -208,10 +208,10 @@ export const settings = pgTable('settings', {
   helpCenterConfig: text('help_center_config'),
   /**
    * Optional per-workspace tier limits (JSON-encoded TierLimits).
-   * Written by an external orchestrator via /api/v1/admin/tier-limits
-   * (capability scope `internal:tier-limits`), or by operators who
-   * want to impose their own caps. Null/absent means defaults
-   * (everything unlimited, all features on).
+   * Written via /api/v1/admin/tier-limits (capability scope
+   * `internal:tier-limits`) by operators who want to impose caps.
+   * Null/absent means defaults (everything unlimited, all features
+   * on).
    */
   tierLimits: text('tier_limits'),
 })
