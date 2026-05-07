@@ -98,6 +98,27 @@ async function createAuth() {
   // /sign-in/oauth2 callback path 404s on that providerId.
   const tierLimits = await getTierLimits()
 
+  // Cloud Quackback adds CP as a pre-baked OAuth provider so the
+  // dashboard's "Open workspace" click can SSO straight in. CP-OIDC
+  // env vars are projected by the chart for cloud tenants only —
+  // self-hosters never have these set, so the `cp` providerId stays
+  // unregistered and the OAuth callback path 404s. Bypasses the
+  // platform-credentials table because it's pure runtime config.
+  if (
+    process.env.CP_OAUTH_DISCOVERY_URL &&
+    process.env.CP_OAUTH_CLIENT_ID &&
+    process.env.CP_OAUTH_CLIENT_SECRET
+  ) {
+    genericOAuthConfigs.push({
+      providerId: 'cp',
+      clientId: process.env.CP_OAUTH_CLIENT_ID,
+      clientSecret: process.env.CP_OAUTH_CLIENT_SECRET,
+      discoveryUrl: process.env.CP_OAUTH_DISCOVERY_URL,
+      scopes: ['openid', 'email', 'profile'],
+    })
+    trustedProviders.push('cp')
+  }
+
   for (const provider of getAllAuthProviders()) {
     const creds = await getPlatformCredentials(provider.credentialType)
     if (!creds?.clientId || !creds?.clientSecret) continue
@@ -271,6 +292,30 @@ async function createAuth() {
               })
               console.log(
                 `[auth] Created principal record: userId=${user.id}, role=user, type=${isAnonymous ? 'anonymous' : 'user'}`
+              )
+            }
+          },
+        },
+      },
+      account: {
+        create: {
+          after: async (account) => {
+            // Cloud SSO: any user signing in via the `cp` OAuth provider
+            // is a verified CP-org member, so they implicitly land as
+            // admin in this workspace. The user.create.after hook above
+            // ran first (writing role=user); upgrading here means a
+            // first-time CP sign-in skips the OSS onboarding wizard's
+            // workspace step entirely. Self-hosters never have a `cp`
+            // provider registered, so this branch is dead code for them.
+            if (account.providerId === 'cp') {
+              await db
+                .update(principalTable)
+                .set({ role: 'admin' })
+                .where(
+                  eq(principalTable.userId, account.userId as ReturnType<typeof generateId<'user'>>)
+                )
+              console.log(
+                `[auth] Upgraded principal to admin via cp OAuth: userId=${account.userId}`
               )
             }
           },
