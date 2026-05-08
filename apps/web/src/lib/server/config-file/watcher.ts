@@ -18,20 +18,42 @@ export interface WatchOptions {
  */
 export function watchConfigFile(
   path: string,
-  onChange: (result: LoadResult) => void,
+  onChange: (result: LoadResult) => void | Promise<void>,
   opts: WatchOptions = {}
 ): () => void {
   const interval = opts.pollIntervalMs ?? 30_000
   let lastHash: string | null = null
   let stopped = false
+  let inFlight: Promise<void> | null = null
+  let queued = false
 
-  const tick = async (): Promise<void> => {
-    if (stopped) return
+  const doTick = async (): Promise<void> => {
     const result = await loadConfigFile(path)
     const hash = hashResult(result)
     if (hash === lastHash) return
     lastHash = hash
-    onChange(result)
+    await onChange(result)
+  }
+
+  const tick = async (): Promise<void> => {
+    if (stopped) return
+    // Serialize: if a tick is already running, queue at most one
+    // follow-up so we don't fire concurrent reconciles. Multiple
+    // overlapping triggers collapse into a single follow-up.
+    if (inFlight) {
+      queued = true
+      return
+    }
+    inFlight = doTick()
+    try {
+      await inFlight
+    } finally {
+      inFlight = null
+      if (queued && !stopped) {
+        queued = false
+        void tick()
+      }
+    }
   }
 
   // Initial load.

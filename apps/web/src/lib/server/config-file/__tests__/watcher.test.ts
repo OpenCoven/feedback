@@ -27,7 +27,9 @@ describe('watchConfigFile', () => {
   it('fires onChange with the parsed config on first tick when the file exists', async () => {
     writeFileSync(path, validYaml)
     const events: unknown[] = []
-    const stop = watchConfigFile(path, (r) => events.push(r))
+    const stop = watchConfigFile(path, (r) => {
+      events.push(r)
+    })
     await wait(60)
     stop()
     expect(events.length).toBeGreaterThanOrEqual(1)
@@ -37,7 +39,9 @@ describe('watchConfigFile', () => {
 
   it('fires onChange with kind=absent when the file does not exist on first tick', async () => {
     const events: unknown[] = []
-    const stop = watchConfigFile(path, (r) => events.push(r))
+    const stop = watchConfigFile(path, (r) => {
+      events.push(r)
+    })
     await wait(60)
     stop()
     const last = events[events.length - 1] as { kind: string }
@@ -47,7 +51,13 @@ describe('watchConfigFile', () => {
   it('dedupes consecutive identical loads (only fires onChange when content changes)', async () => {
     writeFileSync(path, validYaml)
     const events: unknown[] = []
-    const stop = watchConfigFile(path, (r) => events.push(r), { pollIntervalMs: 30 })
+    const stop = watchConfigFile(
+      path,
+      (r) => {
+        events.push(r)
+      },
+      { pollIntervalMs: 30 }
+    )
     await wait(150)
     stop()
     // First load + maybe a few polls; all identical content → only one onChange.
@@ -57,7 +67,13 @@ describe('watchConfigFile', () => {
   it('fires again when content changes', async () => {
     writeFileSync(path, validYaml)
     const events: unknown[] = []
-    const stop = watchConfigFile(path, (r) => events.push(r), { pollIntervalMs: 30 })
+    const stop = watchConfigFile(
+      path,
+      (r) => {
+        events.push(r)
+      },
+      { pollIntervalMs: 30 }
+    )
     await wait(50)
     writeFileSync(
       path,
@@ -66,6 +82,40 @@ describe('watchConfigFile', () => {
     await wait(80)
     stop()
     expect(events.length).toBe(2)
+  })
+
+  it('serializes onChange — no concurrent invocations even with rapid changes', async () => {
+    writeFileSync(path, validYaml)
+    let active = 0
+    let maxActive = 0
+    const onChange = async () => {
+      active++
+      if (active > maxActive) maxActive = active
+      await wait(40)
+      active--
+    }
+    const stop = watchConfigFile(path, onChange, { pollIntervalMs: 10 })
+    // Trigger several near-simultaneous changes via writes.
+    await wait(20)
+    writeFileSync(
+      path,
+      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: A } }\n`
+    )
+    await wait(5)
+    writeFileSync(
+      path,
+      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: B } }\n`
+    )
+    await wait(5)
+    writeFileSync(
+      path,
+      `apiVersion: quackback.io/v1\nkind: QuackbackConfig\nspec: { workspace: { name: C } }\n`
+    )
+    await wait(200)
+    stop()
+    // Even with multiple change triggers, onChange must never be
+    // running in parallel — the in-flight gate guarantees serial calls.
+    expect(maxActive).toBe(1)
   })
 })
 
