@@ -78,6 +78,7 @@ async function createAuth() {
     await import('@/lib/server/domains/platform-credentials/platform-credential.service')
   const { getAllAuthProviders } = await import('./auth-providers')
   const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
+  const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')
 
   // Build socialProviders config from DB-stored credentials
   const socialProviders: Record<string, Record<string, string>> = {}
@@ -98,26 +99,46 @@ async function createAuth() {
   // /sign-in/oauth2 callback path 404s on that providerId.
   const tierLimits = await getTierLimits()
 
-  // Optional environment-baked SSO provider. When the operator (a
-  // self-hoster pointing at their company IdP, or any other deploy
-  // automation) sets the SSO_OIDC_* env trio, register it as a
-  // genericOAuth provider with id `sso` so the sign-in route can
-  // surface a one-click button. Bypasses the platform-credentials
-  // table because it's pure runtime config — there's no admin UI
-  // for it on purpose, the operator owns the env.
-  if (
-    process.env.SSO_OIDC_DISCOVERY_URL &&
-    process.env.SSO_OIDC_CLIENT_ID &&
-    process.env.SSO_OIDC_CLIENT_SECRET
-  ) {
-    genericOAuthConfigs.push({
-      providerId: 'sso',
-      clientId: process.env.SSO_OIDC_CLIENT_ID,
-      clientSecret: process.env.SSO_OIDC_CLIENT_SECRET,
-      discoveryUrl: process.env.SSO_OIDC_DISCOVERY_URL,
-      scopes: ['openid', 'email', 'profile'],
-    })
-    trustedProviders.push('sso')
+  // Optional SSO provider. DB-first (settings.authConfig.ssoOidc, set
+  // by the declarative config-file reconciler — Phase P) with env-var
+  // fallback (SSO_OIDC_* trio) for self-hosters and pre-Phase-P bootstrap.
+  // The client *secret* always comes from env; the file/DB never holds
+  // secrets, so a config-map dump or DB read can't leak it.
+  const tenantSettings = await getTenantSettings()
+  const ssoFromDb = tenantSettings?.authConfig?.ssoOidc
+  const ssoEnabled =
+    ssoFromDb?.enabled ??
+    Boolean(
+      process.env.SSO_OIDC_DISCOVERY_URL &&
+      process.env.SSO_OIDC_CLIENT_ID &&
+      process.env.SSO_OIDC_CLIENT_SECRET
+    )
+
+  if (ssoEnabled) {
+    const cfg = ssoFromDb ?? {
+      providerName: process.env.SSO_OIDC_PROVIDER_NAME ?? 'SSO',
+      discoveryUrl: process.env.SSO_OIDC_DISCOVERY_URL!,
+      clientId: process.env.SSO_OIDC_CLIENT_ID!,
+      isDefault: true,
+      autoCreateUsers: true,
+    }
+    const clientSecret = process.env.SSO_OIDC_CLIENT_SECRET
+    if (!clientSecret) {
+      // DB says "enabled" but the K8s Secret hasn't materialized yet
+      // (rotation gap, ESO sync lag). Logging without registering keeps
+      // the rest of Better-Auth functional and lets the password /
+      // magic-link / other-OAuth fallbacks carry the sign-in load.
+      console.error('[auth] ssoOidc enabled but SSO_OIDC_CLIENT_SECRET not set')
+    } else {
+      genericOAuthConfigs.push({
+        providerId: 'sso',
+        clientId: cfg.clientId,
+        clientSecret,
+        discoveryUrl: cfg.discoveryUrl,
+        scopes: ['openid', 'email', 'profile'],
+      })
+      trustedProviders.push('sso')
+    }
   }
 
   for (const provider of getAllAuthProviders()) {
