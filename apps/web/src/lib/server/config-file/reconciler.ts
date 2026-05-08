@@ -8,6 +8,7 @@ export interface SettingsRow {
   setupState: string | null
   tierLimits: string | null
   featureFlags: string | null
+  authConfig: string | null
   managedFieldPaths: string[]
   state: 'active' | 'suspended' | 'deleting'
 }
@@ -18,6 +19,7 @@ export interface SettingsUpdate {
   setupState?: string
   tierLimits?: string
   featureFlags?: string
+  authConfig?: string
   managedFieldPaths: string[]
   state?: 'active' | 'suspended' | 'deleting'
 }
@@ -84,6 +86,26 @@ export async function reconcileFileIntoDb(
     }
   }
 
+  let touchedAuth = false
+  if (spec.auth !== undefined) {
+    const existing = current.authConfig ? (safeJsonParse(current.authConfig) ?? {}) : {}
+    // Per-key merge of OAuth providers so the file can lock one
+    // provider at a time without nuking others. openSignup falls back
+    // to existing → false in that order.
+    const existingOauth =
+      (existing as { oauth?: Record<string, boolean> }).oauth ?? ({} as Record<string, boolean>)
+    const existingOpenSignup = (existing as { openSignup?: boolean }).openSignup
+    const merged = {
+      oauth: { ...existingOauth, ...(spec.auth.oauth ?? {}) },
+      openSignup: spec.auth.openSignup ?? existingOpenSignup ?? false,
+    }
+    const serialized = JSON.stringify(merged)
+    if (serialized !== current.authConfig) {
+      update.authConfig = serialized
+      touchedAuth = true
+    }
+  }
+
   if (spec.state !== undefined && spec.state !== current.state) {
     update.state = spec.state
   }
@@ -98,7 +120,9 @@ export async function reconcileFileIntoDb(
   await deps.updateSettings(update)
   await deps.invalidateSettingsCache()
   await deps.invalidateTierLimitsCache()
-  if (touchedFeatures) await deps.resetAuth()
+  // Better-Auth's plugin set + provider list is built from settings at
+  // boot, so any auth/feature change has to drop the cached instance.
+  if (touchedFeatures || touchedAuth) await deps.resetAuth()
 }
 
 interface SetupStateShape {

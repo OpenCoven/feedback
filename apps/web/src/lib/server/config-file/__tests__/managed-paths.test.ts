@@ -37,6 +37,20 @@ describe('computeManagedPaths', () => {
       })
     ).toEqual(['workspace.name', 'tierLimits', 'features.a'])
   })
+
+  it('emits per-key auth.oauth paths and the auth.openSignup leaf', () => {
+    expect(
+      computeManagedPaths({
+        auth: { oauth: { google: true, github: false }, openSignup: false },
+      })
+    ).toEqual(['auth.oauth.google', 'auth.oauth.github', 'auth.openSignup'])
+  })
+
+  it('omits auth.openSignup when only oauth providers are declared', () => {
+    expect(computeManagedPaths({ auth: { oauth: { google: true } } })).toEqual([
+      'auth.oauth.google',
+    ])
+  })
 })
 
 describe('isPathManaged', () => {

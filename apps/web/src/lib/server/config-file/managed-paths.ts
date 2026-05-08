@@ -8,6 +8,9 @@ import type { QuackbackConfigSpec } from './schema'
  * - `tierLimits` — whole-block (matches every `tierLimits.*` child)
  * - `features.<key>` — per-key (only the listed keys lock; others
  *   stay UI-editable)
+ * - `auth.oauth.<providerId>` — per-key (each OAuth provider locks
+ *   independently; openSignup stays UI-editable unless declared)
+ * - `auth.openSignup` — leaf
  *
  * The order matters only for snapshot-style equality in tests; runtime
  * checks via `isPathManaged` are order-insensitive.
@@ -24,6 +27,14 @@ export function computeManagedPaths(spec: QuackbackConfigSpec): string[] {
     }
   }
   if (spec.state !== undefined) paths.push('state')
+  if (spec.auth) {
+    if (spec.auth.oauth) {
+      for (const key of Object.keys(spec.auth.oauth)) {
+        paths.push(`auth.oauth.${key}`)
+      }
+    }
+    if (spec.auth.openSignup !== undefined) paths.push('auth.openSignup')
+  }
   return paths
 }
 

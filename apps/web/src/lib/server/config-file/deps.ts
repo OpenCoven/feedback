@@ -19,6 +19,7 @@ export function makeReconcileDeps(): ReconcileDeps {
         setupState: row.setupState,
         tierLimits: row.tierLimits,
         featureFlags: row.featureFlags,
+        authConfig: row.authConfig ?? null,
         managedFieldPaths: (row.managedFieldPaths as string[] | null) ?? [],
         state: (row.state as 'active' | 'suspended' | 'deleting' | null) ?? 'active',
       } satisfies SettingsRow

@@ -12,6 +12,7 @@ const baseDeps = (): ReconcileDeps => ({
     }),
     tierLimits: null,
     featureFlags: null,
+    authConfig: null,
     managedFieldPaths: [],
     state: 'active' as const,
   })),
@@ -57,6 +58,7 @@ describe('reconcileFileIntoDb', () => {
       setupState: null,
       tierLimits: null,
       featureFlags: JSON.stringify({ helpCenter: false, other: true }),
+      authConfig: null,
       managedFieldPaths: [],
       state: 'active' as const,
     }))
@@ -75,6 +77,7 @@ describe('reconcileFileIntoDb', () => {
       setupState: null,
       tierLimits: null,
       featureFlags: null,
+      authConfig: null,
       managedFieldPaths: ['tierLimits', 'workspace.name'],
       state: 'active' as const,
     }))
@@ -114,6 +117,7 @@ describe('reconcileFileIntoDb', () => {
       }),
       tierLimits: null,
       featureFlags: null,
+      authConfig: null,
       managedFieldPaths: ['workspace.name', 'workspace.slug'],
       state: 'active' as const,
     }))
@@ -127,5 +131,61 @@ describe('reconcileFileIntoDb', () => {
     const arg = (deps.updateSettings as ReturnType<typeof vi.fn>).mock.calls[0]![0]
     expect(arg.state).toBe('suspended')
     expect(arg.managedFieldPaths).toEqual(['state'])
+  })
+
+  it('per-key merges auth.oauth over existing config', async () => {
+    const deps = baseDeps()
+    deps.readSettings = vi.fn(async () => ({
+      id: 'ws_1',
+      name: 'X',
+      slug: 'x',
+      setupState: null,
+      tierLimits: null,
+      featureFlags: null,
+      authConfig: JSON.stringify({
+        oauth: { google: false, github: true },
+        openSignup: true,
+      }),
+      managedFieldPaths: [],
+      state: 'active' as const,
+    }))
+    await reconcileFileIntoDb({ auth: { oauth: { google: true } } }, deps)
+    const arg = (deps.updateSettings as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+    const merged = JSON.parse(arg.authConfig as string)
+    expect(merged.oauth).toEqual({ google: true, github: true })
+    expect(merged.openSignup).toBe(true)
+    expect(arg.managedFieldPaths).toEqual(['auth.oauth.google'])
+    expect(deps.resetAuth).toHaveBeenCalled()
+  })
+
+  it('writes openSignup leaf without nuking existing oauth providers', async () => {
+    const deps = baseDeps()
+    deps.readSettings = vi.fn(async () => ({
+      id: 'ws_1',
+      name: 'X',
+      slug: 'x',
+      setupState: null,
+      tierLimits: null,
+      featureFlags: null,
+      authConfig: JSON.stringify({
+        oauth: { google: true, github: true },
+        openSignup: false,
+      }),
+      managedFieldPaths: [],
+      state: 'active' as const,
+    }))
+    await reconcileFileIntoDb({ auth: { openSignup: true } }, deps)
+    const arg = (deps.updateSettings as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+    const merged = JSON.parse(arg.authConfig as string)
+    expect(merged.oauth).toEqual({ google: true, github: true })
+    expect(merged.openSignup).toBe(true)
+    expect(arg.managedFieldPaths).toEqual(['auth.openSignup'])
+    expect(deps.resetAuth).toHaveBeenCalled()
+  })
+
+  it('does NOT call resetAuth when only tierLimits change (auth-untouched path)', async () => {
+    const deps = baseDeps()
+    await reconcileFileIntoDb({ tierLimits: { maxBoards: 1 } }, deps)
+    expect(deps.resetAuth).not.toHaveBeenCalled()
   })
 })
