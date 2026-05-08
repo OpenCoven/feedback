@@ -255,6 +255,13 @@ export const setupWorkspaceFn = createServerFn({ method: 'POST' })
 
         // Create settings
         // Note: Not using transaction because neon-http driver doesn't support interactive transactions.
+        //
+        // Fresh-insert intentionally bypasses the managed-paths gate:
+        // there's no settings row yet to read managedFieldPaths from,
+        // so assertNotManaged would have nothing to assert against. If
+        // the workspace is cloud-managed, the file reconciler will
+        // overwrite name/slug/etc on its next tick and populate
+        // managedFieldPaths — subsequent UI mutators are gated normally.
         const [createdSettings] = await db
           .insert(settings)
           .values({
@@ -402,6 +409,11 @@ export const saveUseCaseFn = createServerFn({ method: 'POST' })
       } else {
         // Fresh install: create minimal settings to store useCase. The
         // workspace step will update name/slug later.
+        //
+        // Fresh-insert intentionally bypasses the managed-paths gate
+        // (same rationale as setupWorkspaceFn): no settings row yet to
+        // read managedFieldPaths from. The reconciler will overwrite on
+        // its next tick if the file owns these fields.
         const setupState: SetupState = {
           version: 1,
           steps: {
