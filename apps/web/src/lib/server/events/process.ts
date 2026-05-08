@@ -90,7 +90,9 @@ async function initializeQueue() {
 
       let result: HookResult
       try {
-        result = await hook.run(event, target, hookConfig)
+        // Pass job.id so idempotency-sensitive handlers (webhook, AI)
+        // can dedupe re-runs after worker crashes.
+        result = await hook.run(event, target, hookConfig, { jobId: job.id })
       } catch (error) {
         if (isRetryableError(error)) throw error
         throw new UnrecoverableError(error instanceof Error ? error.message : 'Unknown error')
