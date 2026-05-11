@@ -73,3 +73,24 @@ describe('updateAuthConfig — autoProvisionRole validation', () => {
     }
   })
 })
+
+describe('updateAuthConfigSchema — Zod boundary accepts autoProvisionRole', () => {
+  it('parses ssoOidc.autoProvisionRole through the strict server-fn schema', async () => {
+    const { updateAuthConfigSchema } = await import('@/lib/server/functions/settings')
+    for (const role of ['admin', 'member', 'user'] as const) {
+      const parsed = updateAuthConfigSchema.parse({
+        ssoOidc: { autoProvisionRole: role },
+      })
+      expect(parsed.ssoOidc?.autoProvisionRole).toBe(role)
+    }
+  })
+
+  it('rejects autoProvisionRole values outside the enum', async () => {
+    const { updateAuthConfigSchema } = await import('@/lib/server/functions/settings')
+    expect(() =>
+      updateAuthConfigSchema.parse({
+        ssoOidc: { autoProvisionRole: 'root' },
+      })
+    ).toThrow()
+  })
+})

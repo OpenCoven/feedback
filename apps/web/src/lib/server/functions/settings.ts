@@ -278,7 +278,7 @@ export const updatePortalConfigFn = createServerFn({ method: 'POST' })
     }
   })
 
-const updateAuthConfigSchema = z.object({
+export const updateAuthConfigSchema = z.object({
   oauth: z.record(z.string(), z.boolean().optional()).optional(),
   openSignup: z.boolean().optional(),
   ssoOidc: z
@@ -287,6 +287,7 @@ const updateAuthConfigSchema = z.object({
       discoveryUrl: z.string().url().optional(),
       clientId: z.string().min(1).optional(),
       autoCreateUsers: z.boolean().optional(),
+      autoProvisionRole: z.enum(['admin', 'member', 'user']).optional(),
       // ssoOidc.enforced is intentionally NOT accepted here — it goes
       // through setSsoEnforcedFn so the bootstrap-guard + break-glass
       // preconditions run. ssoOidc.domain is server-owned via
