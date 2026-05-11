@@ -262,7 +262,8 @@ async function handleSsoCallbackAfter(ctx: {
 }
 
 /**
- * Auto-provision verified-domain users to `member` on first SSO sign-in.
+ * Auto-provision verified-domain users to a configurable role on first
+ * SSO sign-in (defaults to `member`).
  *
  * Fires only on the SSO callback (`/oauth2/callback/sso`). The IdP's
  * assertion of email + identity is the trust source; magic-link to a
@@ -272,8 +273,10 @@ async function handleSsoCallbackAfter(ctx: {
  * enough to claim team membership.
  *
  * Invariants:
- *  - Only upgrades, never downgrades. `admin` and `member` are left
- *    alone; only `role='user'` becomes `role='member'`.
+ *  - Only upgrades from `role='user'`; `admin` and `member` are left
+ *    alone. The target role is `authConfig.ssoOidc.autoProvisionRole`
+ *    (default `'member'`), and the special value `'user'` disables
+ *    promotion entirely.
  *  - `autoCreateUsers=false` short-circuits — the admin opted out.
  *  - Bootstrap-admin from `handleSsoCallbackAfter` runs first; if
  *    that promoted the user to `admin`, the role-check here skips.
