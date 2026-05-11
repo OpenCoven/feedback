@@ -59,6 +59,11 @@ vi.mock('@/lib/server/db', () => ({
   db: {
     delete: hoisted.deleteFn,
     update: hoisted.updateFn,
+    // Pass-through tx — the handler now wraps its writes in
+    // db.transaction(fn); the tx object exposes the same delete/update
+    // surface so the existing call-site assertions still apply.
+    transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn({ delete: hoisted.deleteFn, update: hoisted.updateFn }),
   },
   twoFactor: hoisted.twoFactorTable,
   user: hoisted.userTable,

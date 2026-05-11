@@ -26,11 +26,16 @@ export const adminResetTwoFactorFn = createServerFn({ method: 'POST' })
     const auth = await requireAuth({ roles: ['admin'] })
     const userId = data.userId as UserId
 
-    await db.delete(twoFactor).where(eq(twoFactor.userId, userId))
-    await db.update(user).set({ twoFactorEnabled: false }).where(eq(user.id, userId))
-    await db
-      .delete(verification)
-      .where(and(like(verification.identifier, 'trust-device-%'), eq(verification.value, userId)))
+    // Wrap the three writes in a tx so a mid-flight failure can't leave
+    // the user in a partial state (e.g. twoFactor row gone but
+    // twoFactorEnabled still true, or trust-device records lingering).
+    await db.transaction(async (tx) => {
+      await tx.delete(twoFactor).where(eq(twoFactor.userId, userId))
+      await tx.update(user).set({ twoFactorEnabled: false }).where(eq(user.id, userId))
+      await tx
+        .delete(verification)
+        .where(and(like(verification.identifier, 'trust-device-%'), eq(verification.value, userId)))
+    })
 
     console.log(`[admin] admin=${auth.user.id} reset 2FA for user=${userId}`)
     return { success: true }
