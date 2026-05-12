@@ -179,6 +179,9 @@ export type TransferTokenId = TypeId<'transfer_token'>
 /** Two-factor enrolment ID - e.g., two_factor_01h455vb4pex5vsknk084sn02q */
 export type TwoFactorId = TypeId<'two_factor'>
 
+/** Audit log entry ID - e.g., audit_01h455vb4pex5vsknk084sn02q */
+export type AuditLogId = TypeId<'audit'>
+
 /** API key ID - e.g., api_key_01h455vb4pex5vsknk084sn02q */
 export type ApiKeyId = TypeId<'api_key'>
 
@@ -253,6 +256,7 @@ export interface EntityIdMap {
   domain: DomainId
   transfer_token: TransferTokenId
   two_factor: TwoFactorId
+  audit_log: AuditLogId
   api_key: ApiKeyId
   webhook: WebhookId
   subscription: SubscriptionId

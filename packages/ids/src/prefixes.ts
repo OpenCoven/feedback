@@ -79,6 +79,7 @@ export const ID_PREFIXES = {
   domain: 'domain',
   transfer_token: 'transfer_token',
   two_factor: 'two_factor',
+  audit_log: 'audit',
 
   // ============================================
   // Billing
