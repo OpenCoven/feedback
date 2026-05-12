@@ -301,7 +301,7 @@ function CustomOidcCard({
             <h2 className="text-base font-semibold">Custom identity provider</h2>
             {headerBadge}
           </div>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+          <p className="mt-1 max-w-xl text-xs text-muted-foreground">
             Let portal users sign in via your own IdP. Works with any OpenID Connect provider —
             Okta, Azure AD, Auth0, Keycloak, and more.
           </p>

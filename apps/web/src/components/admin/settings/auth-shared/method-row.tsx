@@ -87,7 +87,7 @@ export function MethodRow({
                 </Badge>
               ))}
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />

@@ -29,7 +29,7 @@ export function SettingsCard({
           <h2 className={cn('text-base font-semibold', variant === 'danger' && 'text-destructive')}>
             {title}
           </h2>
-          {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
         {action}
       </div>

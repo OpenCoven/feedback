@@ -378,7 +378,7 @@ function SsoEmptyState({
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-medium">Choose your identity provider</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground">
           We&rsquo;ll pre-fill the discovery URL for known IdPs. Pick &ldquo;Other OIDC&rdquo; for
           anything else. You can switch any time before saving.
         </p>
@@ -567,7 +567,7 @@ function SsoConfiguredForm({
         <div className="flex items-start justify-between gap-4 py-2">
           <div className="flex-1 min-w-0">
             <Label className="font-medium">Auto-create accounts on first sign-in</Label>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               New users from your IdP land in Quackback with the role you pick.
             </p>
           </div>
