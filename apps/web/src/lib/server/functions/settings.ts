@@ -312,6 +312,25 @@ export const updateAuthConfigSchema = z.object({
       clientId: z.string().min(1).optional(),
       autoCreateUsers: z.boolean().optional(),
       autoProvisionRole: z.enum(['admin', 'member', 'user']).optional(),
+      // Workspace-wide enforce is server-owned via setSsoRequiredFn —
+      // the shape stays in the schema so reads (which round-trip the
+      // existing config back through updateAuthConfig in places like
+      // the config-file reconciler) don't strip it.
+      required: z.boolean().optional(),
+      allowMagicLinkUnderRequired: z.boolean().optional(),
+      attributeMapping: z
+        .object({
+          claimPath: z.string().min(1),
+          rules: z.array(
+            z.object({
+              whenContains: z.string().min(1),
+              role: z.enum(['admin', 'member', 'user']),
+            })
+          ),
+          defaultRole: z.enum(['admin', 'member', 'user']),
+          syncOnEverySignIn: z.boolean().optional(),
+        })
+        .optional(),
       // Per-domain SSO enforcement is server-owned via
       // setVerifiedDomainEnforcedFn (writes sso_verified_domain.enforced).
       // The legacy workspace-wide `ssoOidc.enforced` and `ssoOidc.domain`

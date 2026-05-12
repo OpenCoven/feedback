@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { SettingsCard } from '@/components/admin/settings/settings-card'
 import { VerifiedDomainBlock } from './verified-domain-block'
 import { SsoEnforcementMode } from './sso-enforcement-mode'
+import { AttributeMappingSection } from './attribute-mapping-section'
 import { TimeAgo } from '@/components/ui/time-ago'
 import {
   OktaIcon,
@@ -627,6 +628,9 @@ function SsoConfiguredForm({
         authConfig={{ ssoOidc: config } as AuthConfig}
         hasEnforcedDomain={false}
       />
+
+      {/* Section 4 — IdP-attribute-based role mapping. */}
+      <AttributeMappingSection currentMapping={config.attributeMapping} />
     </div>
   )
 }
