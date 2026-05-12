@@ -4,6 +4,7 @@ import { TeamLoginForm } from '@/components/auth/team-login-form'
 import { AdminAuthShell } from '@/components/auth/admin-auth-shell'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
+import { isSafeCallbackUrl } from '@/lib/shared/routing'
 
 // Error messages for login failures
 const errorMessages: Record<string, string> = {
@@ -66,10 +67,7 @@ export const Route = createFileRoute('/admin/login')({
     const errorMessage = error ? (errorMessages[error] ?? GENERIC_ERROR_MESSAGE) : null
 
     // Validate callbackUrl is a relative path to prevent open redirects
-    const safeCallbackUrl =
-      callbackUrl && callbackUrl.startsWith('/') && !callbackUrl.startsWith('//')
-        ? callbackUrl
-        : '/admin'
+    const safeCallbackUrl = isSafeCallbackUrl(callbackUrl) ? callbackUrl : '/admin'
 
     const authConfig = settings.publicAuthConfig.oauth
 

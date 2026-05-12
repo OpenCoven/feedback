@@ -7,6 +7,7 @@ import {
   oneTimeTokenClient,
   twoFactorClient,
 } from 'better-auth/client/plugins'
+import { isSafeCallbackUrl } from '@/lib/shared/routing'
 
 /**
  * sessionStorage key for the post-2FA destination URL.
@@ -32,15 +33,6 @@ export const TWO_FACTOR_CALLBACK_STORAGE_KEY = 'quackback:auth.callback-url'
  * the server and when sessionStorage is unavailable (private mode in
  * some browsers).
  */
-/**
- * Same-origin safety check: `/`-prefixed AND not protocol-relative
- * (`//evil.com/x` would otherwise look local). Used by every
- * callback-URL handler in this module so the rule lives in one place.
- */
-function isSafeCallbackUrl(url: unknown): url is string {
-  return typeof url === 'string' && url.length > 0 && url.startsWith('/') && !url.startsWith('//')
-}
-
 export function stashTwoFactorCallbackUrl(url: string | undefined): void {
   if (typeof window === 'undefined') return
   try {
@@ -79,8 +71,8 @@ export function clearTwoFactorCallbackUrl(): void {
  * Accepts both `callbackURL` (Better-Auth convention, matches
  * `signIn.email({ callbackURL })`) and the legacy `callbackUrl` so
  * existing links keep working. Returns the first same-origin candidate
- * — see `isSafeCallbackUrl` above — so a poisoned link can't bounce
- * the user offsite.
+ * — see `isSafeCallbackUrl` in `lib/shared/routing` — so a poisoned
+ * link can't bounce the user offsite.
  */
 export function resolveTwoFactorDest(
   search: { callbackURL?: string; callbackUrl?: string } | undefined
