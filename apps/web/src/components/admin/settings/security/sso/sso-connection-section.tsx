@@ -31,7 +31,7 @@ import {
 } from '@/components/icons/idp-provider-icons'
 import { getIdpShortcut, inferIdpKind, type IdpKind } from '../idp-shortcuts'
 import { updateAuthConfigFn } from '@/lib/server/functions/settings'
-import { setSsoClientSecretFn, clearSsoClientSecretFn } from '@/lib/server/functions/sso'
+import { setSsoClientSecretFn, switchSsoProviderFn } from '@/lib/server/functions/sso'
 import { isPathManagedFromBootstrap } from '@/lib/client/config-file'
 import { useRouteContext } from '@tanstack/react-router'
 import type { AuthConfig } from '@/lib/shared/types/settings'
@@ -195,17 +195,24 @@ export function SsoConnectionSection({
           setSwitchProviderPending(true)
           setSwitchProviderError(null)
           try {
-            await clearSsoClientSecretFn({})
+            // switchSsoProviderFn clears BOTH the encrypted secret and
+            // the authConfig.ssoOidc block in one transaction, so the
+            // route's authConfig query refetches a "no SSO configured"
+            // payload and the form snaps back to the provider picker.
+            // Refuses only when an enforced domain exists (hard-bound
+            // users would lose their sign-in path).
+            await switchSsoProviderFn({})
           } catch (err) {
-            // Keep the dialog open so the admin sees why nothing
-            // changed (e.g. enforcement still on, verified domain still
-            // present — the secret-clear guards refuse here).
             setSwitchProviderError(
-              err instanceof Error ? err.message : 'Could not remove the saved client secret.'
+              err instanceof Error ? err.message : 'Could not switch identity provider.'
             )
             setSwitchProviderPending(false)
             return
           }
+          // Local optimistic clear so the empty-state picker renders
+          // immediately. The route-loader refetch (via
+          // queryClient.invalidateQueries) reconciles to the same shape,
+          // so the resync useEffect doesn't bounce the UI back.
           startTransition(() => {
             setAuthConfig((prev: AuthConfig) => ({ ...prev, ssoOidc: undefined }))
             setSelectedIdpKind(null)
@@ -214,6 +221,7 @@ export function SsoConnectionSection({
           })
           void queryClient.invalidateQueries({ queryKey: ['admin', 'ssoStatus'] })
           void queryClient.invalidateQueries({ queryKey: ['settings', 'authConfig'] })
+          router.invalidate()
         }}
       />
     </div>

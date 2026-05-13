@@ -50,6 +50,12 @@ const hoisted = vi.hoisted(() => ({
   mockGetTierLimits: vi.fn(),
   mockIsEmailConfigured: vi.fn().mockReturnValue(true),
   mockCheckUrlSafety: vi.fn().mockResolvedValue({ safe: true }),
+  mockRequireSettings: vi.fn(),
+  mockInvalidateSettingsCache: vi.fn(),
+  mockBumpAuthConfigVersionInTx: vi.fn(),
+  mockResetAuth: vi.fn(),
+  mockDbTransaction: vi.fn(),
+  mockDbUpdate: vi.fn(),
 }))
 
 vi.mock('@/lib/server/functions/auth-helpers', () => ({
@@ -92,6 +98,40 @@ vi.mock('@quackback/email', () => ({
 
 vi.mock('@/lib/server/content/ssrf-guard', () => ({
   checkUrlSafety: hoisted.mockCheckUrlSafety,
+}))
+
+vi.mock('@/lib/server/domains/settings/settings.helpers', () => ({
+  requireSettings: hoisted.mockRequireSettings,
+  invalidateSettingsCache: hoisted.mockInvalidateSettingsCache,
+  parseJsonConfig: (json: string | null, def: unknown) => (json ? JSON.parse(json) : def),
+}))
+
+vi.mock('@/lib/server/auth/config-version', () => ({
+  bumpAuthConfigVersionInTx: hoisted.mockBumpAuthConfigVersionInTx,
+}))
+
+vi.mock('@/lib/server/auth', () => ({
+  resetAuth: hoisted.mockResetAuth,
+}))
+
+vi.mock('@/lib/server/db', () => {
+  const setMock = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
+  const updateMock = vi.fn().mockReturnValue({ set: setMock })
+  const txMock = { update: updateMock }
+  hoisted.mockDbUpdate.mockImplementation(updateMock)
+  return {
+    db: {
+      transaction: async (fn: (tx: typeof txMock) => Promise<void>) => {
+        hoisted.mockDbTransaction()
+        await fn(txMock)
+      },
+    },
+    settings: { id: 'settings_id' },
+  }
+})
+
+vi.mock('drizzle-orm', () => ({
+  eq: vi.fn((col, val) => ({ col, val, _kind: 'eq' })),
 }))
 
 vi.mock('@/lib/server/audit/log', () => ({
@@ -148,16 +188,18 @@ const enforcedDomainRow = { ...verifiedDomainRow, enforced: true }
 //   1: setVerifiedDomainEnforcedFn
 //   2: getSsoStatusFn
 //   3: setSsoClientSecretFn
-//   4: clearSsoClientSecretFn
-//   5: addVerifiedDomainFn
-//   6: removeVerifiedDomainFn
-//   7: verifyDomainFn
-//   8: getVerifiedDomainsFn
+//   4: switchSsoProviderFn
+//   5: clearSsoClientSecretFn
+//   6: addVerifiedDomainFn
+//   7: removeVerifiedDomainFn
+//   8: verifyDomainFn
+//   9: getVerifiedDomainsFn
 currentModule = 'sso'
 await import('../sso')
 const ssoHandlers = handlersByModule.get('sso')!
 const testSsoConnection = ssoHandlers[0]
-const clearSsoClientSecret = ssoHandlers[4]
+const switchSsoProvider = ssoHandlers[4]
+const clearSsoClientSecret = ssoHandlers[5]
 
 currentModule = 'auth'
 await import('../auth')
@@ -202,6 +244,54 @@ describe('clearSsoClientSecretFn refusals', () => {
     })
 
     await expect(clearSsoClientSecret({ data: {} })).resolves.toEqual({ success: true })
+    expect(hoisted.mockDeletePlatformCredentials).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('switchSsoProviderFn', () => {
+  // The "Change provider" flow needs to wipe BOTH the encrypted secret
+  // AND the authConfig.ssoOidc block in one transaction so the settings
+  // page snaps back to the empty-state provider picker. Distinct from
+  // clearSsoClientSecretFn — see the docstring on switchSsoProviderFn.
+  beforeEach(() => {
+    hoisted.mockRequireSettings.mockResolvedValue({
+      id: 'settings_id',
+      authConfig: JSON.stringify({ ssoOidc: ssoConfig, oauth: { password: true } }),
+    })
+  })
+
+  it('refuses when any verified domain has enforcement on (hard-bound users)', async () => {
+    hoisted.mockGetTenantSettings.mockResolvedValue({
+      authConfig: { ssoOidc: ssoConfig },
+      verifiedDomains: [enforcedDomainRow],
+    })
+
+    await expect(switchSsoProvider({ data: {} })).rejects.toThrow(/enforcement/i)
+    expect(hoisted.mockDeletePlatformCredentials).not.toHaveBeenCalled()
+    expect(hoisted.mockDbTransaction).not.toHaveBeenCalled()
+  })
+
+  it('allows switching when domains are verified but NOT enforced (softer than clearSsoClientSecretFn)', async () => {
+    hoisted.mockGetTenantSettings.mockResolvedValue({
+      authConfig: { ssoOidc: ssoConfig },
+      verifiedDomains: [verifiedDomainRow],
+    })
+
+    await expect(switchSsoProvider({ data: {} })).resolves.toEqual({ success: true })
+    expect(hoisted.mockDeletePlatformCredentials).toHaveBeenCalledTimes(1)
+    expect(hoisted.mockDbTransaction).toHaveBeenCalledTimes(1)
+    expect(hoisted.mockBumpAuthConfigVersionInTx).toHaveBeenCalledTimes(1)
+    expect(hoisted.mockResetAuth).toHaveBeenCalledTimes(1)
+    expect(hoisted.mockInvalidateSettingsCache).toHaveBeenCalledTimes(1)
+  })
+
+  it('allows switching when no domains exist', async () => {
+    hoisted.mockGetTenantSettings.mockResolvedValue({
+      authConfig: { ssoOidc: ssoConfig },
+      verifiedDomains: [],
+    })
+
+    await expect(switchSsoProvider({ data: {} })).resolves.toEqual({ success: true })
     expect(hoisted.mockDeletePlatformCredentials).toHaveBeenCalledTimes(1)
   })
 })

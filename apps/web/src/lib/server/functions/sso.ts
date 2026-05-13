@@ -419,6 +419,82 @@ export const setSsoClientSecretFn = createServerFn({ method: 'POST' })
   })
 
 /**
+ * Atomically wipe SSO so the admin can start over with a new IdP.
+ * Clears both the encrypted client secret (in `platform_credentials`)
+ * AND the `authConfig.ssoOidc` block (discoveryUrl, clientId, etc.)
+ * so the settings page returns to its empty-state provider picker.
+ * Verified-domain rows are preserved — they apply to whichever provider
+ * the admin sets up next.
+ *
+ * Refuses ONLY when an enforced verified-domain row exists, because
+ * those users have no fallback sign-in path during the gap. A merely
+ * verified (non-enforced) domain is fine: those users can still use
+ * password/magic-link until the admin finishes setup with the new
+ * provider, at which point SSO sign-in resumes for that domain.
+ *
+ * Distinct from `clearSsoClientSecretFn` (a rotation primitive that
+ * deletes only the secret) — switching providers needs to drop the
+ * config block too, else the UI would re-render with the prior IdP's
+ * URL / client-id locked in.
+ */
+export const switchSsoProviderFn = createServerFn({ method: 'POST' }).handler(async () => {
+  const auth = await requireAuth({ roles: ['admin'] })
+
+  return withAuditEvent(
+    {
+      event: 'sso.config.changed',
+      actor: actorFromAuth(auth),
+      metadata: { action: 'switched_provider' },
+      headers: getRequestHeaders(),
+    },
+    async () => {
+      const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')
+      const tenant = await getTenantSettings()
+
+      const enforcedRow = tenant?.verifiedDomains.find((d) => d.enforced)
+      if (enforcedRow) {
+        const { ValidationError } = await import('@/lib/shared/errors')
+        throw new ValidationError(
+          'SSO_ENFORCEMENT_ACTIVE',
+          `Disable SSO enforcement on ${enforcedRow.name} before switching providers.`
+        )
+      }
+
+      const { deletePlatformCredentials } =
+        await import('@/lib/server/domains/platform-credentials/platform-credential.service')
+      const { SSO_CREDENTIAL_TYPE } = await import('@/lib/server/auth/sso-secret')
+      await deletePlatformCredentials(SSO_CREDENTIAL_TYPE)
+
+      const { db } = await import('@/lib/server/db')
+      const { settings } = await import('@/lib/server/db')
+      const { eq } = await import('drizzle-orm')
+      const { requireSettings } = await import('@/lib/server/domains/settings/settings.helpers')
+      const { parseJsonConfig, invalidateSettingsCache } =
+        await import('@/lib/server/domains/settings/settings.helpers')
+      const { DEFAULT_AUTH_CONFIG } = await import('@/lib/server/domains/settings/settings.types')
+      const { bumpAuthConfigVersionInTx } = await import('@/lib/server/auth/config-version')
+      const { resetAuth } = await import('@/lib/server/auth')
+
+      const org = await requireSettings()
+      const existing = parseJsonConfig(org.authConfig, DEFAULT_AUTH_CONFIG)
+      const { ssoOidc: _stripped, ...rest } = existing
+      void _stripped
+      await db.transaction(async (tx) => {
+        await tx
+          .update(settings)
+          .set({ authConfig: JSON.stringify(rest) })
+          .where(eq(settings.id, org.id))
+        await bumpAuthConfigVersionInTx(tx)
+      })
+      resetAuth()
+      await invalidateSettingsCache()
+
+      return { success: true }
+    }
+  )
+})
+
+/**
  * Remove the SSO OIDC client secret. Use to rotate (delete + save
  * again) or wind down SSO. The auth runtime will skip SSO registration
  * on the next request because no secret is available.
