@@ -220,23 +220,34 @@ export const fetchUserProfile = createServerFn({ method: 'GET' })
       // Resolve once server-side so the page doesn't fan out to
       // listAccounts on the client + so we can hide sections that aren't
       // meaningful for this user.
-      const [userRecord, credentialAccount, { getTenantSettings }] = await Promise.all([
-        db.query.user.findFirst({
-          where: eq(user.id, userId),
-          columns: { imageKey: true, image: true, twoFactorEnabled: true, email: true },
-        }),
-        db.query.account.findFirst({
-          where: and(eq(account.userId, userId), eq(account.providerId, 'credential')),
-          columns: { id: true },
-        }),
-        import('@/lib/server/domains/settings/settings.service'),
-      ])
+      const [userRecord, credentialAccount, principalRow, { getTenantSettings }] =
+        await Promise.all([
+          db.query.user.findFirst({
+            where: eq(user.id, userId),
+            columns: { imageKey: true, image: true, twoFactorEnabled: true, email: true },
+          }),
+          db.query.account.findFirst({
+            where: and(eq(account.userId, userId), eq(account.providerId, 'credential')),
+            columns: { id: true },
+          }),
+          db.query.principal.findFirst({
+            where: eq(principal.userId, userId),
+            columns: { role: true },
+          }),
+          import('@/lib/server/domains/settings/settings.service'),
+        ])
 
-      const { isHardBoundByVerifiedDomain } = await import('@/lib/server/auth/auth-restrictions')
+      const { isHardBound } = await import('@/lib/server/auth/auth-restrictions')
       const tenant = await getTenantSettings()
-      const ssoEnforced = isHardBoundByVerifiedDomain(
+      const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
+      // Use the full predicate so the profile page also hides the
+      // password section for team users locked in by workspace-wide
+      // `ssoOidc.required`, not just per-domain enforced users.
+      const ssoEnforced = isHardBound(
         'credential',
         userRecord?.email ?? null,
+        role,
+        tenant?.authConfig,
         tenant?.verifiedDomains
       )
 

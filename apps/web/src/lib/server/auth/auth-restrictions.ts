@@ -167,25 +167,6 @@ export function isEmailAtVerifiedDomain(
 const HARD_BOUND_PROVIDERS = new Set<AuthProvider>(['credential', 'magic-link'])
 
 /**
- * Policy predicate: this provider's sign-in must be rejected for this
- * email because the email's verified-domain row has `enforced=true`.
- * Without enforcement, verification is routing-only.
- *
- * @deprecated Use {@link isHardBound} — it also handles the workspace-
- * wide `ssoOidc.required` branch. Retained for backwards compatibility
- * with call sites that don't yet have role + authConfig in hand.
- */
-export function isHardBoundByVerifiedDomain(
-  provider: AuthProvider,
-  email: string | null | undefined,
-  verifiedDomains: readonly VerifiedDomain[] | undefined
-): boolean {
-  if (!HARD_BOUND_PROVIDERS.has(provider)) return false
-  const match = findVerifiedDomainForEmail(email, verifiedDomains)
-  return match?.enforced === true
-}
-
-/**
  * Unified hard-binding predicate. Returns true when the sign-in attempt
  * must be rejected because of:
  *
@@ -224,37 +205,4 @@ export function isHardBound(
 
   const match = findVerifiedDomainForEmail(email, verifiedDomains)
   return match?.enforced === true
-}
-
-/**
- * Get the allowed auth methods for a given role.
- * Returns a dynamic map of provider ID → boolean.
- */
-export async function getAllowedAuthMethods(role: Role): Promise<Record<string, boolean>> {
-  if (role === 'user') {
-    const portalConfig = await getPublicPortalConfig()
-    const methods: Record<string, boolean> = {
-      password: portalConfig.oauth.password ?? true,
-      email: portalConfig.oauth.email ?? false,
-    }
-    for (const [key, enabled] of Object.entries(portalConfig.oauth)) {
-      if (key !== 'email' && key !== 'password') {
-        methods[key] = !!enabled
-      }
-    }
-    return methods
-  }
-
-  // Team members: check what credentials are configured
-  const { getConfiguredIntegrationTypes } =
-    await import('@/lib/server/domains/platform-credentials/platform-credential.service')
-  const configuredTypes = await getConfiguredIntegrationTypes()
-
-  const methods: Record<string, boolean> = { password: true, email: true }
-  for (const type of configuredTypes) {
-    if (type.startsWith('auth_')) {
-      methods[type.replace('auth_', '')] = true
-    }
-  }
-  return methods
 }
