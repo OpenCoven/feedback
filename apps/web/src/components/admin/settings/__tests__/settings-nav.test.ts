@@ -98,13 +98,14 @@ describe('buildNavSections', () => {
     expect(labels).toEqual(['Administration', 'Customization', 'Feedback', 'End Users'])
   })
 
-  it('Administration contains Members, Integrations, Security, Audit log, API, Experimental in that order', () => {
+  it('Administration contains Members, Integrations, Security, SSO, Audit log, API, Experimental in that order', () => {
     const sections = buildNavSections()
     const administration = sections.find((s) => s.label === 'Administration')!
     expect(administration.items.map((i) => i.label)).toEqual([
       'Members',
       'Integrations',
       'Security',
+      'SSO',
       'Audit log',
       'API',
       'Experimental',
@@ -169,5 +170,28 @@ describe('buildNavSections', () => {
     )
     expect(dupes).toHaveLength(0)
     expect(endUsers.items.map((i) => i.label)).toEqual(['User Attributes'])
+  })
+})
+
+describe('buildNavSections — SSO entry', () => {
+  it('includes an SSO item under Administration between Security and Audit log', () => {
+    const sections = buildNavSections()
+    const admin = sections.find((s) => s.label === 'Administration')!
+    const labels = admin.items.map((i) => i.label)
+    expect(labels).toContain('SSO')
+
+    const securityIdx = labels.indexOf('Security')
+    const ssoIdx = labels.indexOf('SSO')
+    const auditIdx = labels.indexOf('Audit log')
+    expect(securityIdx).toBeGreaterThan(-1)
+    expect(ssoIdx).toBeGreaterThan(securityIdx)
+    expect(auditIdx).toBeGreaterThan(ssoIdx)
+  })
+
+  it('points SSO at /admin/settings/security/sso', () => {
+    const sections = buildNavSections()
+    const admin = sections.find((s) => s.label === 'Administration')!
+    const sso = admin.items.find((i) => i.label === 'SSO')!
+    expect(sso.to).toBe('/admin/settings/security/sso')
   })
 })

@@ -44,6 +44,11 @@ export function buildNavSections(flags?: { helpCenter?: boolean }): NavSection[]
           icon: ShieldCheckIcon,
         },
         {
+          label: 'SSO',
+          to: '/admin/settings/security/sso',
+          icon: ShieldCheckIcon,
+        },
+        {
           label: 'Audit log',
           to: '/admin/settings/security/audit-log',
           icon: DocumentTextIcon,
