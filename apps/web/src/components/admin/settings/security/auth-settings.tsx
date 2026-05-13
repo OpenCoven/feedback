@@ -1,7 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TeamAuthMethodsSection } from './team-auth-methods-section'
 import { PortalAuthTab } from './portal-auth-tab'
+import { SsoPageCallout } from './sso-page-callout'
+import { settingsQueries } from '@/lib/client/queries/settings'
 import type { AuthConfig, PortalAuthMethods } from '@/lib/shared/types/settings'
 
 export type AuthTab = 'team' | 'portal'
@@ -64,8 +67,9 @@ export function AuthSettings({
         <TabsTrigger value="portal">Portal</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="team">
+      <TabsContent value="team" className="space-y-6">
         <TeamAuthMethodsSection initialConfig={teamAuthConfig} />
+        <AuthSettingsSsoCallout teamAuthConfig={teamAuthConfig} />
       </TabsContent>
 
       <TabsContent value="portal">
@@ -77,4 +81,9 @@ export function AuthSettings({
       </TabsContent>
     </Tabs>
   )
+}
+
+function AuthSettingsSsoCallout({ teamAuthConfig }: { teamAuthConfig: AuthConfig }) {
+  const verifiedDomainsQuery = useSuspenseQuery(settingsQueries.verifiedDomains())
+  return <SsoPageCallout authConfig={teamAuthConfig} verifiedDomains={verifiedDomainsQuery.data} />
 }
