@@ -194,19 +194,8 @@ export function isSsoConfigured(
 
 /**
  * Unified hard-binding predicate. Returns true when the sign-in attempt
- * must be rejected because of:
- *
- *  - the per-domain `sso_verified_domain.enforced` flag (per-domain branch), OR
- *  - the workspace-wide `authConfig.ssoOidc.required` flag, which binds
- *    every admin/member regardless of email domain.
- *
- * Magic-link can escape the workspace-wide branch when
- * `allowMagicLinkUnderRequired` is set — operators who want to keep a
- * cross-IdP break-glass.
- *
- * Portal users (role='user') are never bound by the workspace-wide
- * branch — they're not gated by SSO at all. The per-domain branch
- * still applies because that's email-driven, not role-driven.
+ * must be rejected because the candidate email is at a verified domain
+ * whose `sso_verified_domain.enforced` flag is on.
  *
  * **Fails open when SSO isn't viable at runtime.** Callers pass
  * `ssoActuallyRegistered` (computed via `isSsoActuallyRegistered`) so
@@ -227,18 +216,8 @@ export function isHardBound(
 ): boolean {
   if (!HARD_BOUND_PROVIDERS.has(provider)) return false
   if (!ssoActuallyRegistered) return false
-
-  const sso = authConfig?.ssoOidc
-  const isTeamRole = role === 'admin' || role === 'member'
-  if (isTeamRole && sso?.required === true) {
-    // Magic-link escape: only when explicitly opted into.
-    if (provider === 'magic-link' && sso.allowMagicLinkUnderRequired === true) {
-      // Workspace-wide branch doesn't bind, but a per-domain enforced
-      // row still might — fall through.
-    } else {
-      return true
-    }
-  }
+  void authConfig
+  void role
 
   const match = findVerifiedDomainForEmail(email, verifiedDomains)
   return match?.enforced === true
