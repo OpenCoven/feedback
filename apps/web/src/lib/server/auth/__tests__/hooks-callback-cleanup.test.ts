@@ -65,6 +65,20 @@ vi.mock('@/lib/server/domains/platform-credentials/platform-credential.service',
   hasPlatformCredentials: (...a: unknown[]) => mockHasPlatformCredentials(...a),
 }))
 
+// Default mirrors production: registered iff admin enabled SSO. Tests
+// for tier-downgrade / missing-secret override.
+const mockIsSsoActuallyRegistered = vi.fn(
+  async (sso: { enabled?: boolean } | undefined, _tier: unknown) => sso?.enabled === true
+)
+vi.mock('@/lib/server/auth/sso-secret', () => ({
+  isSsoActuallyRegistered: (sso: { enabled?: boolean } | undefined, tier: unknown) =>
+    mockIsSsoActuallyRegistered(sso, tier),
+}))
+
+vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
+  getTierLimits: async () => ({ features: { customOidcProvider: true } }),
+}))
+
 const { handleCallbackPolicyCleanup } = await import('../hooks')
 
 const tenantSettings = (
@@ -113,6 +127,7 @@ beforeEach(() => {
     oauth: { password: true, magicLink: false },
   })
   mockHasPlatformCredentials.mockResolvedValue(true)
+  mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
 })
 
 // ============================================================

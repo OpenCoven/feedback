@@ -185,13 +185,25 @@ export async function handleSignInPreCheck(ctx: {
     : null
   const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
 
+  // Pre-compute "is SSO actually viable right now?" so `isHardBound`
+  // can fail open on tier-downgrade / missing-secret states (else team
+  // admins lock themselves out the moment an upstream condition flips).
+  const { isSsoActuallyRegistered } = await import('./sso-secret')
+  const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
+  const ssoRegistered = await isSsoActuallyRegistered(
+    tenant?.authConfig?.ssoOidc,
+    await getTierLimits()
+  )
+
   // Hard-binding: refuses password / magic-link / email-OTP for
   //   a) emails at a verified-domain row marked enforced (per-domain), OR
   //   b) any admin/member when `ssoOidc.required=true` (workspace-wide)
   // The verified-domain branch fires before user lookup matters —
   // inbox control at the verified domain shouldn't bypass the IdP's
   // attestations even for brand-new sign-ups.
-  if (isHardBound(provider, email, role, tenant?.authConfig, tenant?.verifiedDomains)) {
+  if (
+    isHardBound(provider, email, role, tenant?.authConfig, tenant?.verifiedDomains, ssoRegistered)
+  ) {
     // Use the workspace-wide message for team-role hard-binds when no
     // per-domain row matches; the per-domain message is more specific
     // for the domain-enforce case.
@@ -517,6 +529,16 @@ export async function handleCallbackPolicyCleanup(
     await db.delete(userTable).where(eq(userTable.id, userId as UserId))
   }
 
+  // Pre-compute viability so `isHardBound` fails open on runtime
+  // unavailability (tier downgrade, secret missing). See the
+  // `isHardBound` docstring for the self-lockout rationale.
+  const { isSsoActuallyRegistered } = await import('./sso-secret')
+  const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
+  const ssoRegistered = await isSsoActuallyRegistered(
+    tenant?.authConfig?.ssoOidc,
+    await getTierLimits()
+  )
+
   // Hard-binding for non-SSO callbacks: handles both branches via
   // isHardBound — per-domain (verified-domain row with enforced=true)
   // and workspace-wide (authConfig.ssoOidc.required=true for any
@@ -526,7 +548,7 @@ export async function handleCallbackPolicyCleanup(
   if (
     provider !== 'sso' &&
     typeof userEmail === 'string' &&
-    isHardBound(provider, userEmail, role, tenant?.authConfig, verifiedDomains)
+    isHardBound(provider, userEmail, role, tenant?.authConfig, verifiedDomains, ssoRegistered)
   ) {
     await revokeSession(ctx as SessionCtx, token)
     await wipeBrandNewShellsIfFresh()

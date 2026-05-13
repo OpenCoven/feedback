@@ -44,6 +44,21 @@ vi.mock('@/lib/server/domains/settings/settings.service', () => ({
   getPublicPortalConfig: (...a: unknown[]) => mockGetPublicPortalConfig(...a),
 }))
 
+// Default mirrors the production conditions: registered iff the admin
+// has SSO enabled (so existing enforcement tests see the same blocking
+// behavior). Tests for tier-downgrade / missing-secret override this.
+const mockIsSsoActuallyRegistered = vi.fn(
+  async (sso: { enabled?: boolean } | undefined, _tier: unknown) => sso?.enabled === true
+)
+vi.mock('@/lib/server/auth/sso-secret', () => ({
+  isSsoActuallyRegistered: (sso: { enabled?: boolean } | undefined, tier: unknown) =>
+    mockIsSsoActuallyRegistered(sso, tier),
+}))
+
+vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
+  getTierLimits: async () => ({ features: { customOidcProvider: true } }),
+}))
+
 // auth-restrictions stays unmocked — we want the real predicates to
 // run so we test the integration, not just the wiring.
 
@@ -89,6 +104,9 @@ beforeEach(() => {
   mockGetPublicPortalConfig.mockResolvedValue({
     oauth: { password: true, magicLink: false },
   })
+  // Default mock returns true when sso.enabled is true (mirrors prod).
+  // Tier-downgrade / missing-secret tests override with mockResolvedValue.
+  mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
 })
 
 // ============================================================
@@ -408,5 +426,79 @@ describe('handleSignInPreCheck — ssoOidc.enabled=false (workspace SSO disabled
     const ctx = ctxFor('/sign-in/email', { email: 'a@anywhere.com' })
 
     await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/password_method_not_allowed/)
+  })
+})
+
+// ============================================================
+// Runtime fail-open — SSO is admin-configured but not viable
+// ============================================================
+
+describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-open', () => {
+  // Admin has SSO enabled and required=true, but the runtime can't
+  // actually use it: tier was downgraded or the secret got rotated and
+  // cleared. Layer A has already unregistered the SSO provider, so
+  // there's no SSO button. Without fail-open, password sign-in would
+  // also be blocked → total lockout. The runtime check undoes the
+  // enforcement until the operator fixes things.
+  it('allows admin password sign-in when SSO is required but not registered (tier downgrade)', async () => {
+    mockGetTenantSettings.mockResolvedValue(tenant({ ssoEnabled: true, required: true }))
+    mockIsSsoActuallyRegistered.mockResolvedValue(false)
+    mockUserFindFirst.mockResolvedValue({ id: 'user_1' })
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@anywhere.com' })
+
+    await handleSignInPreCheck(ctx)
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+
+  it('allows admin password sign-in at enforced verified domain when SSO not registered', async () => {
+    mockGetTenantSettings.mockResolvedValue(
+      tenant({
+        ssoEnabled: true,
+        verifiedDomains: [makeVerifiedDomain('acme.com', true)],
+      })
+    )
+    mockIsSsoActuallyRegistered.mockResolvedValue(false)
+    mockUserFindFirst.mockResolvedValue({ id: 'user_1' })
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@acme.com' })
+
+    await handleSignInPreCheck(ctx)
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+
+  it('allows admin magic-link too when SSO not registered', async () => {
+    mockGetTenantSettings.mockResolvedValue(
+      tenant({
+        ssoEnabled: true,
+        required: true,
+        verifiedDomains: [makeVerifiedDomain('acme.com', true)],
+      })
+    )
+    mockIsSsoActuallyRegistered.mockResolvedValue(false)
+    mockUserFindFirst.mockResolvedValue({ id: 'user_1' })
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor('/sign-in/magic-link', { email: 'a@acme.com' })
+
+    await handleSignInPreCheck(ctx)
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+
+  it('still blocks when ssoRegistered=true and enforcement says so (regression)', async () => {
+    // Sanity: the fail-open must not invert. Same input as the
+    // "blocks password sign-in for admin at enforced verified domain"
+    // test in the per-domain suite — should still block.
+    mockGetTenantSettings.mockResolvedValue(
+      tenant({
+        ssoEnabled: true,
+        verifiedDomains: [makeVerifiedDomain('acme.com', true)],
+      })
+    )
+    mockIsSsoActuallyRegistered.mockResolvedValue(true)
+    mockUserFindFirst.mockResolvedValue({ id: 'user_1' })
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor('/sign-in/email', { email: 'a@acme.com' })
+
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/verified_domain_requires_sso/)
   })
 })

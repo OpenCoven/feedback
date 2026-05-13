@@ -167,6 +167,25 @@ export function isEmailAtVerifiedDomain(
 const HARD_BOUND_PROVIDERS = new Set<AuthProvider>(['credential', 'magic-link'])
 
 /**
+ * Layer-1 predicate: did the admin configure SSO to be on?
+ *
+ * Pure check of admin intent. Use when you need to know whether
+ * downstream SSO state (`required`, verified-domain `enforced`) is in
+ * play at all. Does NOT verify that SSO is actually viable right now —
+ * use {@link isHardBound} for enforcement (which fails open on runtime
+ * unavailability) or `isSsoActuallyRegistered` for the full viability
+ * check (admin intent + tier + secret).
+ *
+ * Type predicate: narrows `sso` to non-undefined inside the guarded
+ * branch so callers don't need to re-check.
+ */
+export function isSsoConfigured(
+  sso: AuthConfig['ssoOidc']
+): sso is NonNullable<AuthConfig['ssoOidc']> {
+  return sso?.enabled === true
+}
+
+/**
  * Unified hard-binding predicate. Returns true when the sign-in attempt
  * must be rejected because of:
  *
@@ -182,25 +201,29 @@ const HARD_BOUND_PROVIDERS = new Set<AuthProvider>(['credential', 'magic-link'])
  * branch — they're not gated by SSO at all. The per-domain branch
  * still applies because that's email-driven, not role-driven.
  *
- * Both branches are dormant when the workspace-level master toggle
- * `ssoOidc.enabled` is off. Stale `required` and `enforced` rows from
- * a previously-active SSO config should not block sign-in once the
- * admin has switched SSO off.
+ * **Fails open when SSO isn't viable at runtime.** Callers pass
+ * `ssoActuallyRegistered` (computed via `isSsoActuallyRegistered`) so
+ * tier downgrades, missing secrets, or stale config can never cause a
+ * self-lockout — a team where the IdP isn't reachable should still let
+ * admins sign in via password/magic-link until the operator fixes it.
+ * Recovery codes remain available as the documented break-glass either
+ * way; the fail-open here covers the case where the admin doesn't know
+ * about recovery codes yet.
  */
 export function isHardBound(
   provider: AuthProvider,
   email: string | null | undefined,
   role: Role,
   authConfig: AuthConfig | undefined,
-  verifiedDomains: readonly VerifiedDomain[] | undefined
+  verifiedDomains: readonly VerifiedDomain[] | undefined,
+  ssoActuallyRegistered: boolean
 ): boolean {
   if (!HARD_BOUND_PROVIDERS.has(provider)) return false
+  if (!ssoActuallyRegistered) return false
 
   const sso = authConfig?.ssoOidc
-  if (sso?.enabled !== true) return false
-
   const isTeamRole = role === 'admin' || role === 'member'
-  if (isTeamRole && sso.required === true) {
+  if (isTeamRole && sso?.required === true) {
     // Magic-link escape: only when explicitly opted into.
     if (provider === 'magic-link' && sso.allowMagicLinkUnderRequired === true) {
       // Workspace-wide branch doesn't bind, but a per-domain enforced

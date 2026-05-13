@@ -48,7 +48,8 @@ export const lookupAuthMethodsFn = createServerFn({ method: 'POST' })
   .inputValidator(lookupAuthMethodsInput)
   .handler(async ({ data }): Promise<LookupAuthMethodsResult> => {
     const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')
-    const { findVerifiedDomainForEmail } = await import('@/lib/server/auth/auth-restrictions')
+    const { findVerifiedDomainForEmail, isSsoConfigured } =
+      await import('@/lib/server/auth/auth-restrictions')
 
     const tenant = await getTenantSettings()
     const sso = tenant?.authConfig?.ssoOidc
@@ -65,7 +66,7 @@ export const lookupAuthMethodsFn = createServerFn({ method: 'POST' })
     // domain row + `required` flag outlive the master toggle, but the
     // user-facing message should be "methods", not "sso unavailable" —
     // the latter implies the admin needs to fix something.
-    if (sso?.enabled !== true) {
+    if (!isSsoConfigured(sso)) {
       return {
         kind: 'methods',
         authConfig: methodsConfig,

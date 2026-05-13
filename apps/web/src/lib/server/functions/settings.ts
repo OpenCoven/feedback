@@ -238,17 +238,27 @@ export const fetchUserProfile = createServerFn({ method: 'GET' })
         ])
 
       const { isHardBound } = await import('@/lib/server/auth/auth-restrictions')
+      const { isSsoActuallyRegistered } = await import('@/lib/server/auth/sso-secret')
+      const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
       const tenant = await getTenantSettings()
+      const ssoRegistered = await isSsoActuallyRegistered(
+        tenant?.authConfig?.ssoOidc,
+        await getTierLimits()
+      )
       const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
       // Use the full predicate so the profile page also hides the
       // password section for team users locked in by workspace-wide
-      // `ssoOidc.required`, not just per-domain enforced users.
+      // `ssoOidc.required`, not just per-domain enforced users. When
+      // SSO isn't actually viable (tier downgrade, missing secret) the
+      // predicate fails open — the UI then surfaces the password
+      // section as a fallback, mirroring the sign-in flow.
       const ssoEnforced = isHardBound(
         'credential',
         userRecord?.email ?? null,
         role,
         tenant?.authConfig,
-        tenant?.verifiedDomains
+        tenant?.verifiedDomains,
+        ssoRegistered
       )
 
       const hasCustomAvatar = !!userRecord?.imageKey

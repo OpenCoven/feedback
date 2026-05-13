@@ -129,6 +129,16 @@ vi.mock('@/lib/server/domains/platform-credentials/platform-credential.service',
   hasPlatformCredentials: (type: string) => mockHasPlatformCredentials(type),
 }))
 
+vi.mock('@/lib/server/auth/sso-secret', () => ({
+  // The integration test runs full hooksAfter end-to-end; default to
+  // "SSO viable" so the enforcement branches behave as in production.
+  isSsoActuallyRegistered: async () => true,
+}))
+
+vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
+  getTierLimits: async () => ({ features: { customOidcProvider: true } }),
+}))
+
 const { hooksAfter } = (await import('../hooks')) as unknown as {
   hooksAfter: (ctx: unknown) => Promise<void>
 }
