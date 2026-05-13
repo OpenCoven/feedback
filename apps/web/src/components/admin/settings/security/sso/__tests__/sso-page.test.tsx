@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 /**
  * <SsoPage> — composition smoke. Asserts that the four sections render
  * in order and that the recovery-codes section is NOT inside the tier-

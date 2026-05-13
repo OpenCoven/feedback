@@ -1,8 +1,9 @@
+// @vitest-environment happy-dom
 /**
- * <TeamAuthMethodsSection> — extracted from admin-auth-settings.tsx.
- * Smoke test: renders the four method rows (password, magic-link, 2FA,
- * new-device notification) and reflects the initialConfig prop state
- * into the switches.
+ * <TeamAuthMethodsSection> — smoke test for the extracted component.
+ * Renders the four method rows (password, magic-link, 2FA, new-device
+ * notification) and reflects the initialConfig prop state into the
+ * switches.
  */
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
