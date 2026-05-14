@@ -42,28 +42,34 @@ import {
 import { startSsoTestFn, getSsoTestResultFn } from '@/lib/server/functions/sso-test'
 import { SSO_TEST_POSTMESSAGE_SOURCE } from '@/lib/shared/sso-test-keys'
 import { openAuthPopup, usePopupTracker } from '@/lib/client/hooks/use-auth-broadcast'
-import { ssoTestReducer, initialSsoTestState, type WireResult } from './sso-test-state'
+import {
+  ssoTestReducer,
+  initialSsoTestState,
+  type WireResult,
+  type SsoTestState,
+} from './sso-test-state'
 
 const POLL_INTERVAL_MS = 2000
 // 150 polls * 2s = 5 minutes. Redis test-session TTL is 10 minutes;
 // bail well before that so we don't poll an expired session forever.
 const MAX_POLLS = 150
 
-/** Callback fired when a test sign-in succeeds — used by the Enable /
- *  Require-SSO gates to auto-apply the action that triggered the
- *  prompt. May be async; the modal shows "Applying…" while it runs. */
 type OnSuccess = () => void | Promise<void>
 
 interface OpenOptions {
   /** Gate context shown in the prompt, e.g. "Test sign-in required
    *  before enabling SSO." Omit for the standalone Test button. */
   reason?: string
-  /** Runs after a successful test sign-in. */
+  /** The gate's pending action — runs after a successful test sign-in.
+   *  May be async; the modal shows "Applying…" while it runs. */
   onSuccess?: OnSuccess
+  /** When set, the modal stays open on the result view after onSuccess
+   *  with this as a confirmation banner (e.g. "Single sign-on is now
+   *  enabled."). When omitted, the modal closes after onSuccess. */
+  successMessage?: string
 }
 
 interface SsoTestSignInContextValue {
-  /** Open the modal in its prompt state. */
   open: (opts?: OpenOptions) => void
 }
 
@@ -82,11 +88,11 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
   const startTest = useServerFn(startSsoTestFn)
   const pollResult = useServerFn(getSsoTestResultFn)
   const [state, dispatch] = useReducer(ssoTestReducer, initialSsoTestState)
-  // `true` while a successful test's onSuccess callback runs.
   const [applying, setApplying] = useState(false)
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onSuccessRef = useRef<OnSuccess | null>(null)
+  const successMessageRef = useRef<string | null>(null)
   // Mirror "is a test actively in flight" in a ref so the popup / poll /
   // postMessage handlers read the latest value without re-attaching.
   // Gating on `=== 'testing'` (not `!== 'closed'`) is load-bearing: the
@@ -108,9 +114,6 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
 
   const { trackPopup, clearPopup } = usePopupTracker({
     onPopupClosed: () => {
-      // Only react while the test is still in flight — a close callback
-      // after a result (incl. the popup's own auto-close on success)
-      // must not stomp the result UI.
       if (!testingRef.current) return
       clearPoll()
       dispatch({
@@ -120,17 +123,17 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  // After a successful test, run the gate's onSuccess (e.g. "now
-  // actually enable SSO"), showing "Applying…" while it runs, then
-  // close. No-op when there's no pending action (the standalone Test
-  // button opens the modal without an onSuccess).
   const runAutoApply = useCallback(async () => {
     const cb = onSuccessRef.current
     if (!cb) return
     setApplying(true)
     try {
       await cb()
-      dispatch({ type: 'close' })
+      // A gate trigger that passed `successMessage` wants the modal to
+      // stay open with a confirmation banner; without one (e.g. Require
+      // SSO, whose onSuccess just opens a follow-up dialog), close it.
+      const msg = successMessageRef.current
+      dispatch(msg ? { type: 'applied', message: msg } : { type: 'close' })
     } catch (err) {
       dispatch({
         type: 'failed',
@@ -142,10 +145,20 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Shared resolution path for the postMessage and poll routes: stop the
+  // trackers, record the result, and kick off the gate's auto-apply.
+  const resolveTest = useCallback(
+    (result: WireResult, identityMatched: boolean | undefined) => {
+      clearPoll()
+      clearPopup()
+      dispatch({ type: 'resolved', result, identityMatched })
+      if (result.ok) void runAutoApply()
+    },
+    [clearPoll, clearPopup, runAutoApply]
+  )
+
   // postMessage listener — origin + source checks keep stray messages
   // (extensions, other tabs, the IdP itself) from ending the test early.
-  // Only act while testing: a late message after the poll already
-  // resolved (or after close) is dropped.
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (!testingRef.current) return
@@ -158,31 +171,25 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
       if (!data || typeof data !== 'object') return
       if (data.source !== SSO_TEST_POSTMESSAGE_SOURCE) return
       if (!data.result) return
-      clearPoll()
-      clearPopup()
-      dispatch({
-        type: 'resolved',
-        result: data.result,
-        identityMatched: data.identityMatched,
-      })
-      if (data.result.ok) void runAutoApply()
+      resolveTest(data.result, data.identityMatched)
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [clearPoll, clearPopup, runAutoApply])
+  }, [resolveTest])
 
-  // Belt-and-braces cleanup if the provider unmounts mid-test.
   useEffect(() => () => clearPoll(), [clearPoll])
 
   const handleClose = useCallback(() => {
     clearPoll()
     clearPopup()
     onSuccessRef.current = null
+    successMessageRef.current = null
     dispatch({ type: 'close' })
   }, [clearPoll, clearPopup])
 
   const open = useCallback((opts?: OpenOptions) => {
     onSuccessRef.current = opts?.onSuccess ?? null
+    successMessageRef.current = opts?.successMessage ?? null
     dispatch({ type: 'open', reason: opts?.reason })
   }, [])
 
@@ -227,23 +234,19 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
       try {
         const diag = await pollResult({ data: { testId: r.testId } })
         if (diag && diag.result) {
-          clearPoll()
-          clearPopup()
-          // The postMessage path may have already resolved this test —
-          // if we're no longer testing, drop the poll result.
-          if (!testingRef.current) return
-          dispatch({
-            type: 'resolved',
-            result: diag.result,
-            identityMatched: diag.identityMatched,
-          })
-          if (diag.result.ok) void runAutoApply()
+          // The postMessage path may have already resolved this test.
+          if (!testingRef.current) {
+            clearPoll()
+            clearPopup()
+            return
+          }
+          resolveTest(diag.result, diag.identityMatched)
         }
       } catch {
         // Transient poll error — the popup may still postMessage.
       }
     }, POLL_INTERVAL_MS)
-  }, [startTest, pollResult, trackPopup, clearPoll, clearPopup, runAutoApply])
+  }, [startTest, pollResult, trackPopup, clearPoll, clearPopup, resolveTest])
 
   return (
     <SsoTestSignInContext.Provider value={{ open }}>
@@ -258,10 +261,6 @@ export function SsoTestSignInProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Modal — pure presentational, driven entirely by reducer state.
-// ---------------------------------------------------------------------------
-
 function SsoTestSignInModal({
   state,
   applying,
@@ -273,15 +272,14 @@ function SsoTestSignInModal({
   onStart: () => void
   onClose: () => void
 }) {
-  const { phase, reason, result, error, identityMatched } = state
+  const { phase, reason, result, error, identityMatched, appliedMessage } = state
   return (
     <Dialog
       open={phase !== 'closed'}
       onOpenChange={(o) => {
         // Block close while a test is in flight or auto-apply is running
         // — a half-applied gate action would be confusing.
-        if (!o && phase === 'testing') return
-        if (!o && applying) return
+        if (!o && (phase === 'testing' || applying)) return
         if (!o) onClose()
       }}
     >
@@ -291,48 +289,113 @@ function SsoTestSignInModal({
           <DialogDescription>{describeModalState(state, applying)}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto px-6 pb-2">
-          {phase === 'prompt' ? (
-            <PromptState reason={reason} />
-          ) : error ? (
-            <Alert variant="destructive">
-              <ExclamationTriangleIcon className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : result ? (
-            <TestResultPanel result={result} identityMatched={identityMatched} />
-          ) : phase === 'testing' ? (
-            <WaitingState />
-          ) : null}
+          <ModalBody
+            phase={phase}
+            reason={reason}
+            result={result}
+            error={error}
+            identityMatched={identityMatched}
+            appliedMessage={appliedMessage}
+          />
         </div>
         <DialogFooter className="shrink-0 px-6 pt-2 pb-6">
-          {phase === 'prompt' ? (
-            <>
-              <Button variant="outline" size="sm" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={onStart}>
-                Start test sign-in
-              </Button>
-            </>
-          ) : phase === 'testing' ? (
-            <Button variant="outline" size="sm" onClick={onClose}>
-              Cancel
-            </Button>
-          ) : (
-            <>
-              <Button variant="outline" size="sm" onClick={onClose} disabled={applying}>
-                Close
-              </Button>
-              {(result || error) && !applying && (
-                <Button size="sm" onClick={onStart}>
-                  Try again
-                </Button>
-              )}
-            </>
-          )}
+          <ModalFooter
+            phase={phase}
+            applying={applying}
+            hasResultOrError={!!(result || error)}
+            onStart={onStart}
+            onClose={onClose}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function ModalBody({
+  phase,
+  reason,
+  result,
+  error,
+  identityMatched,
+  appliedMessage,
+}: {
+  phase: SsoTestState['phase']
+  reason: string | null
+  result: WireResult | null
+  error: string | null
+  identityMatched: boolean | undefined
+  appliedMessage: string | null
+}) {
+  if (phase === 'prompt') return <PromptState reason={reason} />
+  if (phase === 'testing') return <WaitingState />
+  // 'result' phase: an error, or a diagnostic — plus an optional banner
+  // confirming the gate action the test unblocked.
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <ExclamationTriangleIcon className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    )
+  }
+  if (!result) return null
+  return (
+    <div className="space-y-3">
+      {appliedMessage ? (
+        <div className="flex items-center gap-2 rounded-md border border-green-500/30 bg-green-500/10 p-2.5 text-sm font-medium text-green-700">
+          <CheckCircleIcon className="h-4 w-4 shrink-0" />
+          {appliedMessage}
+        </div>
+      ) : null}
+      <TestResultPanel result={result} identityMatched={identityMatched} />
+    </div>
+  )
+}
+
+function ModalFooter({
+  phase,
+  applying,
+  hasResultOrError,
+  onStart,
+  onClose,
+}: {
+  phase: SsoTestState['phase']
+  applying: boolean
+  hasResultOrError: boolean
+  onStart: () => void
+  onClose: () => void
+}) {
+  if (phase === 'prompt') {
+    return (
+      <>
+        <Button variant="outline" size="sm" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={onStart}>
+          Start test sign-in
+        </Button>
+      </>
+    )
+  }
+  if (phase === 'testing') {
+    return (
+      <Button variant="outline" size="sm" onClick={onClose}>
+        Cancel
+      </Button>
+    )
+  }
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={onClose} disabled={applying}>
+        Close
+      </Button>
+      {hasResultOrError && !applying && (
+        <Button size="sm" onClick={onStart}>
+          Try again
+        </Button>
+      )}
+    </>
   )
 }
 

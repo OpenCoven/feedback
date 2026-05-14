@@ -32,12 +32,17 @@ export interface SsoTestState {
   result: WireResult | null
   error: string | null
   identityMatched: boolean | undefined
+  /** Set by `applied` when a gate trigger's auto-apply completed and
+   *  asked the modal to stay open with a confirmation (e.g. the Enable
+   *  toggle: "Single sign-on is now enabled."). Null otherwise. */
+  appliedMessage: string | null
 }
 
 export type SsoTestAction =
   | { type: 'open'; reason?: string }
   | { type: 'start' }
   | { type: 'resolved'; result: WireResult; identityMatched: boolean | undefined }
+  | { type: 'applied'; message: string }
   | { type: 'failed'; error: string }
   | { type: 'close' }
 
@@ -47,6 +52,7 @@ export const initialSsoTestState: SsoTestState = {
   result: null,
   error: null,
   identityMatched: undefined,
+  appliedMessage: null,
 }
 
 export function ssoTestReducer(state: SsoTestState, action: SsoTestAction): SsoTestState {
@@ -55,11 +61,9 @@ export function ssoTestReducer(state: SsoTestState, action: SsoTestAction): SsoT
       // Always re-enter `prompt` from a clean slate — a re-open after a
       // prior result shouldn't flash the stale diagnostic.
       return {
+        ...initialSsoTestState,
         phase: 'prompt',
         reason: action.reason ?? null,
-        result: null,
-        error: null,
-        identityMatched: undefined,
       }
     case 'start':
       // Keep `reason` so the result view can still show gate context;
@@ -70,6 +74,7 @@ export function ssoTestReducer(state: SsoTestState, action: SsoTestAction): SsoT
         result: null,
         error: null,
         identityMatched: undefined,
+        appliedMessage: null,
       }
     case 'resolved':
       return {
@@ -79,6 +84,10 @@ export function ssoTestReducer(state: SsoTestState, action: SsoTestAction): SsoT
         error: null,
         identityMatched: action.identityMatched,
       }
+    case 'applied':
+      // The gate trigger applied its action and wants the modal to stay
+      // open on the result view with a confirmation banner.
+      return { ...state, appliedMessage: action.message }
     case 'failed':
       return {
         ...state,

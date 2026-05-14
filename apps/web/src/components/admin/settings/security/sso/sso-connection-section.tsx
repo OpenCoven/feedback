@@ -507,6 +507,7 @@ function SsoConfiguredForm({
     if (next && !ssoStatus.enableEligible) {
       openTestSignIn({
         reason: 'Test sign-in required before enabling SSO.',
+        successMessage: 'Single sign-on is now enabled.',
         onSuccess: async () => {
           setDraft((d) => ({ ...d, enabled: true }))
           await onSave({ enabled: true })
