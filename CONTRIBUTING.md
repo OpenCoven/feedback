@@ -1,6 +1,6 @@
-# Contributing to Quackback
+# Contributing to OpenCoven Feedback
 
-Thank you for your interest in contributing to Quackback! This guide will help you get started.
+Thank you for your interest in contributing to OpenCoven Feedback! This guide will help you get started.
 
 ## Quick Start
 

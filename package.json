@@ -1,5 +1,5 @@
 {
-  "name": "quackback",
+  "name": "opencoven-feedback",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -39,12 +39,12 @@
   },
   "scripts": {
     "setup": "./scripts/setup.sh",
-    "dev": "bun run --filter @quackback/web dev",
-    "build": "bun run --filter @quackback/web build",
+    "dev": "bun run --filter @opencoven-feedback/web dev",
+    "build": "bun run --filter @opencoven-feedback/web build",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "vitest",
     "test:api": "vitest apps/web/src/lib/api/__tests__/api-integration.test.ts",
-    "test:e2e": "bun run --filter @quackback/web test:e2e",
+    "test:e2e": "bun run --filter @opencoven-feedback/web test:e2e",
     "db:generate": "bun run --cwd packages/db db:generate",
     "db:migrate": "bun run --cwd packages/db db:migrate",
     "db:studio": "bun run --cwd packages/db db:studio",

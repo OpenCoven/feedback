@@ -18,8 +18,8 @@ export const Route = createFileRoute('/api/v1/docs')({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Quackback API Documentation - Build powerful integrations" />
-  <title>API Reference | Quackback</title>
+  <meta name="description" content="OpenCoven Feedback API - Build powerful integrations" />
+  <title>API Reference | OpenCoven Feedback</title>
   <link rel="icon" href="/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1236,8 +1236,8 @@ export const Route = createFileRoute('/api/v1/docs')({
   <header class="header">
     <div class="header-inner">
       <a href="/" class="logo">
-        <img src="/logo.png" alt="Quackback" />
-        <span>Quackback</span>
+        <img src="/logo.png" alt="OpenCoven Feedback" />
+        <span>OpenCoven Feedback</span>
         <span class="logo-sep">/</span>
         <span class="logo-context">API</span>
       </a>
@@ -1256,7 +1256,7 @@ export const Route = createFileRoute('/api/v1/docs')({
         REST API v1
       </div>
       <h1>API Reference</h1>
-      <p>Build integrations and automate workflows with the Quackback API</p>
+      <p>Build integrations and automate workflows with the OpenCoven Feedback API</p>
       <div class="hero-meta">
         <div class="hero-meta-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>

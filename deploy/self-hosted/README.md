@@ -1,6 +1,6 @@
 # Self-Hosted Deployment
 
-Deploy Quackback on your own infrastructure with full control over your data.
+Deploy OpenCoven Feedback on your own infrastructure with full control over your data.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ docker compose up -d
 docker compose logs -f
 ```
 
-Open http://localhost:3000 to access Quackback.
+Open http://localhost:3000 to access OpenCoven Feedback.
 
 ### Using Docker Run
 
@@ -120,7 +120,7 @@ docker pull ghcr.io/quackbackhq/quackback:latest-enterprise
 
 ## Database Setup
 
-Quackback requires PostgreSQL 13+.
+OpenCoven Feedback requires PostgreSQL 13+.
 
 ### Create Database
 
@@ -279,7 +279,7 @@ docker run -d \
 
 ### Obtaining a License
 
-Contact sales@quackback.io for enterprise licensing information.
+Contact sales@feedback.opencoven.dev for enterprise licensing information.
 
 ---
 
@@ -397,7 +397,7 @@ curl -X POST 'https://api.resend.com/emails' \
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/bcnu9a)
 
-Deploys Quackback + PostgreSQL (with pgvector) + S3-compatible storage bucket to Railway. After deploying:
+Deploys OpenCoven Feedback + PostgreSQL (with pgvector) + S3-compatible storage bucket to Railway. After deploying:
 
 1. **Find your OTP code**: If email is not configured, login codes appear in Railway's deployment logs
 2. **Configure email** (recommended): Add SMTP or Resend API key in the service's environment variables
@@ -417,6 +417,6 @@ Coming soon:
 
 ## Support
 
-- **Documentation**: https://docs.quackback.io
+- **Documentation**: https://docs.feedback.opencoven.dev
 - **GitHub Issues**: https://github.com/quackbackhq/quackback/issues
 - **Discord**: https://discord.gg/quackback
