@@ -288,7 +288,7 @@ describe('updatePost mention dispatch', () => {
 
     const actorPrincipal = 'principal_actor' as unknown as PrincipalId
     await updatePost(
-      'post_update' as unknown as import('@quackback/ids').PostId,
+      'post_update' as unknown as import('@opencoven-feedback/ids').PostId,
       {
         contentJson: newContent as unknown as import('@/lib/server/db').TiptapContent,
       },
@@ -316,7 +316,7 @@ describe('updatePost mention dispatch', () => {
 
     const actorPrincipal = 'principal_actor' as unknown as PrincipalId
     await updatePost(
-      'post_update' as unknown as import('@quackback/ids').PostId,
+      'post_update' as unknown as import('@opencoven-feedback/ids').PostId,
       {
         contentJson: newContent as unknown as import('@/lib/server/db').TiptapContent,
       },
@@ -340,7 +340,7 @@ describe('updatePost mention dispatch', () => {
 
     const actorPrincipal = 'principal_actor' as unknown as PrincipalId
     await updatePost(
-      'post_update' as unknown as import('@quackback/ids').PostId,
+      'post_update' as unknown as import('@opencoven-feedback/ids').PostId,
       { title: 'New title only' },
       { principalId: actorPrincipal }
     )

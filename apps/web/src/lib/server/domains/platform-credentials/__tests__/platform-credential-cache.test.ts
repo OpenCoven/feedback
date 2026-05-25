@@ -73,7 +73,7 @@ vi.mock('@/lib/server/integrations/encryption', () => ({
   decryptPlatformCredentials: vi.fn(),
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   generateId: vi.fn().mockReturnValue('platform_cred_1'),
 }))
 

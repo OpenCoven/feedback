@@ -20,7 +20,7 @@ vi.mock('@/lib/server/db', () => ({
   db: { query: { settings: { findFirst: vi.fn(async () => null) } } },
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   isEmailConfigured: () => true,
   sendMagicLinkEmail: hoisted.mockSendMagicLinkEmail,
 }))

@@ -161,7 +161,7 @@ export async function getPublicPostDetail(
   }
 
   const tagsResult = parseJson<
-    Array<{ id: import('@quackback/ids').TagId; name: string; color: string }>
+    Array<{ id: import('@opencoven-feedback/ids').TagId; name: string; color: string }>
   >(postResult.tagsJson)
   const roadmapsResult = parseJson<Array<{ id: string; name: string; slug: string }>>(
     postResult.roadmapsJson

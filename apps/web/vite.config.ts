@@ -127,9 +127,9 @@ export default defineConfig(({ mode }) => {
           client: {
             specifiers: [
               'postgres',
-              '@quackback/db',
-              '@quackback/db/client',
-              '@quackback/db/schema',
+              '@opencoven-feedback/db',
+              '@opencoven-feedback/db/client',
+              '@opencoven-feedback/db/schema',
               'bullmq',
               'ioredis',
               'openai',

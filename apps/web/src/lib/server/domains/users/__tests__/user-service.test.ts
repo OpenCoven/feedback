@@ -96,7 +96,7 @@ vi.mock('@/lib/server/db', () => ({
   userAttributeDefinitions: 'user_attribute_definitions',
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   generateId: vi.fn((prefix: string) => `${prefix}_generated123`),
 }))
 

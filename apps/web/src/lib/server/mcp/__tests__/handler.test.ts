@@ -24,8 +24,8 @@ vi.mock('@/lib/server/db', () => ({
   eq: vi.fn((_a: unknown, _b: unknown) => 'eq-condition'),
 }))
 
-// Mock getTypeIdPrefix from @quackback/ids — extract prefix from underscore-separated IDs
-vi.mock('@quackback/ids', async (importOriginal) => {
+// Mock getTypeIdPrefix from @opencoven-feedback/ids — extract prefix from underscore-separated IDs
+vi.mock('@opencoven-feedback/ids', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,

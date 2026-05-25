@@ -18,7 +18,7 @@ vi.mock('@/lib/server/domains/settings/settings.widget', () => ({
 vi.mock('@/lib/server/domains/posts/post.public', () => ({
   getAllUserVotedPostIds: vi.fn(),
 }))
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   generateId: vi.fn(() => 'mock_id'),
 }))
 

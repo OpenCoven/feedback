@@ -37,7 +37,7 @@ vi.mock('@/lib/server/domains/subscriptions/subscription.service', () => ({
 
 const mockSendEmail = vi.fn().mockResolvedValue({ sent: true })
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   sendFeedbackLinkedEmail: (...args: unknown[]) => mockSendEmail(...args),
 }))
 

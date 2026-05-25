@@ -45,7 +45,7 @@ vi.mock('@/lib/server/db', () => ({
   externalUserMappings: {},
 }))
 
-vi.mock('@quackback/ids', async () => {
+vi.mock('@opencoven-feedback/ids', async () => {
   let counter = 0
   return {
     createId: vi.fn((prefix: string) => `${prefix}_${++counter}` as PrincipalId),

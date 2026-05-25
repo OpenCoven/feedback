@@ -14,7 +14,7 @@
  */
 
 // Per eslint.config.js — app files must import schema via @/lib/server/db,
-// NOT directly from @quackback/db.
+// NOT directly from @opencoven-feedback/db.
 import { db, postMentions, principal, eq, and, inArray } from '@/lib/server/db'
 import { dispatchPostMentioned, type EventActor } from '../../events/dispatch'
 import type { PostId, PrincipalId } from '@opencoven-feedback/ids'

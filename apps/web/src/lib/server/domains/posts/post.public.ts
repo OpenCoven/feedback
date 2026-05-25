@@ -314,7 +314,7 @@ export async function getAllUserVotedPostIds(principalId: PrincipalId): Promise<
 }
 
 export async function getVotedPostIdsByUserId(
-  userId: import('@quackback/ids').UserId
+  userId: import('@opencoven-feedback/ids').UserId
 ): Promise<Set<PostId>> {
   const result = await db
     .select({ postId: votes.postId })
@@ -326,7 +326,7 @@ export async function getVotedPostIdsByUserId(
 
 export async function getBoardByPostId(
   postId: PostId
-): Promise<import('@quackback/db').Board | null> {
+): Promise<import('@opencoven-feedback/db').Board | null> {
   const post = await db.query.posts.findFirst({
     where: eq(posts.id, postId),
     with: { board: true },

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
 // Mock the email package before importing the handler
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   sendStatusChangeEmail: vi.fn(),
   sendNewCommentEmail: vi.fn(),
   sendChangelogPublishedEmail: vi.fn(),

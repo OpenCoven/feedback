@@ -251,7 +251,7 @@ export {
   USE_CASE_TYPES,
 } from '@opencoven-feedback/db'
 
-// Re-export schema types not covered by @quackback/db/types
+// Re-export schema types not covered by @opencoven-feedback/db/types
 export type { ServiceMetadata } from '@opencoven-feedback/db'
 
 // Re-export types (for client components that need types without side effects)

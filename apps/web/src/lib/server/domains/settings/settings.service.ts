@@ -76,7 +76,7 @@ function filterOAuthByCredentials(
  * silently fail.
  */
 async function getEmailDependentPassthroughKeys(): Promise<string[]> {
-  const { isEmailConfigured } = await import('@quackback/email')
+  const { isEmailConfigured } = await import('@opencoven-feedback/email')
   return isEmailConfigured() ? ['magicLink', 'password'] : ['password']
 }
 

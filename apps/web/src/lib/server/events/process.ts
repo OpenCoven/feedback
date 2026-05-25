@@ -202,8 +202,8 @@ async function persistExternalLink(data: HookJobData, result: HookResult): Promi
   await db
     .insert(postExternalLinks)
     .values({
-      postId: postId as import('@quackback/ids').PostId,
-      integrationId: integration.id as import('@quackback/ids').IntegrationId,
+      postId: postId as import('@opencoven-feedback/ids').PostId,
+      integrationId: integration.id as import('@opencoven-feedback/ids').IntegrationId,
       integrationType: data.hookType,
       externalId: result.externalId!,
       externalDisplayId: result.externalDisplayId ?? null,
@@ -306,7 +306,7 @@ async function handleDelayedChangelogPublish(hookConfig: Record<string, unknown>
 
   const { db, changelogEntries, eq } = await import('@/lib/server/db')
   const entry = await db.query.changelogEntries.findFirst({
-    where: eq(changelogEntries.id, changelogId as import('@quackback/ids').ChangelogId),
+    where: eq(changelogEntries.id, changelogId as import('@opencoven-feedback/ids').ChangelogId),
   })
 
   if (!entry || !entry.publishedAt || entry.publishedAt > new Date()) {
@@ -321,7 +321,7 @@ async function handleDelayedChangelogPublish(hookConfig: Record<string, unknown>
   const linkedPosts = await db.query.changelogEntryPosts.findMany({
     where: eq(
       changelogEntryPosts.changelogEntryId,
-      changelogId as import('@quackback/ids').ChangelogId
+      changelogId as import('@opencoven-feedback/ids').ChangelogId
     ),
     columns: { postId: true },
   })
@@ -329,7 +329,7 @@ async function handleDelayedChangelogPublish(hookConfig: Record<string, unknown>
   const { buildEventActor, dispatchChangelogPublished } = await import('./dispatch')
 
   const actor = principalId
-    ? buildEventActor({ principalId: principalId as import('@quackback/ids').PrincipalId })
+    ? buildEventActor({ principalId: principalId as import('@opencoven-feedback/ids').PrincipalId })
     : { type: 'service' as const, displayName: 'scheduler' }
 
   await dispatchChangelogPublished(actor, {
@@ -351,6 +351,6 @@ async function handlePostMergeRecheck(hookConfig: Record<string, unknown>): Prom
 
   const { checkPostForMergeCandidates } =
     await import('@/lib/server/domains/merge-suggestions/merge-check.service')
-  await checkPostForMergeCandidates(postId as import('@quackback/ids').PostId)
+  await checkPostForMergeCandidates(postId as import('@opencoven-feedback/ids').PostId)
   console.log(`[PostMerge] Post-merge recheck complete for ${postId}`)
 }

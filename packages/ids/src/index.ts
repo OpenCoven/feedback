@@ -1,5 +1,5 @@
 /**
- * @quackback/ids - TypeID generation and validation for Quackback
+ * @opencoven-feedback/ids - TypeID generation and validation for Quackback
  *
  * TypeID is a type-safe, sortable identifier format that combines:
  * - Stripe-like prefixes for instant entity recognition

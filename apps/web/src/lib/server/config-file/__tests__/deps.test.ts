@@ -48,7 +48,7 @@ vi.mock('@/lib/server/auth/config-version', () => ({
   bumpAuthConfigVersionInTx: vi.fn(async () => {}),
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   generateId: vi.fn(() => 'ws_test'),
 }))
 

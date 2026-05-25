@@ -39,8 +39,8 @@ vi.mock('@/lib/server/utils', () => ({
   getExecuteRows: vi.fn((result: unknown) => result as unknown[]),
 }))
 
-vi.mock('@quackback/ids', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@quackback/ids')>()
+vi.mock('@opencoven-feedback/ids', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@opencoven-feedback/ids')>()
   return {
     ...original,
     toUuid: vi.fn((id: string) => id),

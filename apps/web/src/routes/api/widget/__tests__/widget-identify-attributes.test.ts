@@ -33,7 +33,7 @@ vi.mock('@/lib/server/storage/s3', () => ({
 vi.mock('@/lib/server/auth/identify-merge', () => ({
   resolveAndMergeAnonymousToken: vi.fn(),
 }))
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   generateId: vi.fn(() => 'mock_id'),
 }))
 vi.mock('@/lib/server/domains/users/user.attributes', () => ({

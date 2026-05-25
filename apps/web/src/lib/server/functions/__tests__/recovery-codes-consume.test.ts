@@ -87,7 +87,7 @@ vi.mock('@/lib/server/redis', () => ({
 
 // Stub email so the fire-and-forget alert doesn't try to load real
 // SMTP / Resend bindings during the test.
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   sendRecoveryCodeUsedEmail: vi.fn().mockResolvedValue({ sent: true }),
   isEmailConfigured: () => false,
 }))

@@ -25,7 +25,7 @@ const { mockCreateDb } = vi.hoisted(() => {
 })
 
 // Mock createDb
-vi.mock('@quackback/db/client', () => ({
+vi.mock('@opencoven-feedback/db/client', () => ({
   createDb: mockCreateDb,
 }))
 

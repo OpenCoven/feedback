@@ -185,7 +185,8 @@ async function sendRecoveryCodeAlert(opts: {
   occurredAt: Date
 }): Promise<void> {
   try {
-    const { sendRecoveryCodeUsedEmail, isEmailConfigured } = await import('@quackback/email')
+    const { sendRecoveryCodeUsedEmail, isEmailConfigured } =
+      await import('@opencoven-feedback/email')
     if (!isEmailConfigured()) return
 
     const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')

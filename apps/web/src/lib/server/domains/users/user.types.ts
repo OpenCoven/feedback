@@ -101,7 +101,7 @@ export interface PortalUserListParams {
   page?: number
   limit?: number
   /** Filter by segment IDs (OR logic — users in ANY of the given segments) */
-  segmentIds?: import('@quackback/ids').SegmentId[]
+  segmentIds?: import('@opencoven-feedback/ids').SegmentId[]
   /** Include anonymous users (principal.type='anonymous'). Default: false (only identified users). */
   includeAnonymous?: boolean
 }

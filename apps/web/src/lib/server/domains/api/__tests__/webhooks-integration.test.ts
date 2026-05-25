@@ -413,7 +413,7 @@ describe.skipIf(SKIP_INTEGRATION)('Webhook API Integration Tests', () => {
     it('returns error for non-existent webhook', async () => {
       if (skipIfNoServer()) return
 
-      const { createId } = await import('@quackback/ids')
+      const { createId } = await import('@opencoven-feedback/ids')
       const fakeWebhookId = createId('webhook')
       const { status } = await api('GET', `/webhooks/${fakeWebhookId}`)
 

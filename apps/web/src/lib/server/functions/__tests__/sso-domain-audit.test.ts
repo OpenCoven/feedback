@@ -96,7 +96,7 @@ vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
   getTierLimits: hoisted.mockGetTierLimits,
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   isEmailConfigured: hoisted.mockIsEmailConfigured,
 }))
 

@@ -212,7 +212,7 @@ export const setVerifiedDomainEnforcedFn = createServerFn({ method: 'POST' })
             )
           }
 
-          const { isEmailConfigured } = await import('@quackback/email')
+          const { isEmailConfigured } = await import('@opencoven-feedback/email')
           if (!isEmailConfigured()) {
             throw new ConflictError(
               'SSO_NO_BREAKGLASS',

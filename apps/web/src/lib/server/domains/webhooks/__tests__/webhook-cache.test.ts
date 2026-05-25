@@ -95,7 +95,7 @@ vi.mock('@/lib/server/events/integrations/webhook/constants', () => ({
   isValidWebhookUrl: vi.fn().mockReturnValue(true),
 }))
 
-vi.mock('@quackback/ids', () => ({
+vi.mock('@opencoven-feedback/ids', () => ({
   createId: vi.fn().mockReturnValue('webhook_new1'),
 }))
 

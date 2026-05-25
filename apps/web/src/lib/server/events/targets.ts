@@ -624,7 +624,7 @@ async function getChangelogSubscriberTargets(
   const linkedPosts = await db.query.changelogEntryPosts.findMany({
     where: eqOp(
       changelogEntryPosts.changelogEntryId,
-      changelogId as import('@quackback/ids').ChangelogId
+      changelogId as import('@opencoven-feedback/ids').ChangelogId
     ),
     columns: { postId: true },
   })

@@ -95,7 +95,7 @@ vi.mock('@/lib/server/domains/platform-credentials/platform-credential.service',
   deletePlatformCredentials: hoisted.mockDeletePlatformCredentials,
 }))
 
-vi.mock('@quackback/email', () => ({
+vi.mock('@opencoven-feedback/email', () => ({
   isEmailConfigured: hoisted.mockIsEmailConfigured,
 }))
 

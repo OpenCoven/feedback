@@ -20,7 +20,7 @@ export async function requestEmailSignin(opts: {
   })
 
   const { db } = await import('@/lib/server/db')
-  const { isEmailConfigured, sendMagicLinkEmail } = await import('@quackback/email')
+  const { isEmailConfigured, sendMagicLinkEmail } = await import('@opencoven-feedback/email')
   const { getEmailSafeUrl } = await import('@/lib/server/storage/s3')
 
   // Failed verifies (token consumed by an email scanner, expired, etc.)
