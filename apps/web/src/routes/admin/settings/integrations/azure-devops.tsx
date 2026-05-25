@@ -72,8 +72,8 @@ function AzureDevOpsIntegrationPage() {
             </p>,
             <p key="2">
               Enter your organization URL and PAT below, then click{' '}
-              <span className="font-medium text-foreground">Connect</span>. Quackback will verify
-              access to your organization.
+              <span className="font-medium text-foreground">Connect</span>. OpenCoven Feedback will
+              verify access to your organization.
             </p>,
             <p key="3">
               Select which project and work item type to use, then enable the events that should

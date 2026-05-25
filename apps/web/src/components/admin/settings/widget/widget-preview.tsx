@@ -184,7 +184,7 @@ export function WidgetPreview({
             <div className={cn('text-center', showTabBar ? 'pb-0.5' : 'py-1')}>
               <span className="inline-flex items-center gap-0.5 text-[8px] text-muted-foreground/60">
                 <img src="/logo.png" alt="" width={10} height={10} className="opacity-60" />
-                Powered by Quackback
+                Powered by OpenCoven Feedback
               </span>
             </div>
           </div>

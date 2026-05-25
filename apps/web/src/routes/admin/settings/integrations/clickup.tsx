@@ -69,7 +69,7 @@ function ClickUpIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to create tasks in your ClickUp workspace.
+              OpenCoven Feedback to create tasks in your ClickUp workspace.
             </p>,
             <p key="2">Select a space and list where new feedback tasks should be created.</p>,
             <p key="3">

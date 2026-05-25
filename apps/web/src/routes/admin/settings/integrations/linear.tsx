@@ -69,7 +69,7 @@ function LinearIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to create issues in your Linear workspace.
+              OpenCoven Feedback to create issues in your Linear workspace.
             </p>,
             <p key="2">Select which team new feedback issues should be created in.</p>,
             <p key="3">

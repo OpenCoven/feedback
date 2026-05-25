@@ -61,7 +61,7 @@ function UseCaseStep() {
 
   async function handleContinue() {
     if (!useCase) {
-      setError('Please select how you plan to use Quackback')
+      setError('Please select how you plan to use OpenCoven Feedback')
       return
     }
 
@@ -82,7 +82,7 @@ function UseCaseStep() {
     <div className="w-full max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold mb-2">How are you planning to use Quackback?</h1>
+        <h1 className="text-2xl font-bold mb-2">How are you planning to use OpenCoven Feedback?</h1>
         <p className="text-muted-foreground">We'll tailor your setup experience accordingly.</p>
       </div>
 

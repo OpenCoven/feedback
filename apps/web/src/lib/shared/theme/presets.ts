@@ -45,6 +45,37 @@ function createPreset(config: MinimalPresetConfig): ThemePreset {
 }
 
 export const themePresets: Record<string, ThemePreset> = {
+  opencoven: createPreset({
+    name: 'OpenCoven',
+    description: 'Deep violet · signature brand',
+    color: '#8E3DFF',
+    font: FONTS.inter,
+    radius: '0.625rem',
+    light: {
+      primary: 'oklch(0.52 0.27 295)',
+      background: 'oklch(1 0 0)',
+      foreground: 'oklch(0.125 0.015 285)',
+      card: 'oklch(1 0 0)',
+      muted: 'oklch(0.96 0.006 295)',
+      mutedForeground: 'oklch(0.52 0.02 285)',
+      border: 'oklch(0.90 0.012 295)',
+      ring: 'oklch(0.52 0.27 295)',
+      destructive: 'oklch(0.577 0.245 27)',
+      success: 'oklch(0.696 0.149 163)',
+    },
+    dark: {
+      primary: 'oklch(0.52 0.27 295)',
+      background: 'oklch(0.083 0.018 285)',
+      foreground: 'oklch(0.92 0.018 285)',
+      card: 'oklch(0.112 0.022 285)',
+      muted: 'oklch(0.18 0.03 285)',
+      mutedForeground: 'oklch(0.64 0.025 285)',
+      border: 'oklch(0.22 0.03 285)',
+      ring: 'oklch(0.52 0.27 295)',
+      destructive: 'oklch(0.396 0.141 25)',
+      success: 'oklch(0.696 0.149 163)',
+    },
+  }),
   default: createPreset({
     name: 'Default',
     description: 'Clean and professional',
@@ -534,6 +565,7 @@ export function getPreset(name: string): ThemePreset | undefined {
 }
 
 export const primaryPresetIds = [
+  'opencoven',
   'default',
   'minimal',
   'playful',

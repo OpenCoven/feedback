@@ -76,7 +76,7 @@ export function buildJiraIssueBody(
         content: [
           {
             type: 'text',
-            text: 'View in Quackback',
+            text: 'View in OpenCoven Feedback',
             marks: [{ type: 'link', attrs: { href: postUrl } }],
           },
         ],

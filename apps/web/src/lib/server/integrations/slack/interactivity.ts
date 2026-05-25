@@ -1,7 +1,7 @@
 /**
  * Slack interactivity handler.
  *
- * Handles message shortcuts ("Send to Quackback") and view submissions.
+ * Handles message shortcuts ("Send to OpenCoven Feedback") and view submissions.
  */
 
 import { WebClient } from '@slack/web-api'
@@ -147,7 +147,7 @@ async function handleMessageAction(
         type: 'modal',
         callback_id: CALLBACK_ID_MODAL,
         private_metadata: privateMetadata,
-        title: { type: 'plain_text', text: 'Send to Quackback' },
+        title: { type: 'plain_text', text: 'Send to OpenCoven Feedback' },
         submit: { type: 'plain_text', text: 'Send' },
         close: { type: 'plain_text', text: 'Cancel' },
         blocks,
@@ -239,13 +239,13 @@ async function handleViewSubmission(
         const baseUrl = getBaseUrl()
         const incomingUrl = `${baseUrl}/admin/feedback/incoming`
         const snippet = details.length > 80 ? details.slice(0, 77) + '...' : details
-        const fallbackText = `Feedback sent to Quackback: ${snippet}`
+        const fallbackText = `Feedback sent to OpenCoven Feedback: ${snippet}`
         const confirmationBlocks = [
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `*Feedback sent to Quackback*\n${snippet}`,
+              text: `*Feedback sent to OpenCoven Feedback*\n${snippet}`,
             },
           },
           {
@@ -253,7 +253,7 @@ async function handleViewSubmission(
             elements: [
               {
                 type: 'mrkdwn',
-                text: `From *#${channelName}* · <${incomingUrl}|View in Quackback>`,
+                text: `From *#${channelName}* · <${incomingUrl}|View in OpenCoven Feedback>`,
               },
             ],
           },

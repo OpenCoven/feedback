@@ -191,7 +191,7 @@ export function WidgetShell({
               <FormattedMessage
                 id="widget.shell.poweredBy"
                 defaultMessage="Powered by {brand}"
-                values={{ brand: <span className="font-medium">Quackback</span> }}
+                values={{ brand: <span className="font-medium">OpenCoven Feedback</span> }}
               />
             </span>
           </a>

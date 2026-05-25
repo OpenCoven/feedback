@@ -56,8 +56,8 @@ const DEMO_PASSWORD_HASH =
   '2180e82a0687f69e51799d64752d0093:b6aef896c3437e07e4fa8389a068b2f6baac8f413b987045cbd030e267b0ddba9362541876e4df03108b3c339e7d813c0bce49c8973da0d3d268cb8ec2c16d50'
 
 const DEMO_ORG = {
-  name: 'Acme Corp',
-  slug: 'acme',
+  name: 'OpenCoven',
+  slug: 'opencoven',
 }
 
 function pick<T>(arr: T[]): T {
@@ -296,7 +296,7 @@ async function seed() {
       createdAt: new Date(),
       setupState: JSON.stringify(setupState),
     })
-    console.log('Created settings: Acme Corp (onboarding complete)')
+    console.log('Created settings: OpenCoven (onboarding complete)')
   } else {
     console.log('Settings already exist, skipping')
   }

@@ -13,7 +13,7 @@ export function getAuthorName(post: {
 }
 
 /**
- * Build the Quackback post URL.
+ * Build the OpenCoven Feedback post URL.
  */
 export function buildPostUrl(rootUrl: string, boardSlug: string, postId: string): string {
   return `${rootUrl}/b/${boardSlug}/posts/${postId}`

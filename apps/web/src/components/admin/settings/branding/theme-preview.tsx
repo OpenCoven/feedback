@@ -178,7 +178,7 @@ function PortalPreview() {
             <div className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--muted-foreground)] px-2.5 py-1 rounded-full bg-[var(--muted)]/50 border border-transparent">
               <img src="/logo.png" alt="" width={14} height={14} className="-mt-px opacity-60" />
               <span>
-                Powered by <span className="font-semibold">Quackback</span>
+                Powered by <span className="font-semibold">OpenCoven Feedback</span>
               </span>
             </div>
           </div>

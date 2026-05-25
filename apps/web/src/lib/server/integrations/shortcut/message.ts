@@ -29,7 +29,7 @@ export function buildShortcutStoryBody(
     '---',
     `**Submitted by:** ${author}`,
     `**Board:** ${post.boardSlug}`,
-    `[View in Quackback](${postUrl})`,
+    `[View in OpenCoven Feedback](${postUrl})`,
   ].join('\n')
 
   const title = truncate(post.title, 512)

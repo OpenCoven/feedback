@@ -12,7 +12,8 @@ export const gitlabCatalog: IntegrationCatalogEntry = {
     },
     {
       label: 'Two-way status sync',
-      description: 'Closing or reopening issues in GitLab updates the feedback status in Quackback',
+      description:
+        'Closing or reopening issues in GitLab updates the feedback status in OpenCoven Feedback',
     },
     {
       label: 'Rich descriptions',

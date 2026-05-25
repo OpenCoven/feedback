@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { httpsUrl } from '@/lib/shared/schemas/auth'
 
 /**
- * Declarative Quackback config file schema.
+ * Declarative OpenCoven Feedback config file schema.
  *
  * Loaded from `/etc/quackback/config.yaml`. Anything declared here is
  * reconciled into the `settings` row AND blocked from in-app UI
@@ -126,7 +126,7 @@ const authSchema = z
 export const quackbackConfigSchema = z
   .object({
     apiVersion: z.literal('quackback.io/v1'),
-    kind: z.literal('QuackbackConfig'),
+    kind: z.literal('quackbackConfig'),
     metadata: z.object({ source: z.string().optional() }).strict().optional(),
     spec: z
       .object({

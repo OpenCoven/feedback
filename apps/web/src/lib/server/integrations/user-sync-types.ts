@@ -4,12 +4,12 @@
  * Implemented by CDP (Customer Data Platform) and CRM integrations that support
  * bidirectional user data sync:
  *
- *   Inbound:  External platform → Quackback
+ *   Inbound:  External platform → OpenCoven Feedback
  *     Receives user identify/update events and writes attributes to user.metadata.
  *     Example: Segment or RudderStack sends an `identify` call when a user's
- *     plan changes; Quackback updates user.metadata and re-evaluates segments.
+ *     plan changes; OpenCoven Feedback updates user.metadata and re-evaluates segments.
  *
- *   Outbound: Quackback → External platform
+ *   Outbound: OpenCoven Feedback → External platform
  *     After dynamic segment evaluation, pushes membership changes back as user
  *     attributes so the external platform knows which segments each user
  *     belongs to.
@@ -27,7 +27,7 @@
  * inbound event is valid and parseable.
  */
 export interface UserIdentifyPayload {
-  /** Email — primary lookup key for matching Quackback users. */
+  /** Email — primary lookup key for matching OpenCoven Feedback users. */
   email: string
   /** The platform's userId, stored for future cross-system identity linking. */
   externalUserId?: string

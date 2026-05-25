@@ -71,7 +71,7 @@ function SlackIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to post messages to your Slack workspace.
+              OpenCoven Feedback to post messages to your Slack workspace.
             </p>,
             <p key="2">
               Select which channel notifications should be posted to. The bot must be added to

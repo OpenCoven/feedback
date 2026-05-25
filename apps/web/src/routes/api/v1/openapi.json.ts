@@ -5,7 +5,7 @@ export const Route = createFileRoute('/api/v1/openapi/json')({
     handlers: {
       /**
        * GET /api/v1/openapi/json
-       * Returns the OpenAPI 3.1 specification for the Quackback API.
+       * Returns the OpenAPI 3.1 specification for the OpenCoven Feedback API.
        *
        * This endpoint is public and does not require authentication.
        */

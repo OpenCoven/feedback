@@ -73,7 +73,7 @@ export async function interpretSignal(
     const signalEmbedding = await embedSignal(signalId, signal.rawFeedbackItemId)
 
     // Step 2: For external sources, check similarity and generate create_post suggestions.
-    // Quackback posts only need embedding — duplicate detection is handled by the
+    // OpenCoven Feedback posts only need embedding — duplicate detection is handled by the
     // separate merge_suggestions system.
     const rawItem = await db.query.rawFeedbackItems.findFirst({
       where: eq(rawFeedbackItems.id, signal.rawFeedbackItemId),

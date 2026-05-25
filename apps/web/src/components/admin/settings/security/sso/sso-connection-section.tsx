@@ -574,7 +574,7 @@ function SsoConfiguredForm({
           <div className="flex-1 min-w-0">
             <Label className="font-medium">Auto-create accounts on first sign-in</Label>
             <p className="mt-1 text-xs text-muted-foreground">
-              New users from your IdP land in Quackback with the role you pick.
+              New users from your IdP land in OpenCoven Feedback with the role you pick.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

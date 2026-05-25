@@ -72,7 +72,8 @@ function HubSpotIntegrationPage() {
               Connect your HubSpot account to authorize read-only access to contact and deal data.
             </p>,
             <p key="2">
-              When feedback is submitted by a known email, Quackback looks up their HubSpot profile.
+              When feedback is submitted by a known email, OpenCoven Feedback looks up their HubSpot
+              profile.
             </p>,
             <p key="3">
               CRM context (company, deal value, lifecycle stage) appears alongside their feedback to

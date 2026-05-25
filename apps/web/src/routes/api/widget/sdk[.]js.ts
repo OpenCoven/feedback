@@ -23,12 +23,12 @@ export const Route = createFileRoute('/api/widget/sdk.js')({
         const widgetConfig = await getWidgetConfig()
         if (!widgetConfig.enabled) {
           return jsResponse(
-            '/* Quackback widget is disabled */ console.warn("Quackback: Widget is disabled for this workspace.");',
+            '/* OpenCoven Feedback widget is disabled */ console.warn("OpenCoven Feedback: Widget is disabled for this workspace.");',
             60
           )
         }
         // Prepend a tenant-specific URL. The bundle reads window.__QUACKBACK_URL__
-        // during browser-queue init to auto-fire Quackback.init when the script
+        // during browser-queue init to auto-fire OpenCoven Feedback.init when the script
         // loads via a raw <script src="/api/widget/sdk.js"> tag.
         const prelude = `window.__QUACKBACK_URL__=${JSON.stringify(config.baseUrl)};`
         return jsResponse(prelude + (widgetBundle as string), 3600)

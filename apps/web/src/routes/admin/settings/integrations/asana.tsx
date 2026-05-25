@@ -69,7 +69,7 @@ function AsanaIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to create tasks in your Asana workspace.
+              OpenCoven Feedback to create tasks in your Asana workspace.
             </p>,
             <p key="2">Select which project new feedback tasks should be created in.</p>,
             <p key="3">

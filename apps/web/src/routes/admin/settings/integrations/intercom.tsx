@@ -72,8 +72,8 @@ function IntercomIntegrationPage() {
               Connect your Intercom account to authorize read-only access to contact data.
             </p>,
             <p key="2">
-              When feedback is submitted by a known email, Quackback automatically looks up their
-              Intercom profile.
+              When feedback is submitted by a known email, OpenCoven Feedback automatically looks up
+              their Intercom profile.
             </p>,
             <p key="3">
               Customer context (company, plan, tags) appears alongside their feedback to help you

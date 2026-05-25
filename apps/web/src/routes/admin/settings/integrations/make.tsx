@@ -60,8 +60,8 @@ function MakeIntegrationPage() {
             </p>,
             <p key="2">
               Copy the webhook URL and paste it below, then click{' '}
-              <span className="font-medium text-foreground">Save</span>. Quackback will send a test
-              payload.
+              <span className="font-medium text-foreground">Save</span>. OpenCoven Feedback will
+              send a test payload.
             </p>,
             <p key="3">
               Choose which events should trigger your scenario, then continue building in Make.

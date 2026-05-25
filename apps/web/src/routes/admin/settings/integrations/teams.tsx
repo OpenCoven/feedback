@@ -68,11 +68,11 @@ function TeamsIntegrationPage() {
           description="Connect Microsoft Teams to receive notifications when users submit feedback, when statuses change, and when comments are added."
           steps={[
             <p key="1">
-              Register Quackback in your Azure AD tenant and add the Teams bot permissions.
+              Register OpenCoven Feedback in your Azure AD tenant and add the Teams bot permissions.
             </p>,
             <p key="2">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to post to your Teams channels.
+              OpenCoven Feedback to post to your Teams channels.
             </p>,
             <p key="3">
               Select a team and channel for notifications, then choose which events trigger

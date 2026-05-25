@@ -87,7 +87,7 @@ export function logStartupBanner(): void {
   const lines = [
     '',
     '========================================',
-    `  Quackback v${__APP_VERSION__} (${__GIT_COMMIT__})`,
+    `  OpenCoven Feedback v${__APP_VERSION__} (${__GIT_COMMIT__})`,
     '========================================',
     `  Environment: ${env}`,
     `  Runtime:     ${runtime}`,
@@ -216,7 +216,7 @@ export function logStartupBanner(): void {
     .then(({ ensureQuackbackFeedbackSource }) => ensureQuackbackFeedbackSource())
     .catch((err) => console.error('[Startup] Failed to ensure quackback feedback source:', err))
 
-  // Quackback config file watcher — reconciles managed fields from
+  // OpenCoven Feedback config file watcher — reconciles managed fields from
   // /etc/quackback/config.yaml on every change. No-op when the file
   // is absent (self-host default).
   import('@/lib/server/config-file')

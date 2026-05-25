@@ -166,6 +166,6 @@ export function buildDiscordMessage(event: EventData, rootUrl: string): DiscordM
     }
 
     default:
-      return { content: `Quackback event: ${(event as EventData).type}` }
+      return { content: `OpenCoven Feedback event: ${(event as EventData).type}` }
   }
 }

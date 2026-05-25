@@ -12,7 +12,8 @@ export const trelloCatalog: IntegrationCatalogEntry = {
     },
     {
       label: 'Two-way status sync',
-      description: 'Moving cards between lists in Trello updates the feedback status in Quackback',
+      description:
+        'Moving cards between lists in Trello updates the feedback status in OpenCoven Feedback',
     },
     {
       label: 'Rich descriptions',

@@ -186,7 +186,7 @@ function buildInitialCss(initialCustomCss: string, initialThemeConfig: ThemeConf
   if (initialCustomCss.trim()) return initialCustomCss
 
   // Otherwise generate readable CSS from the structured config
-  const defaultPreset = themePresets.default
+  const defaultPreset = themePresets.opencoven
   const lightMinimal = extractMinimal({
     ...defaultPreset.light,
     ...(initialThemeConfig.light ?? {}),
@@ -236,7 +236,7 @@ export function useBrandingState(options: UseBrandingStateOptions): BrandingStat
   const previewModeDisabled: 'light' | 'dark' | null =
     themeMode === 'dark' ? 'light' : themeMode === 'light' ? 'dark' : null
 
-  const defaultPreset = themePresets.default
+  const defaultPreset = themePresets.opencoven
   const defaultLightMinimal = useMemo(() => extractMinimal(defaultPreset.light), [defaultPreset])
   const defaultDarkMinimal = useMemo(() => extractMinimal(defaultPreset.dark), [defaultPreset])
 

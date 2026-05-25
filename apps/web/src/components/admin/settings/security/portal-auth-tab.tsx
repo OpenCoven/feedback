@@ -39,7 +39,7 @@ interface PortalAuthTabProps {
  *
  * Differences from the Team tab:
  *  - No SSO card (SSO is admin-only by design — IdPs typically issue
- *    one client secret per Quackback deployment, scoped to team admins
+ *    one client secret per OpenCoven Feedback deployment, scoped to team admins
  *    rather than end users).
  *  - Magic Link defaults to off; password defaults to on.
  *  - No enforcement / bootstrap guard — portal is opt-in self-service.

@@ -72,7 +72,8 @@ function ZendeskIntegrationPage() {
               Connect your Zendesk account to authorize read-only access to user and ticket data.
             </p>,
             <p key="2">
-              When feedback is submitted by a known email, Quackback looks up their Zendesk profile.
+              When feedback is submitted by a known email, OpenCoven Feedback looks up their Zendesk
+              profile.
             </p>,
             <p key="3">
               Support context (organization, ticket history) appears alongside their feedback.

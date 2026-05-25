@@ -1,5 +1,5 @@
 /**
- * Client-side helpers for the declarative Quackback config lock.
+ * Client-side helpers for the declarative OpenCoven Feedback config lock.
  *
  * Mirrors `lib/server/config-file/managed-paths.isPathManaged` so
  * client form components don't import server-only modules. Pulled into

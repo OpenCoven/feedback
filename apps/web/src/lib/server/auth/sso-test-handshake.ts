@@ -318,7 +318,7 @@ export async function runHandshake(input: HandshakeInput): Promise<HandshakeResu
     return {
       ok: false,
       stage: 'claim-check',
-      hint: "ID token has no 'email' claim. Quackback requires an email to create users. Configure your IdP's claim mapper to release the email claim (Keycloak: client scopes; Okta: claim mappers; Entra: API permissions + admin consent).",
+      hint: "ID token has no 'email' claim. OpenCoven Feedback requires an email to create users. Configure your IdP's claim mapper to release the email claim (Keycloak: client scopes; Okta: claim mappers; Entra: API permissions + admin consent).",
       steps,
     }
   }

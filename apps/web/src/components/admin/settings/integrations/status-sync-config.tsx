@@ -136,7 +136,7 @@ export function StatusSyncConfig({
           <div>
             <Label className="text-base font-medium">Status mapping</Label>
             <p className="text-xs text-muted-foreground">
-              Map external statuses to Quackback statuses. Unmapped statuses are ignored.
+              Map external statuses to OpenCoven Feedback statuses. Unmapped statuses are ignored.
             </p>
           </div>
 

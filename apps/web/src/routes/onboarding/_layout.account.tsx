@@ -61,7 +61,7 @@ function AccountStep() {
       <div className="w-full max-w-md mx-auto">
         <div className="overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-b from-card/90 to-card/70 backdrop-blur-sm">
           <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold">Welcome to Quackback</h1>
+            <h1 className="text-2xl font-bold">Welcome to OpenCoven Feedback</h1>
             <p className="mt-2 text-muted-foreground">Sign in with single sign-on to continue</p>
             {error && (
               <div className="mt-4 rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
@@ -128,7 +128,7 @@ function AccountStep() {
       <div className="overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-b from-card/90 to-card/70 backdrop-blur-sm">
         <div className="p-8">
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold">Welcome to Quackback</h1>
+            <h1 className="text-2xl font-bold">Welcome to OpenCoven Feedback</h1>
             <p className="mt-2 text-muted-foreground">Create your account to get started</p>
           </div>
 

@@ -157,7 +157,7 @@ function SidebarContent() {
     <div className="p-3">
       <div className="mb-3 flex items-center gap-2">
         <span className="text-lg">🦆</span>
-        <span className="text-sm font-semibold">Quackback</span>
+        <span className="text-sm font-semibold">OpenCoven Feedback</span>
       </div>
 
       <div className="space-y-4">

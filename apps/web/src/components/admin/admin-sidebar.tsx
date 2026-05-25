@@ -124,7 +124,13 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
               to="/admin/feedback"
               className="flex items-center justify-center mb-8 opacity-90 hover:opacity-100 transition-opacity"
             >
-              <img src="/logo.png" alt="OpenCoven Feedback" width={28} height={28} className="rounded" />
+              <img
+                src="/logo.png"
+                alt="OpenCoven Feedback"
+                width={28}
+                height={28}
+                className="rounded"
+              />
             </Link>
 
             {/* Main Navigation */}
@@ -280,9 +286,15 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
             <SheetHeader className="px-5 pt-6 pb-4">
               <SheetTitle className="flex items-center gap-3">
                 <Link to="/admin/feedback" onClick={() => setMobileMenuOpen(false)}>
-                  <img src="/logo.png" alt="OpenCoven Feedback" width={28} height={28} className="rounded" />
+                  <img
+                    src="/logo.png"
+                    alt="OpenCoven Feedback"
+                    width={28}
+                    height={28}
+                    className="rounded"
+                  />
                 </Link>
-                <span className="text-base font-semibold">Quackback</span>
+                <span className="text-base font-semibold">OpenCoven Feedback</span>
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1.5 px-4 py-3">
@@ -364,7 +376,13 @@ export function AdminSidebar({ initialUserData, latestVersion }: AdminSidebarPro
         </Sheet>
 
         <Link to="/admin/feedback" className="absolute left-1/2 -translate-x-1/2">
-          <img src="/logo.png" alt="OpenCoven Feedback" width={28} height={28} className="rounded" />
+          <img
+            src="/logo.png"
+            alt="OpenCoven Feedback"
+            width={28}
+            height={28}
+            className="rounded"
+          />
         </Link>
 
         <div className="flex items-center gap-1">

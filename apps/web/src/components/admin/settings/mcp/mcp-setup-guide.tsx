@@ -109,7 +109,7 @@ function vscodeConfig(url: string) {
         {
           type: 'promptString',
           id: 'quackback-api-key',
-          description: 'Quackback API Key (qb_...)',
+          description: 'OpenCoven Feedback API Key',
           password: true,
         },
       ],

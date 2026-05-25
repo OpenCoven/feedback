@@ -70,7 +70,7 @@ function DiscordIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to add the
-              Quackback bot to your Discord server.
+              OpenCoven Feedback bot to your Discord server.
             </p>,
             <p key="2">
               Select which text channel notifications should be posted to. The bot needs access to

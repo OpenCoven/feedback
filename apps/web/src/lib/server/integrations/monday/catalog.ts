@@ -13,7 +13,7 @@ export const mondayCatalog: IntegrationCatalogEntry = {
     {
       label: 'Two-way status sync',
       description:
-        'Status changes in Monday.com update the feedback status in Quackback and vice versa',
+        'Status changes in Monday.com update the feedback status in OpenCoven Feedback and vice versa',
     },
     {
       label: 'Board integration',

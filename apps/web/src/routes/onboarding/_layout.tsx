@@ -39,7 +39,7 @@ function OnboardingHeader() {
       {/* Logo */}
       <div className="flex items-center justify-center gap-2 mb-8">
         <img src="/logo.png" alt="OpenCoven Feedback" width={32} height={32} />
-        <span className="text-xl font-bold">Quackback</span>
+        <span className="text-xl font-bold">OpenCoven Feedback</span>
       </div>
 
       {/* Stepper */}

@@ -120,7 +120,7 @@ function WorkspaceStep() {
               type="text"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
-              placeholder="Acme Corp"
+              placeholder="OpenCoven"
               autoFocus
               disabled={isLoading || workspaceLocked}
               className="h-11"

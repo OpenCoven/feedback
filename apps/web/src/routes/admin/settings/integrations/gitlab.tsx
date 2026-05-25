@@ -62,7 +62,7 @@ function GitLabIntegrationPage() {
             </p>,
             <p key="2">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback with your GitLab account.
+              OpenCoven Feedback with your GitLab account.
             </p>,
             <p key="3">
               Select a project to create issues in, then choose which events should trigger new

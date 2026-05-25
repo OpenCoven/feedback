@@ -71,7 +71,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
         <DialogHeader>
           <DialogTitle>Create API Key</DialogTitle>
           <DialogDescription>
-            Create a new API key to authenticate with the Quackback API.
+            Create a new API key to authenticate with the OpenCoven Feedback API.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

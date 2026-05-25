@@ -61,7 +61,7 @@ function SalesforceIntegrationPage() {
             </p>,
             <p key="2">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback with your Salesforce org.
+              OpenCoven Feedback with your Salesforce org.
             </p>,
             <p key="3">
               Contact data will be automatically looked up by email when new feedback is submitted.

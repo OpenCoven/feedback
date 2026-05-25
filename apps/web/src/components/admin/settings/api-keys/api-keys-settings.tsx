@@ -62,7 +62,7 @@ export function ApiKeysSettings({ apiKeys }: ApiKeysSettingsProps) {
           <EmptyState
             icon={KeyIcon}
             title="No API keys yet"
-            description="API keys let you integrate Quackback with your apps, sync feedback programmatically, and build custom workflows."
+            description="API keys let you integrate OpenCoven Feedback with your apps, sync feedback programmatically, and build custom workflows."
             action={
               <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
                 <PlusIcon className="h-4 w-4 mr-1.5" />

@@ -18,7 +18,7 @@ import { claimHookDelivery } from '../hook-idempotency'
 export type { WebhookTarget, WebhookConfig }
 
 const TIMEOUT_MS = 5_000 // 5s timeout for single attempt
-const USER_AGENT = 'Quackback-Webhook/1.0 (+https://quackback.io)'
+const USER_AGENT = 'OpenCoven-Feedback-Webhook/1.0 (+https://quackback.io)'
 
 /**
  * Private IP ranges that should be blocked (SSRF protection).
@@ -131,9 +131,9 @@ export const webhookHook: HookHandler = {
     const headers = {
       'Content-Type': 'application/json',
       'User-Agent': USER_AGENT,
-      'X-Quackback-Signature': `sha256=${signature}`,
-      'X-Quackback-Timestamp': String(timestamp),
-      'X-Quackback-Event': event.type,
+      'X-OpenCoven-Signature': `sha256=${signature}`,
+      'X-OpenCoven-Timestamp': String(timestamp),
+      'X-OpenCoven Feedback-Event': event.type,
     }
 
     try {

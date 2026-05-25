@@ -60,8 +60,8 @@ function FreshdeskIntegrationPage() {
             </p>,
             <p key="2">
               Enter your Freshdesk subdomain and API key below, then click{' '}
-              <span className="font-medium text-foreground">Save</span>. Quackback will verify the
-              connection.
+              <span className="font-medium text-foreground">Save</span>. OpenCoven Feedback will
+              verify the connection.
             </p>,
             <p key="3">
               Contact data will be automatically looked up by email when new feedback is submitted.

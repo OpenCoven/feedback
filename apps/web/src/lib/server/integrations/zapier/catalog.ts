@@ -3,7 +3,7 @@ import type { IntegrationCatalogEntry } from '../types'
 export const zapierCatalog: IntegrationCatalogEntry = {
   id: 'zapier',
   name: 'Zapier',
-  description: 'Connect Quackback to 6,000+ apps with Zapier automations.',
+  description: 'Connect OpenCoven Feedback to 6,000+ apps with Zapier automations.',
   category: 'automation',
   capabilities: [
     {

@@ -98,7 +98,7 @@ export function FeedbackSidebar({
                 id="portal.feedback.sidebar.poweredBy"
                 defaultMessage="Powered by {brand}"
                 values={{
-                  brand: <span className="font-semibold">Quackback</span>,
+                  brand: <span className="font-semibold">OpenCoven Feedback</span>,
                 }}
               />
             </span>

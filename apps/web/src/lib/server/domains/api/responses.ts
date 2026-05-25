@@ -114,7 +114,7 @@ export function badRequestResponse(message: string, details?: Record<string, unk
 export function unauthorizedResponse(message = 'Authentication required'): Response {
   return jsonResponse(
     { error: { code: 'UNAUTHORIZED', message } },
-    { status: 401, headers: { 'WWW-Authenticate': 'Bearer realm="Quackback API"' } }
+    { status: 401, headers: { 'WWW-Authenticate': 'Bearer realm="OpenCoven Feedback API"' } }
   )
 }
 

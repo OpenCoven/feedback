@@ -466,7 +466,7 @@ async function createAuth() {
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
 
-        // Quackback-specific scopes
+        // OpenCoven Feedback-specific scopes
         scopes: [
           'openid',
           'profile',

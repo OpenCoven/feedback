@@ -4,13 +4,13 @@ export const slackCatalog: IntegrationCatalogEntry = {
   id: 'slack',
   name: 'Slack',
   description:
-    'Send feedback from Slack to Quackback with a message shortcut, monitor channels for automatic feedback ingestion, and get notified when statuses change or comments are added.',
+    'Send feedback from Slack to OpenCoven Feedback with a message shortcut, monitor channels for automatic feedback ingestion, and get notified when statuses change or comments are added.',
   category: 'notifications',
   capabilities: [
     {
-      label: 'Send to Quackback shortcut',
+      label: 'Send to OpenCoven Feedback shortcut',
       description:
-        'Right-click any Slack message to send it to Quackback as feedback with a title, details, and board',
+        'Right-click any Slack message to send it to OpenCoven Feedback as feedback with a title, details, and board',
     },
     {
       label: 'Channel notifications',

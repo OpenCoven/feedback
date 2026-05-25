@@ -69,7 +69,7 @@ function NotionIntegrationPage() {
           steps={[
             <p key="1">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback with your Notion workspace.
+              OpenCoven Feedback with your Notion workspace.
             </p>,
             <p key="2">
               Select which database new feedback items should be created in. The database must have

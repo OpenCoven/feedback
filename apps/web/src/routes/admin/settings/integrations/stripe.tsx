@@ -60,8 +60,8 @@ function StripeIntegrationPage() {
             </p>,
             <p key="2">
               Paste the API key below and click{' '}
-              <span className="font-medium text-foreground">Save</span>. Quackback will verify the
-              connection.
+              <span className="font-medium text-foreground">Save</span>. OpenCoven Feedback will
+              verify the connection.
             </p>,
             <p key="3">
               Customer data will be automatically looked up by email when new feedback is submitted.

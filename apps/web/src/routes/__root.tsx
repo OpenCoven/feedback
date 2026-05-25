@@ -171,6 +171,9 @@ function MinimalDocument({ children }: Readonly<{ children: ReactNode }>) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>OpenCoven Feedback</title>
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <meta name="theme-color" content="#8E3DFF" />
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">{children}</body>

@@ -30,7 +30,7 @@ import { adminQueries } from '@/lib/client/queries/admin'
 import { generateRecoveryCodesFn } from '@/lib/server/functions/recovery-codes'
 
 function downloadCodes(codes: string[]): void {
-  const content = ['Quackback SSO recovery codes', '', ...codes].join('\n')
+  const content = ['OpenCoven Feedback SSO recovery codes', '', ...codes].join('\n')
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

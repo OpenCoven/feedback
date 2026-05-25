@@ -23,7 +23,7 @@ export const saveMakeWebhookFn = createServerFn({ method: 'POST' })
       body: JSON.stringify({
         event: 'test',
         timestamp: new Date().toISOString(),
-        message: 'Quackback webhook test',
+        message: 'OpenCoven Feedback webhook test',
       }),
     })
 

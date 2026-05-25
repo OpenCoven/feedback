@@ -1,5 +1,5 @@
 /**
- * MCP Tools for Quackback
+ * MCP Tools for OpenCoven Feedback
  *
  * 27 tools calling domain services directly (no HTTP self-loop):
  * - search: Unified search across posts, changelogs, and articles

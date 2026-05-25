@@ -62,7 +62,7 @@ function MondayIntegrationPage() {
             </p>,
             <p key="2">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback with your Monday.com workspace.
+              OpenCoven Feedback with your Monday.com workspace.
             </p>,
             <p key="3">
               Select a board to create items in, then choose which events should trigger new items.

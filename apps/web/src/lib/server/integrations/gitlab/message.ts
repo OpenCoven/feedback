@@ -26,7 +26,7 @@ export function buildGitLabIssue(
   const author = getAuthorName(post)
 
   const description = [
-    `> Submitted by **${author}** via [Quackback](${postUrl})`,
+    `> Submitted by **${author}** via [OpenCoven Feedback](${postUrl})`,
     '',
     content,
     '',

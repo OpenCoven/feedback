@@ -65,7 +65,7 @@ function TrelloIntegrationPage() {
         <IntegrationSetupCard
           icon={<TrelloIcon className="h-6 w-6 text-muted-foreground" />}
           title="Connect your Trello workspace"
-          description="Connect Trello to create cards from feedback and sync statuses between Trello lists and Quackback."
+          description="Connect Trello to create cards from feedback and sync statuses between Trello lists and OpenCoven Feedback."
           steps={[
             <p key="1">
               Create a Trello Power-Up in your workspace (optional, only needed for custom
@@ -73,7 +73,7 @@ function TrelloIntegrationPage() {
             </p>,
             <p key="2">
               Click <span className="font-medium text-foreground">Connect</span> to authorize
-              Quackback to access your Trello workspace.
+              OpenCoven Feedback to access your Trello workspace.
             </p>,
             <p key="3">Select which board and list new feedback cards should be created in.</p>,
             <p key="4">

@@ -85,7 +85,7 @@ function ApiPage() {
         <TabsContent value="keys" className="space-y-6">
           <SettingsCard
             title="API Keys"
-            description="Create and manage API keys to authenticate with the Quackback REST API. Keys are shown only once when created."
+            description="Create and manage API keys to authenticate with the OpenCoven Feedback REST API. Keys are shown only once when created."
           >
             <ApiKeysSettings apiKeys={apiKeysQuery.data} />
           </SettingsCard>

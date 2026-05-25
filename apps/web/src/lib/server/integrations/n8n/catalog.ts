@@ -3,7 +3,7 @@ import type { IntegrationCatalogEntry } from '../types'
 export const n8nCatalog: IntegrationCatalogEntry = {
   id: 'n8n',
   name: 'n8n',
-  description: 'Connect Quackback to your self-hosted n8n automation workflows.',
+  description: 'Connect OpenCoven Feedback to your self-hosted n8n automation workflows.',
   category: 'automation',
   capabilities: [
     {

@@ -568,14 +568,14 @@ class WidgetController extends Controller
 const CLIENT_CODE_SIMPLE = `import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
-// The widget loads anonymously after Quackback("init"). Call identify
+// The widget loads anonymously after OpenCoven Feedback("init"). Call identify
 // once you know who the user is — no need to call it for anonymous.
 export function WidgetIdentify() {
   const { user } = useAuth();
 
   useEffect(() => {
     if (!user) return;
-    Quackback("identify", {
+    OpenCoven Feedback("identify", {
       id: user.id,
       email: user.email,
       name: user.name,
@@ -599,7 +599,7 @@ export function WidgetIdentify() {
         return res.json();
       })
       .then(({ ssoToken }) => {
-        Quackback("identify", { ssoToken });
+        OpenCoven Feedback("identify", { ssoToken });
       });
   }, [user]);
 
@@ -643,13 +643,13 @@ function WidgetInstallation({
   const installSnippet = useMemo(
     () =>
       `<script>
-  (function(w,d){if(w.Quackback)return;w.Quackback=function(){
-  (w.Quackback.q=w.Quackback.q||[]).push(arguments)};
+  (function(w,d){if(w.OpenCoven Feedback)return;w.OpenCoven Feedback=function(){
+  (w.OpenCoven Feedback.q=w.OpenCoven Feedback.q||[]).push(arguments)};
   var s=d.createElement("script");s.async=true;
   s.src="${baseUrl}/api/widget/sdk.js";
   d.head.appendChild(s)})(window,document);
 
-  Quackback("init");
+  OpenCoven Feedback("init");
 </script>`,
     [baseUrl]
   )
