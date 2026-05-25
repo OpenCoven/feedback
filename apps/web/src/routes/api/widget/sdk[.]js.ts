@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { config } from '@/lib/server/config'
 // Vite `?raw` imports ship the bundle content as a string at build time.
 // packages/widget/dist/browser.js must exist — produced by `bun run --filter
-// @quackback/widget build` before the web app builds.
+// @opencoven/feedback-widget build` before the web app builds.
 import widgetBundle from '../../../../../../packages/widget/dist/browser.js?raw'
 
 function jsResponse(body: string, maxAge: number): Response {

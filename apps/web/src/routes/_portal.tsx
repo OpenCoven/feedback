@@ -87,7 +87,7 @@ export const Route = createFileRoute('/_portal')({
     const faviconUrl =
       loaderData?.faviconData?.url || loaderData?.brandingData?.logoUrl || '/logo.png'
 
-    const workspaceName = loaderData?.org?.name ?? 'Quackback'
+    const workspaceName = loaderData?.org?.name ?? 'OpenCoven Feedback'
     const description = `Share feedback, vote on feature requests, and track the ${workspaceName} roadmap.`
     const logoUrl = loaderData?.brandingData?.logoUrl || '/logo.png'
 

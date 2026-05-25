@@ -23,7 +23,7 @@ export function PortalBrandMark({ variant = 'stack' }: PortalBrandMarkProps) {
     settings?: { brandingData?: SettingsBrandingData }
   }
   const branding = ctx.settings?.brandingData
-  const name = branding?.name ?? 'Quackback'
+  const name = branding?.name ?? 'OpenCoven Feedback'
   const logo = branding?.headerLogoUrl ?? branding?.logoUrl ?? null
   const initial = name.charAt(0).toUpperCase()
 

@@ -60,7 +60,7 @@ export async function sendFeedbackAttributionEmail(
     const workspace = await db.query.settings.findFirst({
       columns: { name: true, logoKey: true },
     })
-    const workspaceName = workspace?.name ?? 'Quackback'
+    const workspaceName = workspace?.name ?? 'OpenCoven Feedback'
 
     // Build post URL
     const baseUrl = getBaseUrl()

@@ -67,7 +67,7 @@ const SOURCE_TYPE_COLORS: Record<string, string> = {
 
 /** Human-readable label for source types */
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
-  quackback: 'Quackback',
+  quackback: 'OpenCoven Feedback',
   api: 'API',
   csv: 'CSV Import',
   email: 'Email',
@@ -119,7 +119,7 @@ export function SourceTypeIcon({ sourceType, size = 'md', className }: SourceTyp
       )}
       title={SOURCE_TYPE_LABELS[sourceType] ?? sourceType}
     >
-      {isLogo && <img src="/logo.png" alt="Quackback" className={cn('rounded-sm', s.logo)} />}
+      {isLogo && <img src="/logo.png" alt="OpenCoven Feedback" className={cn('rounded-sm', s.logo)} />}
       {!isLogo && Icon && <Icon className={s.icon} />}
       {!isLogo && !Icon && (
         <span className={cn('font-semibold', s.fallback)}>

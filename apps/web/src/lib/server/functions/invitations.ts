@@ -94,7 +94,7 @@ export const getInvitationDetailsFn = createServerFn({ method: 'GET' })
         name: inv.name,
         email: inv.email,
         role: inv.role,
-        workspaceName: settings?.name ?? 'Quackback',
+        workspaceName: settings?.name ?? 'OpenCoven Feedback',
         inviterName: inv.inviter?.name ?? null,
       },
       passwordEnabled,
@@ -286,7 +286,7 @@ export const getInviteBrandingFn = createServerFn({ method: 'GET' })
     ])
 
     return {
-      workspaceName: settings?.name ?? 'Quackback',
+      workspaceName: settings?.name ?? 'OpenCoven Feedback',
       logoUrl: getPublicUrlOrNull(settings?.logoKey),
       inviterName: inv?.inviter?.name ?? null,
     }

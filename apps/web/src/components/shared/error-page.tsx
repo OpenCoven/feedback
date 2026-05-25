@@ -21,7 +21,7 @@ export function FriendlyShell({ children, fullPage = true }: FriendlyShellProps)
       )}
     >
       <div className="w-full max-w-md text-center">
-        <img src="/logo.png" alt="Quackback" className="mx-auto mb-6 h-16 w-16" />
+        <img src="/logo.png" alt="OpenCoven Feedback" className="mx-auto mb-6 h-16 w-16" />
         {children}
       </div>
     </div>

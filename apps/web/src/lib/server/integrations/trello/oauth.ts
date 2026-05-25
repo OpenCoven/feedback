@@ -27,7 +27,7 @@ export function getTrelloOAuthUrl(
     callback_method: 'fragment',
     scope: 'read,write',
     expiration: 'never',
-    name: 'Quackback',
+    name: 'OpenCoven Feedback',
     response_type: 'token',
   })
 

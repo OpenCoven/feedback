@@ -36,7 +36,7 @@ export async function ensureQuackbackFeedbackSource(): Promise<void> {
       .values({
         sourceType: 'quackback',
         deliveryMode: 'passive',
-        name: 'Quackback',
+        name: 'OpenCoven Feedback',
         enabled: true,
         config: {},
       })

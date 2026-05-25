@@ -8,7 +8,7 @@ import { ChangelogListPublic } from '@/components/portal/changelog'
 export const Route = createFileRoute('/_portal/changelog/')({
   loader: async ({ context }) => {
     return {
-      workspaceName: context.settings?.name ?? 'Quackback',
+      workspaceName: context.settings?.name ?? 'OpenCoven Feedback',
       baseUrl: context.baseUrl ?? '',
     }
   },

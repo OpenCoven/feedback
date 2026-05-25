@@ -43,7 +43,7 @@ export interface InviteBranding {
 }
 
 const DEFAULT_BRANDING: InviteBranding = {
-  workspaceName: 'Quackback',
+  workspaceName: 'OpenCoven Feedback',
   logoUrl: null,
   inviterName: null,
 }

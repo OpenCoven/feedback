@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: quackback
+      POSTGRES_DB: opencoven_feedback
     ports:
       - '5432:5432'
     volumes:
