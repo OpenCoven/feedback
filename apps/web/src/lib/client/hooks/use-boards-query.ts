@@ -7,7 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { fetchBoardsFn, fetchBoardFn } from '@/lib/server/functions/boards'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Query Key Factory

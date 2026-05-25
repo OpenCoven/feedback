@@ -9,7 +9,7 @@
  * Usage: bun get-mention-target.ts [excludeEmail]
  */
 import postgres from 'postgres'
-import { fromUuid } from '@quackback/ids'
+import { fromUuid } from '@opencoven-feedback/ids'
 
 const excludeEmail = process.argv[2] ?? 'demo@example.com'
 

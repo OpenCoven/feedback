@@ -5,7 +5,7 @@
  */
 
 import { queryOptions, infiniteQueryOptions } from '@tanstack/react-query'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 import {
   listCategoriesFn,
   listPublicCategoriesFn,

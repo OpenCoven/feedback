@@ -7,7 +7,7 @@ import {
   type BrandingConfig,
   type UpdatePortalConfigInput,
 } from '@/lib/server/domains/settings'
-import { userIdSchema, type UserId } from '@quackback/ids'
+import { userIdSchema, type UserId } from '@opencoven-feedback/ids'
 import {
   getPortalConfig,
   getPublicPortalConfig,

@@ -7,7 +7,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { mergePostFn, unmergePostFn } from '@/lib/server/functions/post-merge'
 import { inboxKeys } from '@/lib/client/hooks/use-inbox-query'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Merge Post Mutation

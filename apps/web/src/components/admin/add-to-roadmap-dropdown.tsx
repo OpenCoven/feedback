@@ -10,7 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { useRoadmaps } from '@/lib/client/hooks/use-roadmaps-query'
 import { addPostToRoadmapFn, removePostFromRoadmapFn } from '@/lib/server/functions/roadmaps'
-import type { PostId, RoadmapId } from '@quackback/ids'
+import type { PostId, RoadmapId } from '@opencoven-feedback/ids'
 
 interface AddToRoadmapDropdownProps {
   postId: PostId

@@ -11,7 +11,7 @@
  * preserves the audit row.
  */
 import { pgTable, text, timestamp, index, jsonb } from 'drizzle-orm/pg-core'
-import { typeIdWithDefault, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumnNullable } from '@opencoven-feedback/ids/drizzle'
 import { user } from './auth'
 
 export const auditLog = pgTable(

@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@opencoven-feedback/ids'
 import {
   createChangelogFn,
   updateChangelogFn,

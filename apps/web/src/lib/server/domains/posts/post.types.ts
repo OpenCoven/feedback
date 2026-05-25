@@ -3,7 +3,14 @@
  */
 
 import type { Post, Board, Tag, TiptapContent } from '@/lib/server/db'
-import type { PostId, BoardId, TagId, StatusId, PrincipalId, CommentId } from '@quackback/ids'
+import type {
+  PostId,
+  BoardId,
+  TagId,
+  StatusId,
+  PrincipalId,
+  CommentId,
+} from '@opencoven-feedback/ids'
 import type { CommentReactionCount, CommentStatusChange } from '@/lib/shared'
 
 /**

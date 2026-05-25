@@ -34,7 +34,7 @@ import { useInfiniteScroll } from '@/lib/client/hooks/use-infinite-scroll'
 import { AdminListHeader } from '@/components/admin/admin-list-header'
 import { useDebouncedSearch } from '@/lib/client/hooks/use-debounced-search'
 import { TimeAgo } from '@/components/ui/time-ago'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },

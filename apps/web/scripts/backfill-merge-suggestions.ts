@@ -30,8 +30,8 @@ import OpenAI from 'openai'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, and, or, isNull, desc, sql, count } from 'drizzle-orm'
-import { posts, mergeSuggestions } from '@quackback/db/schema'
-import { toUuid, type PostId } from '@quackback/ids'
+import { posts, mergeSuggestions } from '@opencoven-feedback/db/schema'
+import { toUuid, type PostId } from '@opencoven-feedback/ids'
 
 // ============================================
 // Configuration

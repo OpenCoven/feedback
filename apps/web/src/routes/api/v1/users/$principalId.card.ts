@@ -11,7 +11,7 @@
  * fallback).
  */
 import { createFileRoute } from '@tanstack/react-router'
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 import { auth } from '@/lib/server/auth'
 import { db, principal, user, eq } from '@/lib/server/db'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'

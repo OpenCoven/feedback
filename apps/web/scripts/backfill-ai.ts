@@ -27,8 +27,8 @@ import OpenAI from 'openai'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, and, isNull, sql, count } from 'drizzle-orm'
-import { posts, postSentiment, postTags, tags } from '@quackback/db/schema'
-import { generateId, type PostId } from '@quackback/ids'
+import { posts, postSentiment, postTags, tags } from '@opencoven-feedback/db/schema'
+import { generateId, type PostId } from '@opencoven-feedback/ids'
 
 // Configuration
 const BATCH_SIZE = 10

@@ -30,7 +30,7 @@ import {
 import { toast } from 'sonner'
 import { PortalMergeBanner } from '@/components/public/post-detail/merge-banner'
 import { similarPostsQuery } from '@/components/public/post-detail/similar-posts-section'
-import { isValidTypeId, type CommentId, type PostId } from '@quackback/ids'
+import { isValidTypeId, type CommentId, type PostId } from '@opencoven-feedback/ids'
 import type { TiptapContent } from '@/lib/shared/schemas/posts'
 
 export const Route = createFileRoute('/_portal/b/$slug/posts/$postId')({

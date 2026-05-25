@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import type { BoardId, TagId, PrincipalId, PostId, RoadmapId } from '@quackback/ids'
+import type { BoardId, TagId, PrincipalId, PostId, RoadmapId } from '@opencoven-feedback/ids'
 import {
   fetchInboxPosts,
   fetchBoardsList,

@@ -4,7 +4,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import { type CommentId, type PostId, type StatusId, type UserId } from '@quackback/ids'
+import { type CommentId, type PostId, type StatusId, type UserId } from '@opencoven-feedback/ids'
 import { isTeamMember } from '@/lib/shared/roles'
 import { createActivity } from '@/lib/server/domains/activity/activity.service'
 

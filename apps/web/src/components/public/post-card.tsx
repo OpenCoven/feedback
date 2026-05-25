@@ -29,7 +29,7 @@ import type { PostStatusEntity } from '@/lib/shared/db-types'
 import { usePostVote } from '@/lib/client/hooks/use-post-vote'
 import { cn, getInitials } from '@/lib/shared/utils'
 import { useEnsureAnonSession } from '@/lib/client/hooks/use-ensure-anon-session'
-import type { PostId, StatusId } from '@quackback/ids'
+import type { PostId, StatusId } from '@opencoven-feedback/ids'
 
 interface PostCardProps {
   id: PostId

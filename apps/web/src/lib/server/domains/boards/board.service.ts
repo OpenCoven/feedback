@@ -22,7 +22,7 @@ import {
   inArray,
   asc,
 } from '@/lib/server/db'
-import type { BoardId, PostId } from '@quackback/ids'
+import type { BoardId, PostId } from '@opencoven-feedback/ids'
 import { NotFoundError, ValidationError, ConflictError } from '@/lib/shared/errors'
 import type { CreateBoardInput, UpdateBoardInput, BoardWithDetails } from './board.types'
 import { slugify } from '@/lib/shared/utils'

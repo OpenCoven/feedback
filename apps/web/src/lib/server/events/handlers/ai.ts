@@ -9,7 +9,7 @@ import type { HookHandler, HookResult, HookRunContext } from '../hook-types'
 import type { EventData } from '../types'
 import { analyzeSentiment, saveSentiment } from '@/lib/server/domains/sentiment/sentiment.service'
 import { generatePostEmbedding } from '@/lib/server/domains/embeddings/embedding.service'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import { db, postTags, tags, eq } from '@/lib/server/db'
 import { claimHookDelivery } from '../hook-idempotency'
 

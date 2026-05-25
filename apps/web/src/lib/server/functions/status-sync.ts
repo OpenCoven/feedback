@@ -13,7 +13,7 @@ import {
   storeWebhookConfig,
   clearWebhookConfig,
 } from '@/lib/server/integrations/webhook-registration'
-import type { IntegrationId } from '@quackback/ids'
+import type { IntegrationId } from '@opencoven-feedback/ids'
 
 const enableStatusSyncSchema = z.object({
   integrationId: z.string(),

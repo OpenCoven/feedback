@@ -19,7 +19,7 @@ import {
   inArray,
   sql,
 } from '@/lib/server/db'
-import type { BoardId, ChangelogId, PrincipalId, PostId, StatusId } from '@quackback/ids'
+import type { BoardId, ChangelogId, PrincipalId, PostId, StatusId } from '@opencoven-feedback/ids'
 import { computeStatus } from './changelog.service'
 import type {
   ListChangelogParams,

@@ -9,8 +9,8 @@
  */
 
 import { db, eq, and, inArray, isNull, sql, asc, segments, userSegments } from '@/lib/server/db'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
-import { createId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@opencoven-feedback/ids'
+import { createId } from '@opencoven-feedback/ids'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
 import type {
   Segment,

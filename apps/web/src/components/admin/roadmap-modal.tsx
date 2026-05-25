@@ -26,7 +26,7 @@ import {
 } from '@/lib/client/mutations'
 import { addPostToRoadmapFn, removePostFromRoadmapFn } from '@/lib/server/functions/roadmaps'
 import { Route } from '@/routes/admin/roadmap'
-import { type PostId, type StatusId, type TagId, type RoadmapId } from '@quackback/ids'
+import { type PostId, type StatusId, type TagId, type RoadmapId } from '@opencoven-feedback/ids'
 import type { PostDetails, CurrentUser } from '@/lib/shared/types'
 import type { PublicPostDetailView } from '@/lib/client/queries/portal-detail'
 import { toPortalComments } from '@/components/admin/feedback/detail/post-utils'

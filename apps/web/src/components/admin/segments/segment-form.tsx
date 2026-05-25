@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/shared/utils'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@opencoven-feedback/ids'
 
 export const CUSTOM_ATTR_PREFIX = '__custom__'
 

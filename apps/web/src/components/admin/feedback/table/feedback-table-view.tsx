@@ -13,7 +13,7 @@ import type { PostListItem, PostStatusEntity, Board, Tag } from '@/lib/shared/db
 import type { TeamMember } from '@/lib/shared/types'
 import type { SegmentListItem } from '@/lib/client/hooks/use-segments-queries'
 import type { InboxFilters } from '@/components/admin/feedback/use-inbox-filters'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 interface FeedbackTableViewProps {
   posts: PostListItem[]

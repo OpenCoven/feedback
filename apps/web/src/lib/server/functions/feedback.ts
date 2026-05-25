@@ -9,8 +9,8 @@ import type {
   FeedbackSuggestionId,
   PrincipalId,
   RawFeedbackItemId,
-} from '@quackback/ids'
-import { isTypeId } from '@quackback/ids'
+} from '@opencoven-feedback/ids'
+import { isTypeId } from '@opencoven-feedback/ids'
 
 import { requireAuth } from './auth-helpers'
 import {

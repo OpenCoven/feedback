@@ -6,7 +6,7 @@
 
 import crypto from 'crypto'
 import { db, webhooks, eq, and, isNull, sql } from '@/lib/server/db'
-import { createId, type PrincipalId, type WebhookId } from '@quackback/ids'
+import { createId, type PrincipalId, type WebhookId } from '@opencoven-feedback/ids'
 import { encryptWebhookSecret } from './encryption'
 import { NotFoundError, ValidationError } from '@/lib/shared/errors'
 import { cacheDel, CACHE_KEYS } from '@/lib/server/redis'

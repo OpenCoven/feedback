@@ -1,4 +1,4 @@
-import type { TypeId, PrincipalId } from '@quackback/ids'
+import type { TypeId, PrincipalId } from '@opencoven-feedback/ids'
 
 export type ApiKeyId = TypeId<'api_key'>
 

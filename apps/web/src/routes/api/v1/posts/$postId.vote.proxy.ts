@@ -8,7 +8,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 const bodySchema = z.object({
   voterPrincipalId: z.string().min(1, 'Voter principal ID is required'),
@@ -84,7 +84,9 @@ export const Route = createFileRoute('/api/v1/posts/$postId/vote/proxy')({
        */
       DELETE: async ({ request, params }) => {
         try {
-          const { principalId: removedByPrincipalId } = await withApiKeyAuth(request, { role: 'team' })
+          const { principalId: removedByPrincipalId } = await withApiKeyAuth(request, {
+            role: 'team',
+          })
 
           const postId = parseTypeId<PostId>(params.postId, 'post', 'post ID')
 

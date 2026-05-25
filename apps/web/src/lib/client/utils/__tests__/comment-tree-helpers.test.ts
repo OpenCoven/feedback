@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { addReplyToTree, replaceOptimisticInTree } from '../comment-tree-helpers'
-import type { CommentId } from '@quackback/ids'
+import type { CommentId } from '@opencoven-feedback/ids'
 
 interface TestComment {
   id: string

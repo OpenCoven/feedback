@@ -9,7 +9,7 @@ import {
   type StatusId,
   type TagId,
   type UserId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import type { BoardSettings } from '@/lib/server/db'
 import { getOptionalAuth, hasAuthCredentials } from './auth-helpers'
 import { isTeamMember } from '@/lib/shared/roles'

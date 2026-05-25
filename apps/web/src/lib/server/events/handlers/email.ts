@@ -8,7 +8,7 @@ import {
   sendNewCommentEmail,
   sendChangelogPublishedEmail,
   sendPostMentionEmail,
-} from '@quackback/email'
+} from '@opencoven-feedback/email'
 import type { HookHandler, HookResult, EmailTarget, EmailConfig } from '../hook-types'
 import type { EventData, EventPostMentionedData } from '../types'
 import { isRetryableError } from '../hook-utils'

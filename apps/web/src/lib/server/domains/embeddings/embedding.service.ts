@@ -6,7 +6,7 @@
  */
 
 import { db, posts, eq, and, isNull, sql, desc, ne } from '@/lib/server/db'
-import type { PostId, BoardId } from '@quackback/ids'
+import type { PostId, BoardId } from '@opencoven-feedback/ids'
 import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { withRetry } from '@/lib/server/domains/ai/retry'
 import { withUsageLogging } from '@/lib/server/domains/ai/usage-log'

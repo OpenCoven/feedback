@@ -8,7 +8,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { getSession } from '@/lib/server/auth/session'
 import { db, principal, eq } from '@/lib/server/db'
 import { isTeamMember } from '@/lib/shared/roles'

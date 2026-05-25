@@ -5,7 +5,7 @@
  * inside handlers to avoid bundling Node.js-only code into the client.
  */
 import { createServerFn } from '@tanstack/react-start'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 
 export interface DiscordOAuthState {
   type: 'discord_oauth'

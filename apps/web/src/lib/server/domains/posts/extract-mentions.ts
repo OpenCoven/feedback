@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 
 /**
  * Walk a TipTap document and collect the principalIds of every mention node.

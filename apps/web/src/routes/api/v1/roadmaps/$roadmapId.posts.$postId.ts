@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
 import { noContentResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { RoadmapId, PostId } from '@quackback/ids'
+import type { RoadmapId, PostId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/v1/roadmaps/$roadmapId/posts/$postId')({
   server: {

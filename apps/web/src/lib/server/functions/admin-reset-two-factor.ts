@@ -12,7 +12,7 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { z } from 'zod'
 import { and, db, eq, like, twoFactor, user, verification } from '@/lib/server/db'
 import { actorFromAuth, withAuditEvent } from '@/lib/server/audit/log'

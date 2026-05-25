@@ -12,7 +12,7 @@ import {
   generateEmbedding,
   EMBEDDING_MODEL,
 } from '@/lib/server/domains/embeddings/embedding.service'
-import { toUuid, type FeedbackSignalId } from '@quackback/ids'
+import { toUuid, type FeedbackSignalId } from '@opencoven-feedback/ids'
 
 /**
  * Generate and store an embedding for a feedback signal.

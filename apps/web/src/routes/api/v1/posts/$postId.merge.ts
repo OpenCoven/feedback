@@ -7,7 +7,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 const mergeSchema = z.object({
   canonicalPostId: z.string().min(1, 'Canonical post ID is required'),

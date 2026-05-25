@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean, integer, index } from 'drizzle-orm/pg-core'
-import { typeIdWithDefault } from '@quackback/ids/drizzle'
+import { typeIdWithDefault } from '@opencoven-feedback/ids/drizzle'
 import { STATUS_CATEGORIES, type StatusCategory } from '../types'
 
 // Re-export for convenience (canonical source is ../types.ts)

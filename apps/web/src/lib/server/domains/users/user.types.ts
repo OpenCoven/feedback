@@ -4,7 +4,7 @@
  * Types for portal user management operations.
  */
 
-import type { PrincipalId, StatusId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, StatusId, SegmentId } from '@opencoven-feedback/ids'
 
 // ============================================
 // Segment summary (embedded in user records)

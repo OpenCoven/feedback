@@ -10,7 +10,7 @@ import type {
   PrincipalId,
   RawFeedbackItemId,
   FeedbackSignalId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 
 // --- Mock tracking ---
 const insertValuesCalls: unknown[][] = []

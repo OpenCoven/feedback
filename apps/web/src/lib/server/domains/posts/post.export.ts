@@ -17,7 +17,7 @@ import {
   sql,
   isNull,
 } from '@/lib/server/db'
-import { type PostId, type BoardId } from '@quackback/ids'
+import { type PostId, type BoardId } from '@opencoven-feedback/ids'
 import type { PostForExport } from './post.types'
 
 /**

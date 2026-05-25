@@ -6,7 +6,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Roadmap } from '@/lib/shared/db-types'
-import type { RoadmapId } from '@quackback/ids'
+import type { RoadmapId } from '@opencoven-feedback/ids'
 import {
   createRoadmapFn,
   updateRoadmapFn,

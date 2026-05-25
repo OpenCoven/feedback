@@ -3,7 +3,7 @@
  * Queries database to determine all targets for an event.
  */
 
-import type { PostId, PrincipalId, UserId, WebhookId } from '@quackback/ids'
+import type { PostId, PrincipalId, UserId, WebhookId } from '@opencoven-feedback/ids'
 import {
   db,
   integrations,

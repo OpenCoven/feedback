@@ -5,7 +5,7 @@ import type {
   RoadmapPostsListResult,
   RoadmapPostEntry,
 } from '@/lib/shared/types'
-import type { RoadmapId, StatusId } from '@quackback/ids'
+import type { RoadmapId, StatusId } from '@opencoven-feedback/ids'
 import type { RoadmapFilters } from '@/lib/shared/types'
 import { getRoadmapPostsFn } from '@/lib/server/functions/roadmaps'
 import { getRoadmapPostsByStatusFn } from '@/lib/server/functions/public-posts'

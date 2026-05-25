@@ -15,7 +15,7 @@ import { shouldExtract } from './quality-gate.service'
 import { logPipelineEvent } from './pipeline-log'
 import { enqueueFeedbackAiJob } from '../queues/feedback-ai-queue'
 import type { ExtractionResult, RawFeedbackContent, RawFeedbackItemContextEnvelope } from '../types'
-import type { RawFeedbackItemId } from '@quackback/ids'
+import type { RawFeedbackItemId } from '@opencoven-feedback/ids'
 
 const EXTRACTION_MODEL = 'google/gemini-3.1-flash-lite-preview'
 const EXTRACTION_PROMPT_VERSION = 'v1'

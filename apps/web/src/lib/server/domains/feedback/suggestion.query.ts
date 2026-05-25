@@ -5,7 +5,7 @@
  * Used by both TanStack server functions (admin UI) and MCP tools / REST API.
  */
 
-import type { BoardId, FeedbackSourceId } from '@quackback/ids'
+import type { BoardId, FeedbackSourceId } from '@opencoven-feedback/ids'
 import type { SQL } from 'drizzle-orm'
 import {
   db,

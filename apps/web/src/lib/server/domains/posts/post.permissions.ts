@@ -7,7 +7,7 @@
  */
 
 import { db, posts, comments, eq, and, sql, isNull } from '@/lib/server/db'
-import { toUuid, type PostId, type PrincipalId, type StatusId } from '@quackback/ids'
+import { toUuid, type PostId, type PrincipalId, type StatusId } from '@opencoven-feedback/ids'
 import { getExecuteRows } from '@/lib/server/utils'
 import { NotFoundError } from '@/lib/shared/errors'
 import { isTeamMember } from '@/lib/shared/roles'

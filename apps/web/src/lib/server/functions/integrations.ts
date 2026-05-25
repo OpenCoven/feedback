@@ -10,7 +10,7 @@ import {
   and,
   sql,
 } from '@/lib/server/db'
-import type { IntegrationId, BoardId } from '@quackback/ids'
+import type { IntegrationId, BoardId } from '@opencoven-feedback/ids'
 // cacheDel/CACHE_KEYS are imported dynamically inside handlers to keep ioredis out of the client bundle
 
 // ============================================

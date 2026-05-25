@@ -2,7 +2,7 @@
  * Segment domain types
  */
 
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@opencoven-feedback/ids'
 import type { SegmentRules, EvaluationSchedule, SegmentWeightConfig } from '@/lib/shared/db-types'
 
 // ============================================

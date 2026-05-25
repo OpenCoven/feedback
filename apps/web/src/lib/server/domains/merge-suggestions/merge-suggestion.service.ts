@@ -20,7 +20,7 @@ import {
 } from '@/lib/server/db'
 import { mergePost } from '@/lib/server/domains/posts/post.merge'
 import { NotFoundError } from '@/lib/shared/errors'
-import type { PostId, PrincipalId, MergeSuggestionId } from '@quackback/ids'
+import type { PostId, PrincipalId, MergeSuggestionId } from '@opencoven-feedback/ids'
 
 export interface MergeSuggestionPostView {
   id: string

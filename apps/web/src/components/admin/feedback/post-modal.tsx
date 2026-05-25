@@ -62,7 +62,7 @@ import {
   type RoadmapId,
   type CommentId,
   type BoardId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { useDeleteComment, useRestoreComment } from '@/lib/client/mutations/portal-comments'
 import type { PostDetails, CurrentUser } from '@/lib/shared/types'
 import {

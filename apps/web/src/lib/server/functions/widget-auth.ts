@@ -1,5 +1,5 @@
-import type { PrincipalId, UserId, WorkspaceId } from '@quackback/ids'
-import { generateId } from '@quackback/ids'
+import type { PrincipalId, UserId, WorkspaceId } from '@opencoven-feedback/ids'
+import { generateId } from '@opencoven-feedback/ids'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import type { Role } from '@/lib/server/auth'
 import { auth } from '@/lib/server/auth'

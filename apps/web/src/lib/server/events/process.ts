@@ -12,7 +12,7 @@ import { getHookTargets } from './targets'
 import { isRetryableError } from './hook-utils'
 import type { HookResult } from './hook-types'
 import type { EventData } from './types'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@opencoven-feedback/ids'
 
 interface HookJobData {
   hookType: string

@@ -15,7 +15,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '@/lib/server/domains/help-center/help-center.service'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@opencoven-feedback/ids'
 
 const updateCategoryBody = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -62,7 +62,11 @@ export const Route = createFileRoute('/api/v1/help-center/categories/$categoryId
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const categoryId = parseTypeId<HelpCenterCategoryId>(params.categoryId, 'category', 'category ID')
+          const categoryId = parseTypeId<HelpCenterCategoryId>(
+            params.categoryId,
+            'category',
+            'category ID'
+          )
 
           const category = await getCategoryById(categoryId)
           return successResponse(formatCategory(category))
@@ -77,7 +81,11 @@ export const Route = createFileRoute('/api/v1/help-center/categories/$categoryId
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const categoryId = parseTypeId<HelpCenterCategoryId>(params.categoryId, 'category', 'category ID')
+          const categoryId = parseTypeId<HelpCenterCategoryId>(
+            params.categoryId,
+            'category',
+            'category ID'
+          )
 
           const body = await request.json()
           const parsed = updateCategoryBody.safeParse(body)
@@ -101,7 +109,11 @@ export const Route = createFileRoute('/api/v1/help-center/categories/$categoryId
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const categoryId = parseTypeId<HelpCenterCategoryId>(params.categoryId, 'category', 'category ID')
+          const categoryId = parseTypeId<HelpCenterCategoryId>(
+            params.categoryId,
+            'category',
+            'category ID'
+          )
 
           await deleteCategory(categoryId)
           return noContentResponse()

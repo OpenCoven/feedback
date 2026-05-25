@@ -6,7 +6,7 @@
  * tokens stored in the integrations table.
  */
 
-import { generateId, type PrincipalId } from '@quackback/ids'
+import { generateId, type PrincipalId } from '@opencoven-feedback/ids'
 import { db, integrationPlatformCredentials, eq } from '@/lib/server/db'
 import { cacheGet, cacheSet, cacheDel, CACHE_KEYS } from '@/lib/server/redis'
 import {

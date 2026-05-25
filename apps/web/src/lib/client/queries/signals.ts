@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import {
   getMergeSuggestionsForPostFn,
   fetchMergeSuggestionSummaryFn,

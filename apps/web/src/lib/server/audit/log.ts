@@ -8,7 +8,7 @@
  * inserts are made on the global connection, not the caller's tx.
  */
 import { db, auditLog } from '@/lib/server/db'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { getClientIp } from '@/lib/server/domains/api/rate-limit'
 import type { AuthContext } from '@/lib/server/functions/auth-helpers'
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId, UserId, WorkspaceId } from '@quackback/ids'
+import type { PrincipalId, UserId, WorkspaceId } from '@opencoven-feedback/ids'
 
 // Mock createServerFn so server functions are directly callable in tests
 vi.mock('@tanstack/react-start', () => ({

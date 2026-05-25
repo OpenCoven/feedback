@@ -1,4 +1,4 @@
-// Database client — import from '@quackback/db/client' directly to avoid
+// Database client — import from '@opencoven-feedback/db/client' directly to avoid
 // pulling postgres into the client bundle via Vite's module scanner.
 export type { Database, CreateDbOptions } from './src/client'
 

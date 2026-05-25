@@ -18,7 +18,11 @@ import {
   integer,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import {
+  typeIdWithDefault,
+  typeIdColumn,
+  typeIdColumnNullable,
+} from '@opencoven-feedback/ids/drizzle'
 import { apiKeys } from './api-keys'
 import { integrations } from './integrations'
 

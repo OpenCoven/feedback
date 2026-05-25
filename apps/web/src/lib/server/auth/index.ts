@@ -12,7 +12,7 @@ import {
 } from 'better-auth/plugins'
 import { oauthProvider } from '@better-auth/oauth-provider'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@opencoven-feedback/ids'
 import { config } from '@/lib/server/config'
 
 // Plugin callbacks (magicLink, emailOTP) stash tokens here instead of

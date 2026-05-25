@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 
 const mockArticleFindFirst = vi.fn()
 const mockArticleFindMany = vi.fn()

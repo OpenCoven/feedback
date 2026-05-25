@@ -32,7 +32,7 @@ vi.mock('../encryption', () => ({
 import { createWebhook } from '../webhook.service'
 import { getTierLimits } from '@/lib/server/domains/settings/tier-limits.service'
 import { OSS_TIER_LIMITS } from '@/lib/server/domains/settings/tier-limits.types'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 
 describe('createWebhook — webhooks gate', () => {
   beforeEach(() => {

@@ -9,7 +9,7 @@ import { adminQueries } from '@/lib/client/queries/admin'
 import { useProxyVote } from '@/lib/client/mutations/posts'
 import { useCreatePortalUser } from '@/lib/client/mutations/users'
 import { cn } from '@/lib/shared/utils'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 interface VotersAvatarStackProps {
   postId: PostId

@@ -27,7 +27,7 @@ try {
 }
 
 import postgres from 'postgres'
-import { generateId, toUuid } from '@quackback/ids'
+import { generateId, toUuid } from '@opencoven-feedback/ids'
 
 const DB_URL = process.env.DATABASE_URL ?? 'postgresql://postgres:password@localhost:5432/quackback'
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379'

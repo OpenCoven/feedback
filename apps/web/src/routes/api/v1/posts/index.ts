@@ -13,7 +13,7 @@ import {
   parseOptionalTypeId,
   parseTypeIdArray,
 } from '@/lib/server/domains/api/validation'
-import type { BoardId, PrincipalId, StatusId, TagId } from '@quackback/ids'
+import type { BoardId, PrincipalId, StatusId, TagId } from '@opencoven-feedback/ids'
 
 // Input validation schemas
 const createPostSchema = z.object({
@@ -54,7 +54,7 @@ export const Route = createFileRoute('/api/v1/posts/')({
           const sort = (url.searchParams.get('sort') as 'newest' | 'oldest' | 'votes') ?? 'newest'
           const showDeleted = url.searchParams.get('showDeleted') === 'true'
 
-          const { isValidTypeId } = await import('@quackback/ids')
+          const { isValidTypeId } = await import('@opencoven-feedback/ids')
           const boardId =
             boardIdParam && isValidTypeId(boardIdParam, 'board')
               ? (boardIdParam as BoardId)

@@ -4,7 +4,7 @@ import { CategoryIcon } from '@/components/help-center/category-icon'
 import { PlusIcon, PencilIcon, TrashIcon, FolderPlusIcon } from '@heroicons/react/16/solid'
 import { cn } from '@/lib/shared/utils'
 import { buildAncestorChain, MAX_CATEGORY_DEPTH } from '@/lib/shared/help-center-tree'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@opencoven-feedback/ids'
 import { formatCategoryCount } from './category-count'
 
 export interface TreeCategory {

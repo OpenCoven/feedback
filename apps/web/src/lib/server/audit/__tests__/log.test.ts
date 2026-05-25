@@ -8,7 +8,7 @@
  * mutation it records).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 
 const mockInsertValues = vi.fn()
 const mockInsert = vi.fn()

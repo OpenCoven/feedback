@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 import type { SubscriptionLevel } from '@/lib/shared/types'
 import { adminUpdateVoterSubscriptionFn } from '@/lib/server/functions/subscriptions'
 

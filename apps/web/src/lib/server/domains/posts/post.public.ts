@@ -16,7 +16,13 @@ import {
   postStatuses,
   principal as principalTable,
 } from '@/lib/server/db'
-import { toUuid, type PostId, type StatusId, type TagId, type PrincipalId } from '@quackback/ids'
+import {
+  toUuid,
+  type PostId,
+  type StatusId,
+  type TagId,
+  type PrincipalId,
+} from '@opencoven-feedback/ids'
 import type { PublicPostListResult } from './post.types'
 import type { RespondedFilter } from '@/lib/shared/types/filters'
 

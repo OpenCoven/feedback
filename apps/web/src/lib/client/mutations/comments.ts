@@ -9,7 +9,7 @@ import { createCommentFn, addReactionFn, removeReactionFn } from '@/lib/server/f
 import { inboxKeys } from '@/lib/client/hooks/use-inbox-query'
 import type { PostDetails, CommentReaction, CommentWithReplies } from '@/lib/shared/types'
 import type { InboxPostListResult } from '@/lib/shared/db-types'
-import type { CommentId, PrincipalId, PostId } from '@quackback/ids'
+import type { CommentId, PrincipalId, PostId } from '@opencoven-feedback/ids'
 import { addReplyToTree, replaceOptimisticInTree } from '@/lib/client/utils/comment-tree-helpers'
 
 // ============================================================================

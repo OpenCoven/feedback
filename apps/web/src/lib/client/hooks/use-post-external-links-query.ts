@@ -3,7 +3,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import { fetchPostExternalLinksFn } from '@/lib/server/functions/posts'
 
 export const externalLinksKeys = {

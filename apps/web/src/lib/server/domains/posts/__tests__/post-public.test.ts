@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@opencoven-feedback/ids'
 
 const mockEq = vi.fn((col, val) => ({ _tag: 'eq', col, val }))
 const mockOr = vi.fn((...args) => ({ _tag: 'or', args }))

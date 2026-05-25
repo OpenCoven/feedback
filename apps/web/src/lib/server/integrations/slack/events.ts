@@ -11,7 +11,7 @@ import { getPlatformCredentials } from '@/lib/server/domains/platform-credential
 import { decryptSecrets } from '../encryption'
 import { ingestRawFeedback } from '@/lib/server/domains/feedback/ingestion/feedback-ingest.service'
 import { verifySlackSignature } from './verify'
-import type { FeedbackSourceId, IntegrationId } from '@quackback/ids'
+import type { FeedbackSourceId, IntegrationId } from '@opencoven-feedback/ids'
 
 interface SlackMessageEvent {
   type?: string

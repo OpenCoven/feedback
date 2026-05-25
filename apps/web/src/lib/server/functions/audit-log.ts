@@ -12,7 +12,7 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { and, auditLog, db, desc, eq, gte, ilike, lte } from '@/lib/server/db'
 import type { SQL } from 'drizzle-orm'
 import type { AuditEventOutcome, JsonValue } from '@/lib/server/audit/log'

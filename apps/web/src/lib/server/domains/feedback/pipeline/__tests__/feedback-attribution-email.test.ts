@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId, PostId } from '@quackback/ids'
+import type { PrincipalId, PostId } from '@opencoven-feedback/ids'
 
 const mockPrincipalFindFirst = vi.fn()
 const mockUserFindFirst = vi.fn()

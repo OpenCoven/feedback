@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { isValidTypeId, type BoardId } from '@quackback/ids'
+import { isValidTypeId, type BoardId } from '@opencoven-feedback/ids'
 
 /**
  * Escape a value for CSV format, preventing CSV injection attacks

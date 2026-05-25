@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@opencoven-feedback/ids'
 
 const insertValuesCalls: unknown[][] = []
 const updateSetCalls: unknown[][] = []

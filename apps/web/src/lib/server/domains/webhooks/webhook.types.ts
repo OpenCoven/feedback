@@ -1,4 +1,4 @@
-import type { WebhookId, PrincipalId } from '@quackback/ids'
+import type { WebhookId, PrincipalId } from '@opencoven-feedback/ids'
 
 export interface Webhook {
   id: WebhookId

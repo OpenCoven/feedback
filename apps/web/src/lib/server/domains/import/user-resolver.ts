@@ -9,7 +9,7 @@
  */
 
 import { db, eq, user, principal } from '@/lib/server/db'
-import { createId, type PrincipalId, type UserId } from '@quackback/ids'
+import { createId, type PrincipalId, type UserId } from '@opencoven-feedback/ids'
 
 interface PendingUser {
   principalId: PrincipalId

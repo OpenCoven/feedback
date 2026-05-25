@@ -7,7 +7,7 @@
  */
 
 import { db, eq, and, sql, posts, boards, postStatuses, postExternalLinks } from '@/lib/server/db'
-import { createId, fromUuid, type PostId, type PrincipalId } from '@quackback/ids'
+import { createId, fromUuid, type PostId, type PrincipalId } from '@opencoven-feedback/ids'
 import { getExecuteRows } from '@/lib/server/utils'
 import { addVoteOnBehalf } from '@/lib/server/domains/posts/post.voting'
 import { identifyPortalUser } from '@/lib/server/domains/users/user.identify'

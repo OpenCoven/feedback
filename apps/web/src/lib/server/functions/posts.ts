@@ -12,7 +12,7 @@ import {
   type SegmentId,
   type PrincipalId,
   type UserId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { tiptapContentSchema, type TiptapContent } from '@/lib/shared/schemas/posts'
 import { sanitizeTiptapContent } from '@/lib/server/sanitize-tiptap'
 import { requireAuth } from './auth-helpers'

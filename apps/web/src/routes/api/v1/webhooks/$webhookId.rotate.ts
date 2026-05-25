@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
 import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/v1/webhooks/$webhookId/rotate')({
   server: {

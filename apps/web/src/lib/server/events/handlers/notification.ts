@@ -10,7 +10,7 @@ import type { HookHandler, HookResult } from '../hook-types'
 import type { EventData, EventPostMentionedData } from '../types'
 import { createNotificationsBatch } from '@/lib/server/domains/notifications/notification.service'
 import type { CreateNotificationInput, NotificationType } from '@/lib/server/domains/notifications'
-import type { PrincipalId, PostId, CommentId } from '@quackback/ids'
+import type { PrincipalId, PostId, CommentId } from '@opencoven-feedback/ids'
 import { truncate, isRetryableError } from '../hook-utils'
 
 /**

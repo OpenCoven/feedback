@@ -12,7 +12,7 @@ import { getBaseUrl } from '@/lib/server/config'
 import { decryptSecrets } from '../encryption'
 import { ingestRawFeedback } from '@/lib/server/domains/feedback/ingestion/feedback-ingest.service'
 import { verifySlackSignature } from './verify'
-import type { FeedbackSourceId, IntegrationId } from '@quackback/ids'
+import type { FeedbackSourceId, IntegrationId } from '@opencoven-feedback/ids'
 
 interface SlackInteractionPayload {
   type: string

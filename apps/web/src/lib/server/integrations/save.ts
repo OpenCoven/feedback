@@ -5,7 +5,7 @@
 import { db, integrations, eq } from '@/lib/server/db'
 import { encryptSecrets } from './encryption'
 import { getIntegration } from './index'
-import type { IntegrationId, PrincipalId } from '@quackback/ids'
+import type { IntegrationId, PrincipalId } from '@opencoven-feedback/ids'
 import { createServicePrincipal } from '@/lib/server/domains/principals/principal.service'
 
 export interface SaveIntegrationParams {

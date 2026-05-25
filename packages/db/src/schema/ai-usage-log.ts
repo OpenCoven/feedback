@@ -1,5 +1,5 @@
 import { pgTable, varchar, integer, text, timestamp, jsonb, index } from 'drizzle-orm/pg-core'
-import { typeIdWithDefault, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumnNullable } from '@opencoven-feedback/ids/drizzle'
 
 export const aiUsageLog = pgTable(
   'ai_usage_log',

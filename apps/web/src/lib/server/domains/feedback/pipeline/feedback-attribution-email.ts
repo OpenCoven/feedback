@@ -10,8 +10,8 @@ import { db, eq, principal, user, posts } from '@/lib/server/db'
 import { getBaseUrl } from '@/lib/server/config'
 import { getEmailSafeUrl } from '@/lib/server/storage/s3'
 import { generateUnsubscribeToken } from '@/lib/server/domains/subscriptions/subscription.service'
-import { sendFeedbackLinkedEmail } from '@quackback/email'
-import type { PrincipalId, PostId } from '@quackback/ids'
+import { sendFeedbackLinkedEmail } from '@opencoven-feedback/email'
+import type { PrincipalId, PostId } from '@opencoven-feedback/ids'
 
 export async function sendFeedbackAttributionEmail(
   principalId: PrincipalId,

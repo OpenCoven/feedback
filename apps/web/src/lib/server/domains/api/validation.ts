@@ -1,4 +1,4 @@
-import { isValidTypeId, type IdPrefix } from '@quackback/ids'
+import { isValidTypeId, type IdPrefix } from '@opencoven-feedback/ids'
 import { ValidationError } from '@/lib/shared/errors'
 
 /**

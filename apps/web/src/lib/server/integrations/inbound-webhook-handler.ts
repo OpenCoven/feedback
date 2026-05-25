@@ -13,7 +13,7 @@ import { getIntegration } from './index'
 import { decryptSecrets } from './encryption'
 import { resolveStatusMapping, type StatusMappings } from './status-mapping'
 import { changeStatus } from '@/lib/server/domains/posts/post.status'
-import type { PostId, StatusId, PrincipalId } from '@quackback/ids'
+import type { PostId, StatusId, PrincipalId } from '@opencoven-feedback/ids'
 
 /**
  * Handle an inbound webhook from an external platform.

@@ -24,7 +24,7 @@ import { cn } from '@/lib/shared/utils'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { COMMENT_EDITOR_FEATURES } from './comment-editor-features'
 import type { TiptapContent } from '@/lib/shared/db-types'
-import type { PostId, CommentId } from '@quackback/ids'
+import type { PostId, CommentId } from '@opencoven-feedback/ids'
 
 export type CreateCommentMutation = UseMutationResult<
   unknown,

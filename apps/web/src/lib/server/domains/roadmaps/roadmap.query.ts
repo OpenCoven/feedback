@@ -15,7 +15,7 @@ import {
   userSegments,
   type Roadmap,
 } from '@/lib/server/db'
-import { type RoadmapId, type PostId } from '@quackback/ids'
+import { type RoadmapId, type PostId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import type { RoadmapPostsListResult, RoadmapPostsQueryOptions } from './roadmap.types'
 

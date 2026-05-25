@@ -21,7 +21,7 @@ import {
   isNull,
 } from '@/lib/server/db'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
-import { type PostId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type PrincipalId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { buildCommentTree, toStatusChange, type CommentTreeNode } from '@/lib/shared'
 import type { PostWithDetails, PinnedComment } from './post.types'

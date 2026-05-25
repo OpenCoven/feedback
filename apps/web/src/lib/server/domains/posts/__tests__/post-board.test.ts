@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PostId, BoardId, PrincipalId } from '@quackback/ids'
+import type { PostId, BoardId, PrincipalId } from '@opencoven-feedback/ids'
 
 const createActivity = vi.fn()
 const mockPostsFindFirst = vi.fn()

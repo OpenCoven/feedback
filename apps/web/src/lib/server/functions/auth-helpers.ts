@@ -4,8 +4,8 @@
  * These provide role-based authentication checks for use in server function handlers.
  */
 
-import type { UserId, PrincipalId, WorkspaceId } from '@quackback/ids'
-import { generateId } from '@quackback/ids'
+import type { UserId, PrincipalId, WorkspaceId } from '@opencoven-feedback/ids'
+import { generateId } from '@opencoven-feedback/ids'
 import type { Role } from '@/lib/server/auth'
 import { auth } from '@/lib/server/auth'
 import { getRequestHeaders } from '@tanstack/react-start/server'

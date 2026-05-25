@@ -13,7 +13,7 @@ import { useDeleteArticle, useDeleteCategory } from '@/lib/client/mutations/help
 import { helpCenterQueries } from '@/lib/client/queries/help-center'
 import { collectDescendantIds } from '@/lib/shared/help-center-tree'
 import { Route } from '@/routes/admin/help-center'
-import type { HelpCenterArticleId, HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterArticleId, HelpCenterCategoryId } from '@opencoven-feedback/ids'
 
 type CategoryDialogState =
   | { mode: 'new'; parentId: HelpCenterCategoryId | null }

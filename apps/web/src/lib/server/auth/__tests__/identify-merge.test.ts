@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 
 /**
  * Tests for resolveAndMergeAnonymousToken — the server-side logic that

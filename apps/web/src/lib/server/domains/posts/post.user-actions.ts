@@ -17,7 +17,7 @@ import {
   isNull,
   type Post,
 } from '@/lib/server/db'
-import { type PostId, type PrincipalId, type UserId } from '@quackback/ids'
+import { type PostId, type PrincipalId, type UserId } from '@opencoven-feedback/ids'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
 import { isTeamMember } from '@/lib/shared/roles'
 import { createActivity } from '@/lib/server/domains/activity/activity.service'

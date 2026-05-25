@@ -12,7 +12,7 @@ import { toggleVoteFn, getVotedPostsFn } from '@/lib/server/functions/public-pos
 import { getWidgetAuthHeaders, hasWidgetToken } from '@/lib/client/widget-auth'
 import { sendToHost } from '@/lib/client/widget-bridge'
 import { voteCountKeys } from './use-post-vote'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 /** Initial sessionVersion before any identify() call */
 export const INITIAL_SESSION_VERSION = 0

@@ -9,7 +9,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 
 const updateUserSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -30,7 +30,11 @@ export const Route = createFileRoute('/api/v1/users/$principalId')({
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const principalId = parseTypeId<PrincipalId>(params.principalId, 'principal', 'principal ID')
+          const principalId = parseTypeId<PrincipalId>(
+            params.principalId,
+            'principal',
+            'principal ID'
+          )
 
           const { getPortalUserDetail } = await import('@/lib/server/domains/users/user.detail')
           const { parseUserAttributes } = await import('@/lib/server/domains/users/user.attributes')
@@ -85,7 +89,11 @@ export const Route = createFileRoute('/api/v1/users/$principalId')({
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const principalId = parseTypeId<PrincipalId>(params.principalId, 'principal', 'principal ID')
+          const principalId = parseTypeId<PrincipalId>(
+            params.principalId,
+            'principal',
+            'principal ID'
+          )
 
           const body = await request.json()
           const parsed = updateUserSchema.safeParse(body)
@@ -124,7 +132,11 @@ export const Route = createFileRoute('/api/v1/users/$principalId')({
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const principalId = parseTypeId<PrincipalId>(params.principalId, 'principal', 'principal ID')
+          const principalId = parseTypeId<PrincipalId>(
+            params.principalId,
+            'principal',
+            'principal ID'
+          )
 
           const { removePortalUser } = await import('@/lib/server/domains/users/user.service')
 

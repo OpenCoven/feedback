@@ -21,7 +21,7 @@ import { ChangelogMetadataSidebar } from './changelog-metadata-sidebar'
 import { ChangelogMetadataSidebarContent } from './changelog-metadata-sidebar-content'
 import { toPublishState, type PublishState } from '@/lib/shared/schemas/changelog'
 import { Route } from '@/routes/admin/changelog'
-import { type ChangelogId, type PostId } from '@quackback/ids'
+import { type ChangelogId, type PostId } from '@opencoven-feedback/ids'
 import type { JSONContent } from '@tiptap/react'
 
 interface ChangelogModalProps {

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import { type UserId, type PrincipalId } from '@quackback/ids'
+import { type UserId, type PrincipalId } from '@opencoven-feedback/ids'
 import { getSession } from '@/lib/server/auth/session'
 import { requireAuth } from './auth-helpers'
 import { getCurrentUserRole } from './workspace'

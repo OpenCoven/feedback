@@ -19,7 +19,7 @@ import {
   type Principal,
 } from '@/lib/server/db'
 import type { ServiceMetadata } from '@/lib/server/db'
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 import { InternalError, ForbiddenError, NotFoundError } from '@/lib/shared/errors'
 import { isTeamMember, isAdmin } from '@/lib/shared/roles'
 import { cacheDel, CACHE_KEYS } from '@/lib/server/redis'

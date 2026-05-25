@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/form'
 import { useUpdateBoard } from '@/lib/client/mutations'
 import { GlobeAltIcon, LockClosedIcon } from '@heroicons/react/24/solid'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@opencoven-feedback/ids'
 
 interface Board {
   id: BoardId

@@ -5,7 +5,7 @@
  */
 
 import { db, eq, and, comments, commentReactions } from '@/lib/server/db'
-import { type CommentId, type PrincipalId } from '@quackback/ids'
+import { type CommentId, type PrincipalId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { aggregateReactions } from '@/lib/shared'
 import type { ReactionResult } from './comment.types'

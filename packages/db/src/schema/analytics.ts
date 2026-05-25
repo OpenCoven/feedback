@@ -1,5 +1,5 @@
 import { pgTable, date, integer, jsonb, timestamp, text, primaryKey } from 'drizzle-orm/pg-core'
-import { typeIdColumn } from '@quackback/ids/drizzle'
+import { typeIdColumn } from '@opencoven-feedback/ids/drizzle'
 
 /**
  * Pre-aggregated daily analytics stats.

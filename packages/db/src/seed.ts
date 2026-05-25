@@ -10,7 +10,7 @@ config({ path: '../../.env', quiet: true })
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@opencoven-feedback/ids'
 import type {
   TagId,
   BoardId,
@@ -22,7 +22,7 @@ import type {
   WorkspaceId,
   ChangelogId,
   RawFeedbackItemId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { user, account, settings, principal } from './schema/auth'
 import { boards, tags, roadmaps } from './schema/boards'
 import { posts, postTags, postRoadmaps, votes, comments } from './schema/posts'

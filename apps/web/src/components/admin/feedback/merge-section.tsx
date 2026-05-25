@@ -30,7 +30,7 @@ import { useMergePost } from '@/lib/client/mutations/post-merge'
 import { findSimilarPostsFn, type SimilarPost } from '@/lib/server/functions/public-posts'
 import { mergeSuggestionQueries } from '@/lib/client/queries/signals'
 import { inboxKeys } from '@/lib/client/hooks/use-inbox-query'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Merge Into Dialog (shown when admin wants to merge current post into another)

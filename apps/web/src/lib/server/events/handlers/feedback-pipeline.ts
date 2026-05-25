@@ -12,7 +12,7 @@ import type { EventData, PostCreatedEvent } from '../types'
 import { db, eq, feedbackSources } from '@/lib/server/db'
 import { getCommentsByPost } from '@/lib/server/domains/comments/comment.query'
 import { ingestRawFeedback } from '@/lib/server/domains/feedback/ingestion/feedback-ingest.service'
-import type { FeedbackSourceId, PostId } from '@quackback/ids'
+import type { FeedbackSourceId, PostId } from '@opencoven-feedback/ids'
 import type { RawFeedbackThreadMessage } from '@/lib/server/db'
 
 // Module-level cache for the quackback source ID.

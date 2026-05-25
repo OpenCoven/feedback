@@ -24,7 +24,7 @@ import {
   segments,
   asc,
 } from '@/lib/server/db'
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@opencoven-feedback/ids'
 import { InternalError } from '@/lib/shared/errors'
 import { truncate } from '@/lib/shared/utils/string'
 import type {

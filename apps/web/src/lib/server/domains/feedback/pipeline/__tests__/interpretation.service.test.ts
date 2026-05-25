@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { FeedbackSignalId, RawFeedbackItemId } from '@quackback/ids'
+import type { FeedbackSignalId, RawFeedbackItemId } from '@opencoven-feedback/ids'
 
 // --- Mock tracking ---
 const updateSetCalls: unknown[][] = []

@@ -11,7 +11,7 @@ import {
   votes,
   postSubscriptions,
 } from '@/lib/server/db'
-import { toUuid, type PostId, type StatusId, type PrincipalId } from '@quackback/ids'
+import { toUuid, type PostId, type StatusId, type PrincipalId } from '@opencoven-feedback/ids'
 import type { RoadmapPost, RoadmapPostListResult } from './post.types'
 import { getExecuteRows } from '@/lib/server/utils'
 

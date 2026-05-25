@@ -11,7 +11,7 @@ import dns from 'dns/promises'
 import type { HookHandler, HookResult, HookRunContext } from '../hook-types'
 import type { EventData } from '../types'
 import type { WebhookTarget, WebhookConfig } from '../integrations/webhook/constants'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@opencoven-feedback/ids'
 import { isRetryableError } from '../hook-utils'
 import { claimHookDelivery } from '../hook-idempotency'
 

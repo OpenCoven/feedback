@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { isValidTypeId, type InviteId } from '@quackback/ids'
+import { isValidTypeId, type InviteId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/auth/invitation/$invitationId')({
   server: {

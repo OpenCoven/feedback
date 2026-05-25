@@ -7,7 +7,7 @@ import { useAuthBroadcast } from '@/lib/client/hooks/use-auth-broadcast'
 import { useEnsureAnonSession } from '@/lib/client/hooks/use-ensure-anon-session'
 import { useCreateComment } from '@/lib/client/mutations'
 import type { PublicCommentView } from '@/lib/client/queries/portal-detail'
-import type { CommentId, PostId, PrincipalId } from '@quackback/ids'
+import type { CommentId, PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 interface AuthCommentsSectionProps {
   postId: PostId

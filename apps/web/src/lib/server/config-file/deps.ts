@@ -3,7 +3,7 @@ import { invalidateSettingsCache } from '@/lib/server/domains/settings/settings.
 import { invalidateTierLimitsCache } from '@/lib/server/domains/settings/tier-limits.service'
 import { resetAuth } from '@/lib/server/auth/index'
 import { bumpAuthConfigVersionInTx } from '@/lib/server/auth/config-version'
-import { generateId } from '@quackback/ids'
+import { generateId } from '@opencoven-feedback/ids'
 import type { ReconcileDeps, SettingsInsert, SettingsRow, SettingsUpdate } from './reconciler'
 import { makeReportStatus } from './report-status'
 

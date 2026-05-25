@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { HelpCenterArticleEditor } from '@/components/admin/help-center/help-center-article-editor'
 import type { FeatureFlags } from '@/lib/shared/types/settings'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/admin/help-center/articles/$articleId')({
   component: HelpCenterArticleEditorPage,

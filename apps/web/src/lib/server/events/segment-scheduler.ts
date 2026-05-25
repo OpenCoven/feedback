@@ -12,7 +12,7 @@
 
 import { Queue, Worker, UnrecoverableError } from 'bullmq'
 import { getQueueRedis, REDIS_READY_TIMEOUT_MS } from '@/lib/server/queue/redis-config'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@opencoven-feedback/ids'
 import type { EvaluationSchedule } from '@/lib/server/db'
 
 // ============================================================================

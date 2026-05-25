@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, startTransition } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { ensureTypeId, type IdPrefix } from '@quackback/ids'
+import { ensureTypeId, type IdPrefix } from '@opencoven-feedback/ids'
 
 interface UseUrlModalOptions {
   /** The ID from the URL search param (may be undefined when modal is closed) */

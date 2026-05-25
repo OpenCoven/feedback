@@ -8,7 +8,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { JSONContent } from '@tiptap/core'
-import type { BoardId, PrincipalId, StatusId } from '@quackback/ids'
+import type { BoardId, PrincipalId, StatusId } from '@opencoven-feedback/ids'
 
 const insertedRows: Record<string, unknown[]> = { posts: [], votes: [], postTags: [] }
 const subscribeToPost = vi.fn()

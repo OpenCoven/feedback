@@ -10,7 +10,7 @@ import {
 import { WEBHOOK_EVENTS } from '@/lib/server/events/integrations/webhook/constants'
 import { parseTypeIdArray } from '@/lib/server/domains/api/validation'
 import { toWebhookListResponse } from '@/lib/server/domains/api/webhooks'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@opencoven-feedback/ids'
 
 // Input validation schema
 const createWebhookSchema = z.object({

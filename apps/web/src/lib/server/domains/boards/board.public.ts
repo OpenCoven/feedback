@@ -1,5 +1,5 @@
 import { db, eq, and, isNull, sql, boards, posts, type Board } from '@/lib/server/db'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@opencoven-feedback/ids'
 import { NotFoundError, InternalError } from '@/lib/shared/errors'
 import type { BoardWithStats } from './board.types'
 

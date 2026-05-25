@@ -9,7 +9,7 @@ import { db, helpCenterArticles, eq, sql } from '@/lib/server/db'
 import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { withRetry } from '@/lib/server/domains/ai/retry'
 import { EMBEDDING_MODEL } from '@/lib/server/domains/embeddings/embedding.service'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 
 const KB_EMBEDDING_DIMENSIONS = 1536
 

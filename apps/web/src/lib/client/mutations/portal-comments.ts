@@ -16,7 +16,7 @@ import {
   pinCommentFn,
   unpinCommentFn,
 } from '@/lib/server/functions/comments'
-import type { PostId, CommentId } from '@quackback/ids'
+import type { PostId, CommentId } from '@opencoven-feedback/ids'
 import { portalDetailQueries } from '@/lib/client/queries/portal-detail'
 import { commentKeys } from '@/lib/client/hooks/use-comments-query'
 import { addReplyToTree, replaceOptimisticInTree } from '@/lib/client/utils/comment-tree-helpers'

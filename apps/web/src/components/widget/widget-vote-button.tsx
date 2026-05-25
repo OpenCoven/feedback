@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl'
 import { useWidgetVote } from '@/lib/client/hooks/use-widget-vote'
 import { useWidgetAuth } from './widget-auth-provider'
 import { cn } from '@/lib/shared/utils'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 interface WidgetVoteButtonProps {
   postId: PostId

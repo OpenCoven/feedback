@@ -30,7 +30,7 @@ import {
   getCategoryDepth,
   getSubtreeMaxDepth,
 } from '@/lib/shared/help-center-tree'
-import type { HelpCenterCategoryId } from '@quackback/ids'
+import type { HelpCenterCategoryId } from '@opencoven-feedback/ids'
 
 const DEFAULT_ICON = 'FolderIcon'
 

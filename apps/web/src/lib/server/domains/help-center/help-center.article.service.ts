@@ -11,7 +11,11 @@ import {
   lte,
   sql,
 } from '@/lib/server/db'
-import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@quackback/ids'
+import type {
+  HelpCenterArticleId,
+  HelpCenterCategoryId,
+  PrincipalId,
+} from '@opencoven-feedback/ids'
 import { NotFoundError, ValidationError } from '@/lib/shared/errors'
 import { isTeamMember } from '@/lib/shared/roles'
 import { markdownToTiptapJson } from '@/lib/server/markdown-tiptap'

@@ -10,7 +10,7 @@ import {
 import { parseTypeId, parseTypeIdArray } from '@/lib/server/domains/api/validation'
 import { WEBHOOK_EVENTS } from '@/lib/server/events/integrations/webhook/constants'
 import { toWebhookResponse } from '@/lib/server/domains/api/webhooks'
-import type { BoardId, WebhookId } from '@quackback/ids'
+import type { BoardId, WebhookId } from '@opencoven-feedback/ids'
 
 // Input validation schema
 const updateWebhookSchema = z.object({
@@ -61,9 +61,10 @@ export const Route = createFileRoute('/api/v1/webhooks/$webhookId')({
             })
           }
 
-          const boardIds = parsed.data.boardIds != null
-            ? parseTypeIdArray<BoardId>(parsed.data.boardIds, 'board', 'board IDs')
-            : parsed.data.boardIds
+          const boardIds =
+            parsed.data.boardIds != null
+              ? parseTypeIdArray<BoardId>(parsed.data.boardIds, 'board', 'board IDs')
+              : parsed.data.boardIds
 
           const { updateWebhook } = await import('@/lib/server/domains/webhooks/webhook.service')
           const webhook = await updateWebhook(webhookId, {

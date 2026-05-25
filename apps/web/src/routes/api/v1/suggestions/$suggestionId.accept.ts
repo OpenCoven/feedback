@@ -5,8 +5,8 @@ import {
   badRequestResponse,
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
-import { isTypeId, isValidTypeId } from '@quackback/ids'
-import type { FeedbackSuggestionId, MergeSuggestionId } from '@quackback/ids'
+import { isTypeId, isValidTypeId } from '@opencoven-feedback/ids'
+import type { FeedbackSuggestionId, MergeSuggestionId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/v1/suggestions/$suggestionId/accept')({
   server: {

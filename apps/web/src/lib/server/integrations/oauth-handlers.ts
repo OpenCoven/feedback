@@ -6,7 +6,7 @@
  * leaking into the client bundle via TanStack Router's routeTree.
  */
 
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 import { getIntegration } from '.'
 import { verifyOAuthState } from '@/lib/server/auth/oauth-state'
 import { auth } from '@/lib/server/auth'

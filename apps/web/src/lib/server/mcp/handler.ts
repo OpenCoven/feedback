@@ -18,7 +18,7 @@ import { getDeveloperConfig } from '@/lib/server/domains/settings/settings.servi
 import { db, principal, eq } from '@/lib/server/db'
 import { config } from '@/lib/server/config'
 import { createMcpServer } from './server'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 import type { McpAuthContext, McpScope } from './types'
 
 /** Build a JSON-RPC error response (used for MCP-level denials). */
@@ -130,10 +130,10 @@ export async function resolveAuthContext(request: Request): Promise<McpAuthConte
         headers['WWW-Authenticate'] =
           `Bearer resource_metadata="${config.baseUrl}/.well-known/oauth-protected-resource"`
       }
-      return new Response(
-        JSON.stringify({ error: err.message }),
-        { status: err.statusCode, headers }
-      )
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: err.statusCode,
+        headers,
+      })
     }
 
     const principalRecord = await db.query.principal.findFirst({

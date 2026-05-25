@@ -21,7 +21,7 @@ import type {
   RawFeedbackItemId,
   FeedbackSignalId,
   StatusId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 
 type SimilarPostEntry = { postId: string; title: string; similarity: number; voteCount: number }
 

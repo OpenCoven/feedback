@@ -6,7 +6,7 @@
  */
 
 import type { Board, Tag } from '@/lib/shared/db-types'
-import type { PostId, StatusId, CommentId, PrincipalId } from '@quackback/ids'
+import type { PostId, StatusId, CommentId, PrincipalId } from '@opencoven-feedback/ids'
 import type { CommentTreeNode, CommentReactionCount } from '@/lib/shared'
 
 export interface PinnedComment {

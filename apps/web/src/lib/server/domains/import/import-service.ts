@@ -15,7 +15,7 @@ import {
   type PostId,
   type TagId,
   type StatusId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { ValidationError } from '@/lib/shared/errors'
 import type { ImportInput, ImportResult, ImportRowError } from './types'
 import { ImportUserResolver } from './user-resolver'

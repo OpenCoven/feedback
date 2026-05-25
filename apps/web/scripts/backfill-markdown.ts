@@ -27,7 +27,7 @@ try {
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { isNull } from 'drizzle-orm'
-import { posts, changelogEntries } from '@quackback/db/schema'
+import { posts, changelogEntries } from '@opencoven-feedback/db/schema'
 import { markdownToTiptapJson } from '../src/lib/server/markdown-tiptap'
 
 const BATCH_SIZE = 50

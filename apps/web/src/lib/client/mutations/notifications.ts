@@ -6,7 +6,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { NotificationId } from '@quackback/ids'
+import type { NotificationId } from '@opencoven-feedback/ids'
 import {
   markNotificationAsReadFn,
   markAllNotificationsAsReadFn,

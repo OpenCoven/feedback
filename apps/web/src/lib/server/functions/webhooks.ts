@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
 import { requireAuth } from './auth-helpers'
 import { WEBHOOK_EVENTS } from '@/lib/server/events/integrations/webhook/constants'
-import type { WebhookId } from '@quackback/ids'
+import type { WebhookId } from '@opencoven-feedback/ids'
 
 // ============================================
 // Schemas

@@ -20,8 +20,8 @@ import {
   boards,
   type Transaction,
 } from '@/lib/server/db'
-import type { NotificationId, PrincipalId } from '@quackback/ids'
-import { createId } from '@quackback/ids'
+import type { NotificationId, PrincipalId } from '@opencoven-feedback/ids'
+import { createId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import type {
   CreateNotificationInput,

@@ -25,7 +25,7 @@ import { adminQueries } from '@/lib/client/queries/admin'
 import { Route } from '@/routes/admin/roadmap'
 import type { PostStatusEntity } from '@/lib/shared/db-types'
 import type { RoadmapPostEntry } from '@/lib/shared/types'
-import type { StatusId, PostId, RoadmapId } from '@quackback/ids'
+import type { StatusId, PostId, RoadmapId } from '@opencoven-feedback/ids'
 
 interface RoadmapAdminProps {
   statuses: PostStatusEntity[]

@@ -14,7 +14,7 @@ import {
   deleteChangelog,
 } from '@/lib/server/domains/changelog/changelog.service'
 import type { PublishState } from '@/lib/shared/schemas/changelog'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@opencoven-feedback/ids'
 
 // Input validation schema
 const updateChangelogSchema = z.object({
@@ -52,7 +52,11 @@ export const Route = createFileRoute('/api/v1/changelog/$entryId')({
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const entryId = parseTypeId<ChangelogId>(params.entryId, 'changelog', 'changelog entry ID')
+          const entryId = parseTypeId<ChangelogId>(
+            params.entryId,
+            'changelog',
+            'changelog entry ID'
+          )
 
           const entry = await getChangelogById(entryId)
           return successResponse(formatChangelogResponse(entry))
@@ -69,7 +73,11 @@ export const Route = createFileRoute('/api/v1/changelog/$entryId')({
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const entryId = parseTypeId<ChangelogId>(params.entryId, 'changelog', 'changelog entry ID')
+          const entryId = parseTypeId<ChangelogId>(
+            params.entryId,
+            'changelog',
+            'changelog entry ID'
+          )
 
           const body = await request.json()
           const parsed = updateChangelogSchema.safeParse(body)
@@ -114,7 +122,11 @@ export const Route = createFileRoute('/api/v1/changelog/$entryId')({
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const entryId = parseTypeId<ChangelogId>(params.entryId, 'changelog', 'changelog entry ID')
+          const entryId = parseTypeId<ChangelogId>(
+            params.entryId,
+            'changelog',
+            'changelog entry ID'
+          )
 
           await deleteChangelog(entryId)
           return noContentResponse()

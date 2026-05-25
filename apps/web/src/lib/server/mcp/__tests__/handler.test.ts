@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { ApiKey } from '@/lib/server/domains/api-keys'
-import type { PrincipalId, ApiKeyId, UserId } from '@quackback/ids'
+import type { PrincipalId, ApiKeyId, UserId } from '@opencoven-feedback/ids'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 

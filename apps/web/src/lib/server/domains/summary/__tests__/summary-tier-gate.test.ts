@@ -41,7 +41,7 @@ import { generateAndSavePostSummary } from '../summary.service'
 import { getTierLimits } from '@/lib/server/domains/settings/tier-limits.service'
 import { aiTokensThisMonth } from '@/lib/server/domains/ai/usage-counter'
 import { OSS_TIER_LIMITS } from '@/lib/server/domains/settings/tier-limits.types'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 describe('generateAndSavePostSummary — token budget gate', () => {
   beforeEach(() => {

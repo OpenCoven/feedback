@@ -1,6 +1,10 @@
 import { pgTable, text, timestamp, varchar, index, unique, foreignKey } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import {
+  typeIdWithDefault,
+  typeIdColumn,
+  typeIdColumnNullable,
+} from '@opencoven-feedback/ids/drizzle'
 import { posts } from './posts'
 import { integrations } from './integrations'
 

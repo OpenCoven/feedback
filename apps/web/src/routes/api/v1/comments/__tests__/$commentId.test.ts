@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { CommentId, PrincipalId } from '@quackback/ids'
+import type { CommentId, PrincipalId } from '@opencoven-feedback/ids'
 import {
   ForbiddenError,
   NotFoundError,

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { isValidTypeId, type UserId } from '@quackback/ids'
+import { isValidTypeId, type UserId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/user/avatar/$userId')({
   server: {

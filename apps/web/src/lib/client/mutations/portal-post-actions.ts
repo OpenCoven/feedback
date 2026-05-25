@@ -6,7 +6,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import type { JSONContent } from '@tiptap/react'
 import { userEditPostFn, userDeletePostFn } from '@/lib/server/functions/public-posts'
 import { portalDetailQueries } from '@/lib/client/queries/portal-detail'

@@ -21,7 +21,7 @@ import {
   useBoardSelection,
   type BoardTab,
 } from '@/components/admin/settings/boards/use-board-selection'
-import type { BoardId } from '@quackback/ids'
+import type { BoardId } from '@opencoven-feedback/ids'
 
 /** Board data as returned from server functions (dates serialized as strings) */
 interface BoardForSettings {

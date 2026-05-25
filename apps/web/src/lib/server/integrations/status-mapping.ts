@@ -5,7 +5,7 @@
  * using the statusMappings stored in integrations.config.
  */
 
-import type { StatusId } from '@quackback/ids'
+import type { StatusId } from '@opencoven-feedback/ids'
 
 /**
  * Status mappings stored in integrations.config.statusMappings.

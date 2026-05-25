@@ -9,7 +9,11 @@ vi.mock('@quackback/email', () => ({
 }))
 
 import { emailHook } from '../handlers/email'
-import { sendStatusChangeEmail, sendNewCommentEmail, sendPostMentionEmail } from '@quackback/email'
+import {
+  sendStatusChangeEmail,
+  sendNewCommentEmail,
+  sendPostMentionEmail,
+} from '@opencoven-feedback/email'
 import type { EmailTarget, EmailConfig } from '../hook-types'
 import type { EventData } from '../types'
 

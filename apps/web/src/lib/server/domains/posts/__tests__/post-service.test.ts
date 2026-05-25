@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PostId, PrincipalId, StatusId, TagId } from '@quackback/ids'
+import type { PostId, PrincipalId, StatusId, TagId } from '@opencoven-feedback/ids'
 
 const createActivity = vi.fn()
 const dispatchPostStatusChanged = vi.fn()

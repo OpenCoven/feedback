@@ -6,7 +6,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { getAvatarUploadUrlFn } from '@/lib/server/functions/uploads'
 import { saveAvatarKeyFn, removeAvatarFn } from '@/lib/server/functions/user'
 import { settingsQueries } from '@/lib/client/queries/settings'

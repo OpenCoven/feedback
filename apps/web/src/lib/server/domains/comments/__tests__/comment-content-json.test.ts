@@ -5,7 +5,7 @@
  * TipTap doc instead of parsing markdown on every render.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CommentId, PostId, PrincipalId } from '@quackback/ids'
+import type { CommentId, PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 const insertedComments: Record<string, unknown>[] = []
 const insertedEditHistory: Record<string, unknown>[] = []

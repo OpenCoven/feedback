@@ -5,7 +5,7 @@
  */
 
 import { db, posts, boards, postStatuses, eq } from '@/lib/server/db'
-import { type PostId, type StatusId, type UserId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type StatusId, type UserId, type PrincipalId } from '@opencoven-feedback/ids'
 import { dispatchPostStatusChanged, buildEventActor } from '@/lib/server/events/dispatch'
 import { NotFoundError } from '@/lib/shared/errors'
 import { createActivity } from '@/lib/server/domains/activity/activity.service'

@@ -19,7 +19,7 @@ import {
   isNull,
   isNotNull,
 } from '@/lib/server/db'
-import { toUuid, type PostId, type PrincipalId } from '@quackback/ids'
+import { toUuid, type PostId, type PrincipalId } from '@opencoven-feedback/ids'
 import type { PostListItem, InboxPostListParams, InboxPostListResult } from './post.types'
 
 /**

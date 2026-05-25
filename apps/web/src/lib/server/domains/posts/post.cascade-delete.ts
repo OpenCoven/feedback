@@ -5,7 +5,7 @@
  * Failures are warnings, never blockers -- the post delete always succeeds.
  */
 
-import type { PostId, LinkedEntityId, IntegrationId } from '@quackback/ids'
+import type { PostId, LinkedEntityId, IntegrationId } from '@opencoven-feedback/ids'
 import { db, eq, and, inArray, postExternalLinks, integrations } from '@/lib/server/db'
 import { decryptSecrets, encryptSecrets } from '@/lib/server/integrations/encryption'
 import { archiveExternalIssue } from '@/lib/server/integrations/archive'

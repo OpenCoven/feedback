@@ -17,7 +17,7 @@
 // NOT directly from @quackback/db.
 import { db, postMentions, principal, eq, and, inArray } from '@/lib/server/db'
 import { dispatchPostMentioned, type EventActor } from '../../events/dispatch'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 export interface SyncPostMentionsInput {
   postId: PostId

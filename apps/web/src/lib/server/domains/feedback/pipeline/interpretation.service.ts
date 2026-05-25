@@ -20,7 +20,7 @@ import { createPostSuggestion, createVoteSuggestion } from './suggestion.service
 import { logPipelineEvent } from './pipeline-log'
 import { buildSuggestionPrompt } from './prompts/suggestion.prompt'
 import type { SuggestionGenerationResult } from '../types'
-import type { FeedbackSignalId, RawFeedbackItemId, BoardId, PostId } from '@quackback/ids'
+import type { FeedbackSignalId, RawFeedbackItemId, BoardId, PostId } from '@opencoven-feedback/ids'
 
 const SUGGESTION_MODEL = 'google/gemini-3.1-flash-lite-preview'
 

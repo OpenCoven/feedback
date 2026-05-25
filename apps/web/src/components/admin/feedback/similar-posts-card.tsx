@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button'
 import { mergeSuggestionQueries } from '@/lib/client/queries/signals'
 import { acceptSuggestionFn, dismissSuggestionFn } from '@/lib/server/functions/feedback'
 import { inboxKeys } from '@/lib/client/hooks/use-inbox-query'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 interface SimilarPostsCardProps {
   postId: PostId

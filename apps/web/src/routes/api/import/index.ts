@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import Papa from 'papaparse'
 import type { ImportInput } from '@/lib/server/domains/import/types'
 import { REQUIRED_HEADERS } from '@/lib/shared/schemas/import'
-import { isValidTypeId, type BoardId } from '@quackback/ids'
+import { isValidTypeId, type BoardId } from '@opencoven-feedback/ids'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_ROWS = 10000

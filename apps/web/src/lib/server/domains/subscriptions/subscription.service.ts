@@ -31,7 +31,7 @@ import {
   user,
   type Transaction,
 } from '@/lib/server/db'
-import type { PrincipalId, PostId } from '@quackback/ids'
+import type { PrincipalId, PostId } from '@opencoven-feedback/ids'
 import { randomUUID } from 'crypto'
 import {
   levelFromFlags,

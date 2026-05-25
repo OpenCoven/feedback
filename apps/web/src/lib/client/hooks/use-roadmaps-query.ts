@@ -7,7 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { Roadmap } from '@/lib/shared/db-types'
-import type { RoadmapId } from '@quackback/ids'
+import type { RoadmapId } from '@opencoven-feedback/ids'
 import { fetchRoadmaps } from '@/lib/server/functions/roadmaps'
 import { listPublicRoadmapsFn } from '@/lib/server/functions/public-posts'
 

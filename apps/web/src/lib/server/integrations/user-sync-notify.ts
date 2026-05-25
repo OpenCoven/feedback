@@ -6,7 +6,7 @@
  * userSync.syncSegmentMembership (e.g. Segment CDP, HubSpot, etc.).
  */
 
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 import { db, integrations, principal, user, eq, and, inArray } from '@/lib/server/db'
 import { getIntegration, getIntegrationTypesWithSegmentSync } from './index'
 import { decryptSecrets } from './encryption'

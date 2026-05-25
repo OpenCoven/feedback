@@ -3,7 +3,7 @@ import { RichTextContent, isRichTextContent } from '@/components/ui/rich-text-ed
 import { StatusBadge } from '@/components/ui/status-badge'
 import { BackLink } from '@/components/ui/back-link'
 import { ChevronUpIcon } from '@heroicons/react/24/outline'
-import type { ChangelogId, PostId } from '@quackback/ids'
+import type { ChangelogId, PostId } from '@opencoven-feedback/ids'
 import type { JSONContent } from '@tiptap/react'
 import type { TiptapContent } from '@/lib/shared/db-types'
 

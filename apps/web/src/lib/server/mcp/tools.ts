@@ -52,10 +52,7 @@ import {
   dismissMergeSuggestion,
   restoreMergeSuggestion,
 } from '@/lib/server/domains/merge-suggestions/merge-suggestion.service'
-import {
-  createComment,
-  deleteComment,
-} from '@/lib/server/domains/comments/comment.service'
+import { createComment, deleteComment } from '@/lib/server/domains/comments/comment.service'
 import { userEditComment } from '@/lib/server/domains/comments/comment.permissions'
 import { addReaction, removeReaction } from '@/lib/server/domains/comments/comment.reactions'
 import {
@@ -70,7 +67,7 @@ import {
   addPostToRoadmap,
   removePostFromRoadmap,
 } from '@/lib/server/domains/roadmaps/roadmap.service'
-import { getTypeIdPrefix, isTypeId, isValidTypeId } from '@quackback/ids'
+import { getTypeIdPrefix, isTypeId, isValidTypeId } from '@opencoven-feedback/ids'
 import { isTeamMember } from '@/lib/shared/roles'
 import { truncate } from '@/lib/shared/utils/string'
 import {
@@ -103,7 +100,7 @@ import type {
   MergeSuggestionId,
   HelpCenterArticleId,
   HelpCenterCategoryId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Helpers
@@ -551,7 +548,11 @@ const createHelpCenterArticleSchema = {
       'Article content. Markdown (GFM), max 50,000 chars. Images via ![alt](url) are auto-rehosted to workspace storage on save. See tool description for full format details.'
     ),
   slug: z.string().max(200).optional().describe('URL slug (auto-generated from title if omitted)'),
-  description: z.string().max(300).optional().describe('Short page description for SEO and article previews (max 300 chars)'),
+  description: z
+    .string()
+    .max(300)
+    .optional()
+    .describe('Short page description for SEO and article previews (max 300 chars)'),
   authorId: z
     .string()
     .optional()
@@ -579,10 +580,7 @@ const updateHelpCenterArticleSchema = {
     .describe(
       'Any ISO 8601 datetime string to publish immediately (e.g. "2026-04-08T00:00:00Z"), or null to unpublish. The exact timestamp is not used — articles are always published at the current time.'
     ),
-  authorId: z
-    .string()
-    .optional()
-    .describe('Principal TypeID to reassign as the article author'),
+  authorId: z.string().optional().describe('Principal TypeID to reassign as the article author'),
 }
 
 const deleteHelpCenterArticleSchema = {
@@ -1238,11 +1236,10 @@ Examples:
       if (scopeDenied) return scopeDenied
       // No team role gate — the service layer allows comment authors OR team members
       try {
-        const result = await userEditComment(
-          args.commentId as CommentId,
-          args.content,
-          { principalId: auth.principalId, role: auth.role }
-        )
+        const result = await userEditComment(args.commentId as CommentId, args.content, {
+          principalId: auth.principalId,
+          role: auth.role,
+        })
 
         return jsonResult({
           id: result.id,
@@ -1762,8 +1759,7 @@ Examples:
 
         const { articleId: _, publishedAt: __, authorId: ___, ...updateData } = args
         const hasUpdates =
-          Object.values(updateData).some((v) => v !== undefined) ||
-          authorPrincipalId !== undefined
+          Object.values(updateData).some((v) => v !== undefined) || authorPrincipalId !== undefined
 
         // Validate + apply field/author updates first so a bad authorId
         // never leaves the article in a partially-published state.

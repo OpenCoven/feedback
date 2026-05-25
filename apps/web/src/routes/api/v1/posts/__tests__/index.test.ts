@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { BoardId, PrincipalId } from '@quackback/ids'
+import type { BoardId, PrincipalId } from '@opencoven-feedback/ids'
 
 const mockWithApiKeyAuth = vi.fn()
 const mockCreatePost = vi.fn()

@@ -17,7 +17,7 @@ import { ChangelogListItem } from './changelog-list-item'
 import { changelogQueries } from '@/lib/client/queries/changelog'
 import { useDeleteChangelog } from '@/lib/client/mutations/changelog'
 import { Route } from '@/routes/admin/changelog'
-import type { ChangelogId } from '@quackback/ids'
+import type { ChangelogId } from '@opencoven-feedback/ids'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
 
 function ChangelogSkeleton() {

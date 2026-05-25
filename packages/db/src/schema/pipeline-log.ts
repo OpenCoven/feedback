@@ -1,5 +1,5 @@
 import { pgTable, varchar, timestamp, jsonb, index } from 'drizzle-orm/pg-core'
-import { typeIdWithDefault, typeIdColumnNullable } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumnNullable } from '@opencoven-feedback/ids/drizzle'
 import { rawFeedbackItems, feedbackSignals, feedbackSuggestions } from './feedback'
 import { posts } from './posts'
 

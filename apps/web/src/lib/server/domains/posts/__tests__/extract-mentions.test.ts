@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { JSONContent } from '@tiptap/core'
-import type { PrincipalId } from '@quackback/ids'
+import type { PrincipalId } from '@opencoven-feedback/ids'
 import { extractMentions, extractMentionExcerpts } from '../extract-mentions'
 
 const doc = (content: JSONContent[]): JSONContent => ({ type: 'doc', content })

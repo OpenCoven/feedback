@@ -9,7 +9,7 @@ import { getOpenAI } from '@/lib/server/domains/ai/config'
 import { findMergeCandidates } from './merge-search.service'
 import { assessMergeCandidates, determineDirection } from './merge-assessment.service'
 import { createMergeSuggestion, expireStaleMergeSuggestions } from './merge-suggestion.service'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 const SWEEP_BATCH_SIZE = 50
 const SWEEP_POST_DELAY_MS = 500

@@ -7,7 +7,7 @@
 import { randomBytes } from 'crypto'
 import { config } from '@/lib/server/config'
 import { db, integrations, eq } from '@/lib/server/db'
-import type { IntegrationId } from '@quackback/ids'
+import type { IntegrationId } from '@opencoven-feedback/ids'
 
 /**
  * Generate a random webhook secret (32 bytes hex = 64 chars).

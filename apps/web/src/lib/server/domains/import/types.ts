@@ -1,4 +1,4 @@
-import type { BoardId, PrincipalId } from '@quackback/ids'
+import type { BoardId, PrincipalId } from '@opencoven-feedback/ids'
 
 /**
  * CSV import input

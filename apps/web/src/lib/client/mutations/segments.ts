@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { SegmentId, PrincipalId } from '@quackback/ids'
+import type { SegmentId, PrincipalId } from '@opencoven-feedback/ids'
 import {
   createSegmentFn,
   updateSegmentFn,

@@ -17,7 +17,7 @@ import {
   unpublishArticle,
   deleteArticle,
 } from '@/lib/server/domains/help-center/help-center.service'
-import type { HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, PrincipalId } from '@opencoven-feedback/ids'
 
 const updateArticleBody = z.object({
   categoryId: z.string().optional(),
@@ -70,7 +70,11 @@ export const Route = createFileRoute('/api/v1/help-center/articles/$articleId')(
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const articleId = parseTypeId<HelpCenterArticleId>(params.articleId, 'article', 'article ID')
+          const articleId = parseTypeId<HelpCenterArticleId>(
+            params.articleId,
+            'article',
+            'article ID'
+          )
 
           const article = await getArticleById(articleId)
           return successResponse(formatArticle(article))
@@ -85,7 +89,11 @@ export const Route = createFileRoute('/api/v1/help-center/articles/$articleId')(
         try {
           await withApiKeyAuth(request, { role: 'team' })
 
-          const articleId = parseTypeId<HelpCenterArticleId>(params.articleId, 'article', 'article ID')
+          const articleId = parseTypeId<HelpCenterArticleId>(
+            params.articleId,
+            'article',
+            'article ID'
+          )
 
           const body = await request.json()
           const parsed = updateArticleBody.safeParse(body)
@@ -139,7 +147,11 @@ export const Route = createFileRoute('/api/v1/help-center/articles/$articleId')(
         try {
           await withApiKeyAuth(request, { role: 'admin' })
 
-          const articleId = parseTypeId<HelpCenterArticleId>(params.articleId, 'article', 'article ID')
+          const articleId = parseTypeId<HelpCenterArticleId>(
+            params.articleId,
+            'article',
+            'article ID'
+          )
 
           await deleteArticle(articleId)
           return noContentResponse()

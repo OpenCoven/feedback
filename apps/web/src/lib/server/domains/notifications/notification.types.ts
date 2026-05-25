@@ -4,7 +4,7 @@
  * Type definitions for in-app notifications
  */
 
-import type { NotificationId, PostId, CommentId, PrincipalId } from '@quackback/ids'
+import type { NotificationId, PostId, CommentId, PrincipalId } from '@opencoven-feedback/ids'
 
 /**
  * Notification event types that can trigger in-app notifications

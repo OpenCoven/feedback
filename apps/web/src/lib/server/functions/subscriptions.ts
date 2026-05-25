@@ -4,7 +4,7 @@
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import { type PostId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type PrincipalId } from '@opencoven-feedback/ids'
 import { requireAuth } from './auth-helpers'
 import type { SubscriptionLevel } from '@/lib/server/domains/subscriptions/subscription.service'
 import { db, votes, eq, and } from '@/lib/server/db'

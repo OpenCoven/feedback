@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean, jsonb, integer, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault } from '@quackback/ids/drizzle'
+import { typeIdWithDefault } from '@opencoven-feedback/ids/drizzle'
 import type { BoardSettings } from '../types'
 
 export const boards = pgTable(

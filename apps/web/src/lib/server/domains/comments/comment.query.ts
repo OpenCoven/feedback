@@ -1,5 +1,5 @@
 import { db, eq, asc, comments, posts, boards, type Comment } from '@/lib/server/db'
-import { type CommentId, type PostId, type PrincipalId } from '@quackback/ids'
+import { type CommentId, type PostId, type PrincipalId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import type { CommentThread } from './comment.types'
 import { buildCommentTree, toStatusChange } from '@/lib/shared'

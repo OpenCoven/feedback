@@ -6,7 +6,7 @@
  * per integration directory.
  */
 
-import type { IntegrationId, PrincipalId } from '@quackback/ids'
+import type { IntegrationId, PrincipalId } from '@opencoven-feedback/ids'
 import type {
   RawFeedbackAuthor,
   RawFeedbackContent,

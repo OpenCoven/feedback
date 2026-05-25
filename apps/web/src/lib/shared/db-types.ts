@@ -10,10 +10,10 @@
  * import { REACTION_EMOJIS } from '@/lib/shared/db-types'
  */
 
-import type { SetupState } from '@quackback/db/types'
+import type { SetupState } from '@opencoven-feedback/db/types'
 
 // Re-export types only to keep this module client-safe.
-export type * from '@quackback/db/types'
+export type * from '@opencoven-feedback/db/types'
 
 // Schema types needed by client components (type-only = no side effects)
 export type {
@@ -26,7 +26,7 @@ export type {
   UserAttributeDefinition,
   UserAttributeType,
   CurrencyCode,
-} from '@quackback/db/schema'
+} from '@opencoven-feedback/db/schema'
 
 // Runtime exports used in client components.
 export const REACTION_EMOJIS = ['👍', '❤️', '🎉', '😄', '🤔', '👀'] as const

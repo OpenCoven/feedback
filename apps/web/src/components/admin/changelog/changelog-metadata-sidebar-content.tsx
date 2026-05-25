@@ -23,7 +23,7 @@ import {
   type StatusOption,
 } from '@/components/shared/sidebar-primitives'
 import { cn } from '@/lib/shared/utils'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import type { PublishState } from '@/lib/shared/schemas/changelog'
 
 interface ChangelogMetadataSidebarContentProps {

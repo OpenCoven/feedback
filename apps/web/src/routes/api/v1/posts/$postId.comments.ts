@@ -10,7 +10,7 @@ import {
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId, parseOptionalTypeId } from '@/lib/server/domains/api/validation'
 import type { Role } from '@/lib/shared/roles'
-import type { PostId, CommentId, PrincipalId } from '@quackback/ids'
+import type { PostId, CommentId, PrincipalId } from '@opencoven-feedback/ids'
 
 // Input validation schema
 const createCommentSchema = z.object({

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { recordArticleFeedbackFn } from '@/lib/server/functions/help-center'
-import type { HelpCenterArticleId } from '@quackback/ids'
+import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 
 interface HelpCenterArticleFeedbackProps {
   articleId: string

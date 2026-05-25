@@ -11,7 +11,7 @@ import {
   type BoardId,
   type TagId,
   type SegmentId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { requireAuth } from './auth-helpers'
 import {
   addPostToRoadmap,

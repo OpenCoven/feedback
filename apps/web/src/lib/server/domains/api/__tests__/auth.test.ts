@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { requireApiKey, withApiKeyAuth, type AuthLevel } from '../auth'
 import type { ApiKey } from '@/lib/server/domains/api-keys'
-import type { PrincipalId, ApiKeyId } from '@quackback/ids'
+import type { PrincipalId, ApiKeyId } from '@opencoven-feedback/ids'
 import { UnauthorizedError, ForbiddenError } from '@/lib/shared/errors'
 
 // Mock the verifyApiKey function

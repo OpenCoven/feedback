@@ -10,7 +10,7 @@ import {
 import { parseTypeId } from '@/lib/server/domains/api/validation'
 import { isFeatureEnabled } from '@/lib/server/domains/settings/settings.service'
 import { recordArticleFeedback } from '@/lib/server/domains/help-center/help-center.service'
-import type { HelpCenterArticleId, PrincipalId } from '@quackback/ids'
+import type { HelpCenterArticleId, PrincipalId } from '@opencoven-feedback/ids'
 
 const feedbackBody = z.object({
   helpful: z.boolean(),
@@ -25,7 +25,11 @@ export const Route = createFileRoute('/api/v1/help-center/articles/$articleId/fe
         try {
           const { principalId } = await withApiKeyAuth(request, { role: 'team' })
 
-          const articleId = parseTypeId<HelpCenterArticleId>(params.articleId, 'article', 'article ID')
+          const articleId = parseTypeId<HelpCenterArticleId>(
+            params.articleId,
+            'article',
+            'article ID'
+          )
 
           const body = await request.json()
           const parsed = feedbackBody.safeParse(body)

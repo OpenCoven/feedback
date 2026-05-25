@@ -1,4 +1,4 @@
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 
 /** Known MCP scopes that gate tool access. */
 export type McpScope =

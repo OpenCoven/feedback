@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { boardIdSchema, statusIdSchema, tagIdsSchema } from '@quackback/ids/zod'
+import { boardIdSchema, statusIdSchema, tagIdsSchema } from '@opencoven-feedback/ids/zod'
 import type { TiptapContent as DbTiptapContent } from '@/lib/shared/db-types'
 
 /**

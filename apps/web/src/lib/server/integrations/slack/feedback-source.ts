@@ -7,7 +7,7 @@
 import { db, eq, feedbackSources } from '@/lib/server/db'
 import { sql } from 'drizzle-orm'
 import { hashCode } from '@/lib/server/utils'
-import type { IntegrationId } from '@quackback/ids'
+import type { IntegrationId } from '@opencoven-feedback/ids'
 
 export async function ensureSlackFeedbackSource(integrationId: IntegrationId): Promise<void> {
   await db.transaction(async (tx) => {

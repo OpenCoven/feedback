@@ -5,7 +5,7 @@
  */
 
 import { db, posts, boards, eq } from '@/lib/server/db'
-import { type PostId, type BoardId, type UserId, type PrincipalId } from '@quackback/ids'
+import { type PostId, type BoardId, type UserId, type PrincipalId } from '@opencoven-feedback/ids'
 import { NotFoundError } from '@/lib/shared/errors'
 import { createActivity } from '@/lib/server/domains/activity/activity.service'
 import type { ChangeBoardResult } from './post.types'

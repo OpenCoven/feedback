@@ -8,7 +8,7 @@
 import type { InferSelectModel } from 'drizzle-orm'
 import { db, eq, feedbackSources, integrations } from '@/lib/server/db'
 import { getIntegration } from '@/lib/server/integrations'
-import type { FeedbackSourceId } from '@quackback/ids'
+import type { FeedbackSourceId } from '@opencoven-feedback/ids'
 import type { FeedbackConnector } from '@/lib/server/integrations/feedback-source-types'
 
 type FeedbackSource = InferSelectModel<typeof feedbackSources>

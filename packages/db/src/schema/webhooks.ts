@@ -6,7 +6,7 @@
  */
 import { pgTable, text, timestamp, integer, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import { typeIdWithDefault, typeIdColumn } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn } from '@opencoven-feedback/ids/drizzle'
 import { principal } from './auth'
 
 /**

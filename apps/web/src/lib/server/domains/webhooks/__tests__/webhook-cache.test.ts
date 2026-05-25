@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PrincipalId, WebhookId } from '@quackback/ids'
+import type { PrincipalId, WebhookId } from '@opencoven-feedback/ids'
 
 // --- Redis cache mocks ---
 const mockCacheDel = vi.fn()

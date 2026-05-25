@@ -29,7 +29,7 @@ import {
   userSegments,
   segments,
 } from '@/lib/server/db'
-import type { PrincipalId, SegmentId } from '@quackback/ids'
+import type { PrincipalId, SegmentId } from '@opencoven-feedback/ids'
 import { NotFoundError, InternalError } from '@/lib/shared/errors'
 import type {
   PortalUserListParams,

@@ -7,7 +7,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { getCommentPermissionsFn, canPinCommentFn } from '@/lib/server/functions/comments'
-import type { CommentId } from '@quackback/ids'
+import type { CommentId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Types

@@ -9,7 +9,7 @@ import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-q
 import { fetchInboxPostsForAdmin, fetchPostWithDetails } from '@/lib/server/functions/posts'
 import type { InboxFilters, PostDetails } from '@/lib/shared/types'
 import type { PostListItem, InboxPostListResult } from '@/lib/shared/db-types'
-import type { BoardId, PrincipalId, PostId, TagId, SegmentId } from '@quackback/ids'
+import type { BoardId, PrincipalId, PostId, TagId, SegmentId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Types

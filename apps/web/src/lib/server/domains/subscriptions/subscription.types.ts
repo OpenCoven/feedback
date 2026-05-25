@@ -5,7 +5,7 @@
  * no database dependencies.
  */
 
-import type { PrincipalId, PostId, PostSubscriptionId } from '@quackback/ids'
+import type { PrincipalId, PostId, PostSubscriptionId } from '@opencoven-feedback/ids'
 
 export type SubscriptionReason = 'author' | 'vote' | 'comment' | 'manual' | 'feedback_author'
 

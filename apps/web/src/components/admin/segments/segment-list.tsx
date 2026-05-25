@@ -30,7 +30,7 @@ import {
   useEvaluateSegment,
   useEvaluateAllSegments,
 } from '@/lib/client/mutations'
-import type { SegmentId } from '@quackback/ids'
+import type { SegmentId } from '@opencoven-feedback/ids'
 
 type SegmentItem = NonNullable<ReturnType<typeof useSegments>['data']>[number]
 

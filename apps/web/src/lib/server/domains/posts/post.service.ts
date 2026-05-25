@@ -28,8 +28,8 @@ import {
 import { sql, isNull } from 'drizzle-orm'
 import { getTierLimits } from '@/lib/server/domains/settings/tier-limits.service'
 import { enforceCountLimit } from '@/lib/server/domains/settings/tier-enforce'
-import { createId } from '@quackback/ids'
-import { type PostId, type PrincipalId, type UserId, type TagId } from '@quackback/ids'
+import { createId } from '@opencoven-feedback/ids'
+import { type PostId, type PrincipalId, type UserId, type TagId } from '@opencoven-feedback/ids'
 import {
   dispatchPostCreated,
   dispatchPostStatusChanged,

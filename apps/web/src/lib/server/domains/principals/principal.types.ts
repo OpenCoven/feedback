@@ -5,7 +5,7 @@
  * no database dependencies.
  */
 
-import type { PrincipalId, UserId } from '@quackback/ids'
+import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 
 /**
  * Team member info with user details

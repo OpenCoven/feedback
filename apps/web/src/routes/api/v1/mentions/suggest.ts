@@ -11,7 +11,7 @@
  * Fails open on Redis errors (the limiter returns `null` count then).
  */
 import { createFileRoute } from '@tanstack/react-router'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import type { SQL } from 'drizzle-orm'
 import { auth } from '@/lib/server/auth'
 import { db, principal, user, eq, and, inArray, sql } from '@/lib/server/db'

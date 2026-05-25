@@ -1,7 +1,7 @@
 import { useAuthPopover } from '@/components/auth/auth-popover-context'
 import { useEnsureAnonSession } from '@/lib/client/hooks/use-ensure-anon-session'
 import { VoteButton } from './vote-button'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 interface AuthVoteButtonProps {
   postId: PostId

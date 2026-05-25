@@ -16,7 +16,11 @@ import {
   sql,
   inArray,
 } from '@/lib/server/db'
-import type { HelpCenterArticleId, HelpCenterCategoryId, PrincipalId } from '@quackback/ids'
+import type {
+  HelpCenterArticleId,
+  HelpCenterCategoryId,
+  PrincipalId,
+} from '@opencoven-feedback/ids'
 import type {
   HelpCenterArticleWithCategory,
   ListArticlesParams,
@@ -224,11 +228,13 @@ export async function listPublicCategoryEditors(): Promise<
     })
     .from(helpCenterArticles)
     .innerJoin(principal, eq(principal.id, helpCenterArticles.principalId))
-    .where(and(
-      isNotNull(helpCenterArticles.publishedAt),
-      isNull(helpCenterArticles.deletedAt),
-      inArray(principal.role, ['admin', 'member'])
-    ))
+    .where(
+      and(
+        isNotNull(helpCenterArticles.publishedAt),
+        isNull(helpCenterArticles.deletedAt),
+        inArray(principal.role, ['admin', 'member'])
+      )
+    )
     .orderBy(asc(helpCenterArticles.categoryId), desc(helpCenterArticles.publishedAt))
 
   const result: Record<string, Array<{ name: string; avatarUrl: string | null }>> = {}

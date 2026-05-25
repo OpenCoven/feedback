@@ -1,6 +1,6 @@
 import { SubscriptionBell } from './subscription-bell'
 import { useAuthPopover } from '@/components/auth/auth-popover-context'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 import type { SubscriptionLevel } from '@/lib/shared/types'
 
 interface SubscriptionStatus {

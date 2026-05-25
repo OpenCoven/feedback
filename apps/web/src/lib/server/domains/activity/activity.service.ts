@@ -7,7 +7,7 @@
  */
 
 import { db, postActivity, eq, desc, principal as principalTable } from '@/lib/server/db'
-import type { PostId, PrincipalId } from '@quackback/ids'
+import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 
 // ============================================
 // Types

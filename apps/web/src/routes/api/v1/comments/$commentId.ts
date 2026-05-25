@@ -8,7 +8,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
-import type { CommentId } from '@quackback/ids'
+import type { CommentId } from '@opencoven-feedback/ids'
 
 // Input validation schema
 const updateCommentSchema = z.object({

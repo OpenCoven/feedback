@@ -8,7 +8,7 @@
  * import { db, eq, and, posts } from '@/lib/server/db'
  */
 
-import { createDb, type Database as PostgresDatabase } from '@quackback/db/client'
+import { createDb, type Database as PostgresDatabase } from '@opencoven-feedback/db/client'
 import { config } from '@/lib/server/config'
 
 // Import drizzle-orm operators explicitly to work around Nitro bundler issues
@@ -249,10 +249,10 @@ export {
   // Types/constants
   REACTION_EMOJIS,
   USE_CASE_TYPES,
-} from '@quackback/db'
+} from '@opencoven-feedback/db'
 
 // Re-export schema types not covered by @quackback/db/types
-export type { ServiceMetadata } from '@quackback/db'
+export type { ServiceMetadata } from '@opencoven-feedback/db'
 
 // Re-export types (for client components that need types without side effects)
-export * from '@quackback/db/types'
+export * from '@opencoven-feedback/db/types'

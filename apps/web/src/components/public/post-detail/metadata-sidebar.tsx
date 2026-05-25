@@ -38,7 +38,7 @@ import { VotersAvatarStack } from '@/components/admin/feedback/voters-avatar-sta
 import { SOURCE_TYPE_LABELS, SourceTypeIcon } from '@/components/admin/feedback/source-type-icon'
 import { cn, getInitials } from '@/lib/shared/utils'
 import type { PostStatusEntity } from '@/lib/shared/db-types'
-import type { PostId, StatusId, TagId, RoadmapId, BoardId } from '@quackback/ids'
+import type { PostId, StatusId, TagId, RoadmapId, BoardId } from '@opencoven-feedback/ids'
 
 export function MetadataSidebarSkeleton({
   variant = 'column',

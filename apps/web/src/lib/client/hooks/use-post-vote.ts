@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { votedPostsKeys, fetchVotedPosts } from './use-portal-posts-query'
 import { useVoteMutation } from '@/lib/client/mutations/portal-posts'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 // ============================================================================
 // Query Keys

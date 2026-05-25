@@ -2,7 +2,7 @@
  * Input/Output types for CommentService operations
  */
 
-import type { PostId, CommentId, BoardId, PrincipalId, StatusId } from '@quackback/ids'
+import type { PostId, CommentId, BoardId, PrincipalId, StatusId } from '@opencoven-feedback/ids'
 import type { CommentStatusChange } from '@/lib/shared'
 import type { TiptapContent } from '@/lib/shared/db-types'
 

@@ -1,5 +1,5 @@
 {
-  "name": "@quackback/db",
+  "name": "@opencoven-feedback/db",
   "version": "0.1.0",
   "private": true,
   "license": "AGPL-3.0",
@@ -26,7 +26,7 @@
     "db:sync-counts": "bun src/sync-counts.ts"
   },
   "dependencies": {
-    "@quackback/ids": "workspace:*",
+    "@opencoven-feedback/ids": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.8"
   },

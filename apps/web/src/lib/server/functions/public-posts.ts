@@ -12,7 +12,7 @@ import {
   type PrincipalId,
   type RoadmapId,
   type UserId,
-} from '@quackback/ids'
+} from '@opencoven-feedback/ids'
 import { tiptapContentSchema } from '@/lib/shared/schemas/posts'
 import { sanitizeTiptapContent } from '@/lib/server/sanitize-tiptap'
 import { getRequestHeaders } from '@tanstack/react-start/server'

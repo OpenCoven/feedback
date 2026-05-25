@@ -17,7 +17,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { z } from 'zod'
-import type { UserId } from '@quackback/ids'
+import type { UserId } from '@opencoven-feedback/ids'
 import { and, db, eq, isNull, ssoRecoveryCode } from '@/lib/server/db'
 import { actorFromAuth, recordAuditEvent } from '@/lib/server/audit/log'
 import { generateRecoveryCode, hashRecoveryCode } from '@/lib/server/auth/recovery-codes'

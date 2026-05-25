@@ -5,7 +5,7 @@
  */
 
 import type { JSONContent } from '@tiptap/react'
-import type { CommentId } from '@quackback/ids'
+import type { CommentId } from '@opencoven-feedback/ids'
 import type { PostDetails } from '@/lib/shared/types'
 import type { PublicCommentView } from '@/lib/client/queries/portal-detail'
 

@@ -7,7 +7,7 @@ import { ChevronUpIcon } from '@heroicons/react/24/solid'
 import { LinkIcon } from '@heroicons/react/16/solid'
 import { cn } from '@/lib/shared/utils'
 import { findSimilarPostsFn, type SimilarPost } from '@/lib/server/functions/public-posts'
-import type { PostId } from '@quackback/ids'
+import type { PostId } from '@opencoven-feedback/ids'
 
 function SimilarPostRow({ post }: { post: SimilarPost }) {
   return (

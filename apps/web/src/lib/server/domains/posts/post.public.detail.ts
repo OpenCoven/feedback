@@ -15,7 +15,13 @@ import {
   roadmaps,
   principal as principalTable,
 } from '@/lib/server/db'
-import { toUuid, fromUuid, type PostId, type CommentId, type PrincipalId } from '@quackback/ids'
+import {
+  toUuid,
+  fromUuid,
+  type PostId,
+  type CommentId,
+  type PrincipalId,
+} from '@opencoven-feedback/ids'
 import { buildCommentTree, toStatusChange } from '@/lib/shared'
 import type { PublicPostDetail, PublicComment, PinnedComment } from './post.types'
 import { resolveAvatarUrl, parseJson, parseAvatarData } from './post.public'

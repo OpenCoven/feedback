@@ -6,7 +6,7 @@
  */
 
 import { db, eq, user, principal, externalUserMappings } from '@/lib/server/db'
-import { createId, type PrincipalId } from '@quackback/ids'
+import { createId, type PrincipalId } from '@opencoven-feedback/ids'
 import type { FeedbackSourceType } from '@/lib/server/integrations/feedback-source-types'
 
 export type AuthorResolutionMethod =
