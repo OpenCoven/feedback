@@ -8,8 +8,8 @@
 #   - Optional database seeding with SEED_DATABASE=true
 #
 # Example:
-#   docker build -t quackback -f apps/web/Dockerfile .
-#   docker run -e DATABASE_URL=... -e SEED_DATABASE=true quackback
+#   docker build -t opencoven-feedback -f apps/web/Dockerfile .
+#   docker run -e DATABASE_URL=... -e SEED_DATABASE=true opencoven-feedback
 # ============================================================================
 
 # Base image with Bun
@@ -38,7 +38,7 @@ ENV NODE_ENV=production
 
 # Build the widget bundle first — apps/web imports packages/widget/dist/browser.js
 # via a Vite ?raw import, so the file must exist before the TanStack Start build runs.
-RUN bun run --filter @quackback/widget build
+RUN bun run --filter @opencoven/feedback-widget build
 
 # Build the TanStack Start application
 WORKDIR /app/apps/web
@@ -84,27 +84,27 @@ ENV NODE_ENV=production
 
 # Create non-root user for security (alpine uses addgroup/adduser, not groupadd/useradd)
 RUN addgroup -S -g 1001 nodejs && \
-    adduser -S -u 1001 -G nodejs quackback
+    adduser -S -u 1001 -G nodejs app
 
 # Copy the built server bundle (self-contained — Nitro inlines all runtime deps)
-COPY --from=builder --chown=quackback:nodejs /app/apps/web/.output ./.output
+COPY --from=builder --chown=app:nodejs /app/apps/web/.output ./.output
 
 # Copy the bundled migration script + drizzle SQL files. The bundle is a
 # single self-contained .mjs (no node_modules required); the SQL files are
 # read at runtime by drizzle's migrator.
-COPY --from=builder --chown=quackback:nodejs /tmp/migrate.mjs ./migrate.mjs
-COPY --from=builder --chown=quackback:nodejs /tmp/seed.mjs ./seed.mjs
-COPY --from=builder --chown=quackback:nodejs /app/packages/db/drizzle ./drizzle
+COPY --from=builder --chown=app:nodejs /tmp/migrate.mjs ./migrate.mjs
+COPY --from=builder --chown=app:nodejs /tmp/seed.mjs ./seed.mjs
+COPY --from=builder --chown=app:nodejs /app/packages/db/drizzle ./drizzle
 
 # Copy entrypoint script
-COPY --chown=quackback:nodejs apps/web/docker-entrypoint.sh ./docker-entrypoint.sh
+COPY --chown=app:nodejs apps/web/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
 # Create writable directories for Bun runtime
-RUN mkdir -p /app/.cache && chown -R quackback:nodejs /app/.cache
+RUN mkdir -p /app/.cache && chown -R app:nodejs /app/.cache
 
 # Switch to non-root user
-USER quackback
+USER app
 
 # Set Bun's cache directory to a writable location
 ENV BUN_INSTALL_CACHE_DIR=/app/.cache
