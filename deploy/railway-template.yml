@@ -13,8 +13,8 @@ services:
     volumes:
       - mount: /var/lib/postgresql/data
     env:
-      POSTGRES_DB: quackback
-      POSTGRES_USER: quackback
+      POSTGRES_DB: opencoven_feedback
+      POSTGRES_USER: opencoven
       POSTGRES_PASSWORD: ${{secret(32)}}
     networking: private
 
@@ -33,8 +33,8 @@ services:
     # Railway-provided S3-compatible object storage
     # Region is selected by the user during deployment
 
-  quackback:
-    image: ghcr.io/quackbackio/quackback:latest
+  feedback:
+    image: ghcr.io/opencoven/feedback:latest
     healthcheck:
       path: /api/health
       timeout: 300
@@ -43,7 +43,7 @@ services:
       maxRetries: 3
     networking: public
     env:
-      DATABASE_URL: postgresql://quackback:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/quackback
+      DATABASE_URL: postgresql://opencoven:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/opencoven_feedback
       REDIS_URL: redis://${{dragonfly.RAILWAY_PRIVATE_DOMAIN}}:6379
       SECRET_KEY: ${{secret(64)}}
       BASE_URL: https://${{RAILWAY_PUBLIC_DOMAIN}}
