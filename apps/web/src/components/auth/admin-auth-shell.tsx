@@ -44,15 +44,6 @@ export function AdminAuthShell({ heading, subheading, children, footer }: AdminA
         {children}
         {footer}
       </div>
-      <a
-        href="https://quackback.io"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute bottom-6 inset-x-0 mx-auto w-fit flex items-center gap-1.5 text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-      >
-        <img src="/logo.png" alt="" className="h-3.5 w-3.5 opacity-80" />
-        Powered by OpenCoven Feedback
-      </a>
     </div>
   )
 }
