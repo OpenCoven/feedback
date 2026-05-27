@@ -300,6 +300,20 @@
   border-radius: var(--radius-lg);
 }
 
+/* Active / current nav links (mirrors coven-docs globals.css) */
+a[aria-current="page"],
+a[data-active="true"] {
+  color: var(--coven-violet-dark);
+  font-weight: 600;
+}
+.dark a[aria-current="page"],
+.dark a[data-active="true"] {
+  color: var(--coven-violet-light);
+}
+a:hover {
+  color: var(--coven-violet-light);
+}
+
 .dark :not(pre) > code {
   background: rgba(154, 142, 205, 0.1);
   color: var(--coven-violet-light);
