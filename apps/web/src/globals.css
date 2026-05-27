@@ -267,7 +267,9 @@
     @apply border-border outline-ring/50;
   }
   body {
+    font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     letter-spacing: var(--letter-spacing);
     @apply bg-background text-foreground;
   }
@@ -275,6 +277,42 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+/* ==============================================
+   Coven Named Violet Tokens
+   Mirrors coven-docs globals.css --coven-violet*
+   ============================================== */
+:root {
+  --coven-violet:       #9A8ECD;
+  --coven-violet-light: #B4AAEB;
+  --coven-violet-dark:  #7A6FB3;
+}
+
+/* ==============================================
+   Glassmorphism + Code Styles
+   Matches coven-docs callout + shiki dark treatment
+   ============================================== */
+.dark .glass-card,
+.dark [data-callout] {
+  background: rgba(154, 142, 205, 0.06) !important;
+  border: 1px solid rgba(154, 142, 205, 0.15) !important;
+  border-radius: var(--radius-lg);
+}
+
+.dark :not(pre) > code {
+  background: rgba(154, 142, 205, 0.1);
+  color: var(--coven-violet-light);
+  border: 1px solid rgba(154, 142, 205, 0.15);
+  border-radius: 4px;
+  padding: 0.15em 0.35em;
+  font-size: 0.875em;
+}
+
+.dark pre,
+.dark .shiki {
+  background: #0a0a0a !important;
+  border-color: rgba(154, 142, 205, 0.1) !important;
 }
 
 /* Interactive elements cursor - prevent flickering */
