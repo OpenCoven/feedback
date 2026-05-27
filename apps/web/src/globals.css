@@ -266,12 +266,25 @@
     color-scheme: light dark;
     @apply border-border outline-ring/50;
   }
+  html {
+    background: oklch(0.083 0.018 285);
+  }
   body {
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: var(--letter-spacing);
     @apply bg-background text-foreground;
+  }
+  /* Dark mode: violet ambient glow (mirrors coven-docs deep violet night) */
+  .dark body,
+  [data-theme="dark"] body {
+    background:
+      radial-gradient(ellipse 80% 45% at 50% -8%, rgba(154, 142, 205, 0.14), transparent 52%),
+      radial-gradient(ellipse 55% 35% at 90% 15%, rgba(122, 111, 179, 0.06), transparent 55%),
+      radial-gradient(ellipse 40% 25% at 5%  80%, rgba(154, 142, 205, 0.04), transparent 60%),
+      oklch(0.083 0.018 285);
+    background-attachment: fixed;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
