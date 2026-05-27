@@ -113,6 +113,9 @@ export type PipelineLogId = TypeId<'plog'>
 /** Post activity log ID - e.g., activity_01h455vb4pex5vsknk084sn02q */
 export type ActivityId = TypeId<'activity'>
 
+/** Widget event ID - e.g., widget_event_01h455vb4pex5vsknk084sn02q */
+export type WidgetEventId = TypeId<'widget_event'>
+
 // ============================================
 // Feedback Aggregation Entity IDs
 // ============================================
@@ -234,6 +237,7 @@ export interface EntityIdMap {
   ai_usage: AiUsageLogId
   pipeline_log: PipelineLogId
   activity: ActivityId
+  widget_event: WidgetEventId
   feedback_source: FeedbackSourceId
   raw_feedback: RawFeedbackItemId
   feedback_signal: FeedbackSignalId

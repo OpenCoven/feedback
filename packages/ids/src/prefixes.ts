@@ -65,6 +65,7 @@ export const ID_PREFIXES = {
   user_mapping: 'user_mapping',
   merge_suggestion: 'merge_sug',
   activity: 'activity',
+  widget_event: 'widget_event',
 
   // ============================================
   // Auth Entities (Better-auth, text primary keys)
