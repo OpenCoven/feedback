@@ -11,9 +11,9 @@
 /* ==============================================
    OPENCOVEN FEEDBACK THEME
 
-   Brand: deep violet (#8E3DFF) + orchid (#D26BFF)
+   Brand: docs violet (#9A8ECD) + light (#B4AAEB)
    Built on OpenCoven's official color tokens.
-   tweakcn-compatible OKLCH format.
+   Matches coven-docs --coven-violet. tweakcn-compatible OKLCH format.
    ============================================== */
 
   :root {
@@ -24,8 +24,8 @@
     --card-foreground: oklch(0.125 0.015 285);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.125 0.015 285);
-    /* #8E3DFF → oklch(0.52 0.27 295) */
-    --primary: oklch(0.52 0.27 295);
+    /* #9A8ECD → oklch(0.64 0.12 295) — matches coven-docs --coven-violet */
+    --primary: oklch(0.64 0.12 295);
     --primary-foreground: oklch(1 0 0);
     --secondary: oklch(0.96 0.006 295);
     --secondary-foreground: oklch(0.125 0.015 285);
@@ -40,24 +40,24 @@
     --border: oklch(0.90 0.012 295);
     --input: oklch(0.90 0.012 295);
     /* ring = primary */
-    --ring: oklch(0.52 0.27 295);
-    --chart-1: oklch(0.52 0.27 295);
-    --chart-2: oklch(0.64 0.22 300);
-    --chart-3: oklch(0.72 0.18 295);
-    --chart-4: oklch(0.82 0.14 290);
+    --ring: oklch(0.64 0.12 295);
+    --chart-1: oklch(0.64 0.12 295);
+    --chart-2: oklch(0.72 0.10 295);
+    --chart-3: oklch(0.78 0.08 295);
+    --chart-4: oklch(0.84 0.06 295);
     --chart-5: oklch(0.696 0.149 163);
     --sidebar: oklch(0.97 0.008 295);
     --sidebar-foreground: oklch(0.125 0.015 285);
-    --sidebar-primary: oklch(0.52 0.27 295);
+    --sidebar-primary: oklch(0.64 0.12 295);
     --sidebar-primary-foreground: oklch(1 0 0);
     --sidebar-accent: oklch(0.93 0.018 295);
     --sidebar-accent-foreground: oklch(0.125 0.015 285);
     --sidebar-border: oklch(0.90 0.012 295);
-    --sidebar-ring: oklch(0.52 0.27 295);
+    --sidebar-ring: oklch(0.64 0.12 295);
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, serif;
     --font-mono: ui-monospace, SFMono-Regular, monospace;
-    --radius: 0.625rem;
+    --radius: 0.5rem;
     --letter-spacing: 0em;
     /* Shadows - light mode (subtle) */
     --shadow-2xs: 0 1px oklch(0 0 0 / 0.05);
@@ -93,7 +93,7 @@
     --popover: oklch(0.112 0.022 285);
     --popover-foreground: oklch(0.92 0.018 285);
     /* primary unchanged: #8E3DFF */
-    --primary: oklch(0.52 0.27 295);
+    --primary: oklch(0.64 0.12 295);
     --primary-foreground: oklch(1 0 0);
     --secondary: oklch(0.18 0.03 285);
     --secondary-foreground: oklch(0.92 0.018 285);
@@ -107,20 +107,20 @@
     --success-foreground: oklch(0.985 0 0);
     --border: oklch(0.22 0.03 285);
     --input: oklch(0.22 0.03 285);
-    --ring: oklch(0.52 0.27 295);
-    --chart-1: oklch(0.52 0.27 295);
-    --chart-2: oklch(0.64 0.22 300);
-    --chart-3: oklch(0.72 0.18 295);
-    --chart-4: oklch(0.82 0.14 290);
+    --ring: oklch(0.64 0.12 295);
+    --chart-1: oklch(0.64 0.12 295);
+    --chart-2: oklch(0.72 0.10 295);
+    --chart-3: oklch(0.78 0.08 295);
+    --chart-4: oklch(0.84 0.06 295);
     --chart-5: oklch(0.696 0.149 163);
     --sidebar: oklch(0.083 0.018 285);
     --sidebar-foreground: oklch(0.92 0.018 285);
-    --sidebar-primary: oklch(0.52 0.27 295);
+    --sidebar-primary: oklch(0.64 0.12 295);
     --sidebar-primary-foreground: oklch(1 0 0);
     --sidebar-accent: oklch(0.18 0.03 285);
     --sidebar-accent-foreground: oklch(0.92 0.018 285);
     --sidebar-border: oklch(0.22 0.03 285);
-    --sidebar-ring: oklch(0.52 0.27 295);
+    --sidebar-ring: oklch(0.64 0.12 295);
     /* Shadows - dark mode (more pronounced) */
     --shadow-2xs: 0 1px oklch(0 0 0 / 0.15);
     --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.15);
