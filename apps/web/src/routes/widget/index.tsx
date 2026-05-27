@@ -62,7 +62,6 @@ export const Route = createFileRoute('/widget/')({
           name: b.name,
           slug: b.slug,
         })),
-      orgSlug: settings?.slug ?? '',
       features: {
         anonymousVoting: settings?.publicPortalConfig?.features?.anonymousVoting ?? true,
         anonymousCommenting: settings?.publicPortalConfig?.features?.anonymousCommenting ?? false,
@@ -107,7 +106,6 @@ function WidgetPage() {
     postsHasMore,
     statuses,
     boards,
-    orgSlug,
     features,
     tabs,
     imageUploadsInWidget,
@@ -245,7 +243,6 @@ function WidgetPage() {
 
   return (
     <WidgetShell
-      orgSlug={orgSlug}
       activeTab={activeTab}
       onTabChange={handleTabChange}
       onBack={shellOnBack}
