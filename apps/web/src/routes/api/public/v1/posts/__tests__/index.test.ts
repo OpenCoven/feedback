@@ -134,6 +134,14 @@ describe('GET /api/public/v1/posts', () => {
     })
   })
 
+  it('invalid boardId string results in boardId: undefined passed to listPublicPostFeed', async () => {
+    const url = 'http://test/api/public/v1/posts?boardId=not-a-valid-typeid'
+    await GET({ request: makeRequest(url) })
+    expect(mockListPublicPostFeed).toHaveBeenCalledWith(
+      expect.objectContaining({ boardId: undefined })
+    )
+  })
+
   it('clamps limit to 100 maximum', async () => {
     const url = 'http://test/api/public/v1/posts?limit=999'
     await GET({ request: makeRequest(url) })
