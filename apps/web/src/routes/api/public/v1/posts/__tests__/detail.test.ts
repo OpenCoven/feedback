@@ -6,7 +6,7 @@ const mockGetPostWithDetails = vi.fn()
 const mockGetCommentsWithReplies = vi.fn()
 const mockOptionalPortalSession = vi.fn()
 const mockGetAllUserVotedPostIds = vi.fn()
-const mockParseTypeId = vi.fn((value: string) => value)
+const mockParseTypeId = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: vi.fn(() => (opts: unknown) => ({ options: opts })),
@@ -22,7 +22,8 @@ vi.mock('@/lib/server/domains/posts/post.public', () => ({
   getAllUserVotedPostIds: (...args: unknown[]) => mockGetAllUserVotedPostIds(...args),
 }))
 vi.mock('@/lib/server/domains/api/validation', () => ({
-  parseTypeId: (...args: unknown[]) => mockParseTypeId(...args),
+  parseTypeId: <T extends string>(value: string, prefix: string, paramName?: string) =>
+    mockParseTypeId(value, prefix, paramName) as T,
 }))
 
 import { Route as DetailRoute } from '../$postId'
