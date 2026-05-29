@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import type { BoardId } from '@opencoven-feedback/ids'
 import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 
 export const Route = createFileRoute('/api/public/v1/posts/')({
@@ -18,12 +19,18 @@ export const Route = createFileRoute('/api/public/v1/posts/')({
           const rawSort = url.searchParams.get('sort') ?? 'newest'
           const sort: 'newest' | 'votes' = rawSort === 'votes' ? 'votes' : 'newest'
 
-          const boardId = url.searchParams.get('boardId') ?? undefined
+          const boardIdParam = url.searchParams.get('boardId') ?? undefined
           const cursor = url.searchParams.get('cursor') ?? undefined
+
+          const { isValidTypeId } = await import('@opencoven-feedback/ids')
+          const boardId =
+            boardIdParam && isValidTypeId(boardIdParam, 'board')
+              ? (boardIdParam as BoardId)
+              : undefined
 
           const { listPublicPostFeed } = await import('@/lib/server/domains/posts/post.public-list')
           const result = await listPublicPostFeed({
-            boardId: boardId as never,
+            boardId,
             sort,
             cursor,
             limit,
