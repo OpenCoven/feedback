@@ -7,6 +7,7 @@ import {
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
 import { parseTypeId, parseOptionalTypeId } from '@/lib/server/domains/api/validation'
+import { NotFoundError } from '@/lib/shared/errors'
 import type { CommentId, PostId } from '@opencoven-feedback/ids'
 
 const createCommentSchema = z.object({
@@ -25,9 +26,17 @@ export const Route = createFileRoute('/api/public/v1/posts/$postId/comments')({
         try {
           const postId = parseTypeId<PostId>(params.postId, 'post', 'post ID')
 
-          const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+          const { getPostWithDetails, getCommentsWithReplies } =
+            await import('@/lib/server/domains/posts/post.query')
 
-          const comments = await getCommentsWithReplies(postId)
+          // C1/C2: enforce post visibility before returning any comments
+          const post = await getPostWithDetails(postId)
+          if (!post.board?.isPublic || post.deletedAt != null || post.canonicalPostId != null) {
+            throw new NotFoundError('POST_NOT_FOUND', 'Post not found')
+          }
+
+          // C2: pass publicOnly so private/team comments are excluded and deleted leaves pruned
+          const comments = await getCommentsWithReplies(postId, undefined, { publicOnly: true })
 
           type Comment = (typeof comments)[0]
 

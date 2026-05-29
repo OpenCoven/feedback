@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
+import { NotFoundError } from '@/lib/shared/errors'
 import type { PostId } from '@opencoven-feedback/ids'
 
 export const Route = createFileRoute('/api/public/v1/posts/$postId')({
@@ -21,6 +22,11 @@ export const Route = createFileRoute('/api/public/v1/posts/$postId')({
             getPostWithDetails(postId),
             optionalPortalSession(request),
           ])
+
+          // C1/C3: enforce public visibility — return identical 404 for private/deleted/merged
+          if (!post.board?.isPublic || post.deletedAt != null || post.canonicalPostId != null) {
+            throw new NotFoundError('POST_NOT_FOUND', 'Post not found')
+          }
 
           let hasVoted = false
           if (session) {
