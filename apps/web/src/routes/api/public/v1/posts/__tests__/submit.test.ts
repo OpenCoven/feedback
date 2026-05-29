@@ -171,7 +171,7 @@ describe('POST /api/public/v1/posts', () => {
     expect(mockCreatePost).not.toHaveBeenCalled()
   })
 
-  it('(d) board not found (getBoardById throws NotFoundError) → 4xx, createPost not called', async () => {
+  it('(d) board not found (getBoardById throws NotFoundError) → 404, createPost not called', async () => {
     const { NotFoundError } = await import('@/lib/shared/errors')
     mockGetBoardById.mockRejectedValue(new NotFoundError('BOARD_NOT_FOUND', 'Board not found'))
 
@@ -179,19 +179,44 @@ describe('POST /api/public/v1/posts', () => {
       request: makePostRequest({ boardId: BOARD_ID, title: 'Hello' }),
     })
 
-    expect(res.status).toBeGreaterThanOrEqual(400)
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error.message).toBe('Board not found')
     expect(mockCreatePost).not.toHaveBeenCalled()
   })
 
-  it('(d2) board exists but is not public → 400, createPost not called', async () => {
+  it('(d2) board exists but is not public → 404 (same as missing board), createPost not called', async () => {
     mockGetBoardById.mockResolvedValue({ ...PUBLIC_BOARD, isPublic: false })
 
     const res = await POST({
       request: makePostRequest({ boardId: BOARD_ID, title: 'Hello' }),
     })
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error.message).toBe('Board not found')
     expect(mockCreatePost).not.toHaveBeenCalled()
+  })
+
+  it('(e) client-supplied authorPrincipalId in body is ignored — session principal is used', async () => {
+    const ATTACKER_PRINCIPAL = 'principal_attacker' as unknown as PrincipalId
+
+    const res = await POST({
+      request: makePostRequest({
+        boardId: BOARD_ID,
+        title: 'Injected post',
+        content: 'Trying to set author',
+        authorPrincipalId: ATTACKER_PRINCIPAL,
+        author: ATTACKER_PRINCIPAL,
+        principalId: ATTACKER_PRINCIPAL,
+      }),
+    })
+
+    expect(res.status).toBe(201)
+    expect(mockCreatePost).toHaveBeenCalledOnce()
+    const [, authorArg] = mockCreatePost.mock.calls[0]
+    expect(authorArg.principalId).toBe(PRINCIPAL_ID)
+    expect(authorArg.principalId).not.toBe(ATTACKER_PRINCIPAL)
   })
 
   it('requirePortalSession is the very first async call (called before board lookup)', async () => {
