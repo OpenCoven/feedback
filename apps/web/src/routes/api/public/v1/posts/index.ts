@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import type { BoardId } from '@opencoven-feedback/ids'
+import { NotFoundError } from '@/lib/shared/errors'
 import {
   successResponse,
   createdResponse,
@@ -89,7 +90,7 @@ export const Route = createFileRoute('/api/public/v1/posts/')({
           const { getBoardById } = await import('@/lib/server/domains/boards/board.service')
           const board = await getBoardById(parsed.data.boardId as BoardId)
           if (!board.isPublic) {
-            return badRequestResponse('Invalid board')
+            throw new NotFoundError('BOARD_NOT_FOUND', 'Board not found')
           }
 
           const { createPost } = await import('@/lib/server/domains/posts/post.service')
