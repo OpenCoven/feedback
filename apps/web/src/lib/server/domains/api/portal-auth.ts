@@ -23,6 +23,7 @@ export async function optionalPortalSession(request: Request): Promise<PortalSes
   })
 
   if (!row?.user) return null
+  if (!row.user.email) return null
 
   const userId = row.userId as UserId
 
@@ -42,13 +43,14 @@ export async function optionalPortalSession(request: Request): Promise<PortalSes
         createdAt: new Date(),
       })
       .returning()
+    if (!created) return null
     principalRecord = created
   }
 
   return {
     user: {
       id: userId,
-      email: row.user.email!,
+      email: row.user.email,
       name: row.user.name,
       image: row.user.image ?? null,
     },

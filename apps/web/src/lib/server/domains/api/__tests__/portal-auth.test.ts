@@ -92,6 +92,34 @@ describe('optionalPortalSession', () => {
     expect(result).toBeNull()
   })
 
+  it('returns null when session user has a null email', async () => {
+    mockSessionFindFirst.mockResolvedValue({
+      ...sessionRow,
+      user: { ...sessionRow.user, email: null },
+    })
+    const result = await optionalPortalSession(makeRequest({ authorization: 'Bearer tok_valid' }))
+    expect(result).toBeNull()
+  })
+
+  it('returns null when session user has an empty string email', async () => {
+    mockSessionFindFirst.mockResolvedValue({
+      ...sessionRow,
+      user: { ...sessionRow.user, email: '' },
+    })
+    const result = await optionalPortalSession(makeRequest({ authorization: 'Bearer tok_valid' }))
+    expect(result).toBeNull()
+  })
+
+  it('returns null when insert returning() yields an empty array', async () => {
+    mockSessionFindFirst.mockResolvedValue(sessionRow)
+    mockPrincipalFindFirst.mockResolvedValue(null)
+    mockGenerateId.mockReturnValue('principal_new_01')
+    mockInsertPrincipal.mockResolvedValue([])
+
+    const result = await optionalPortalSession(makeRequest({ authorization: 'Bearer tok_valid' }))
+    expect(result).toBeNull()
+  })
+
   it('returns user + principal when session is valid and principal exists', async () => {
     mockSessionFindFirst.mockResolvedValue(sessionRow)
     mockPrincipalFindFirst.mockResolvedValue(principalRow)
@@ -136,6 +164,8 @@ describe('requirePortalSession', () => {
   beforeEach(() => {
     mockSessionFindFirst.mockReset()
     mockPrincipalFindFirst.mockReset()
+    mockInsertPrincipal.mockReset()
+    mockGenerateId.mockReset()
   })
 
   it('throws UnauthorizedError when no authorization header', async () => {
