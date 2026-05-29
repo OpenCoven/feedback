@@ -52,7 +52,7 @@ export async function listPublicPostFeed(
   // Cursor-based keyset pagination
   if (cursor) {
     const cursorPost = await db.query.posts.findFirst({
-      where: eq(posts.id, cursor as PostId),
+      where: and(eq(posts.id, cursor as PostId), isNull(posts.deletedAt)),
       columns: { id: true, createdAt: true, voteCount: true },
     })
     if (cursorPost) {

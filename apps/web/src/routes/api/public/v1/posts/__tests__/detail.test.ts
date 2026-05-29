@@ -66,6 +66,7 @@ const MOCK_POST = {
   boardId: BOARD_ID,
   boardSlug: 'general',
   boardName: 'General',
+  board: { id: BOARD_ID, name: 'General', slug: 'general', isPublic: true },
   statusId: STATUS_ID,
   authorName: 'Alice',
   authorEmail: 'alice@example.com',
@@ -225,9 +226,11 @@ describe('GET /api/public/v1/posts/:postId', () => {
 // ============================================================
 describe('GET /api/public/v1/posts/:postId/comments', () => {
   beforeEach(() => {
+    mockGetPostWithDetails.mockReset()
     mockGetCommentsWithReplies.mockReset()
     mockParseTypeId.mockImplementation((value: string) => value)
 
+    mockGetPostWithDetails.mockResolvedValue(MOCK_POST)
     mockGetCommentsWithReplies.mockResolvedValue(MOCK_COMMENTS)
   })
 
@@ -277,5 +280,72 @@ describe('GET /api/public/v1/posts/:postId/comments', () => {
   it('calls parseTypeId with the postId param', async () => {
     await CommentsGET({ request: makeRequest(), params: { postId: POST_ID } })
     expect(mockParseTypeId).toHaveBeenCalledWith(POST_ID, 'post', 'post ID')
+  })
+
+  // C1/C2 — private-board post returns 404 on comments route
+  it('returns 404 when post board is not public', async () => {
+    mockGetPostWithDetails.mockResolvedValue({
+      ...MOCK_POST,
+      board: { ...MOCK_POST.board, isPublic: false },
+    })
+    const res = await CommentsGET({ request: makeRequest(), params: { postId: POST_ID } })
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error?.message ?? json.message).toBe('Post not found')
+  })
+
+  // C2 — getCommentsWithReplies is called with publicOnly: true
+  it('calls getCommentsWithReplies with { publicOnly: true }', async () => {
+    await CommentsGET({ request: makeRequest(), params: { postId: POST_ID } })
+    expect(mockGetCommentsWithReplies).toHaveBeenCalledWith(POST_ID, undefined, {
+      publicOnly: true,
+    })
+  })
+})
+
+// ============================================================
+// Visibility guards — GET /api/public/v1/posts/:postId (C1/C3)
+// ============================================================
+describe('GET /api/public/v1/posts/:postId — visibility guards', () => {
+  beforeEach(() => {
+    mockGetPostWithDetails.mockReset()
+    mockOptionalPortalSession.mockReset()
+    mockGetAllUserVotedPostIds.mockReset()
+    mockParseTypeId.mockImplementation((value: string) => value)
+
+    mockOptionalPortalSession.mockResolvedValue(null)
+  })
+
+  it('returns 404 with "Post not found" when board is not public (C1)', async () => {
+    mockGetPostWithDetails.mockResolvedValue({
+      ...MOCK_POST,
+      board: { ...MOCK_POST.board, isPublic: false },
+    })
+    const res = await DetailGET({ request: makeRequest(), params: { postId: POST_ID } })
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error?.message ?? json.message).toBe('Post not found')
+  })
+
+  it('returns 404 with "Post not found" when post is soft-deleted (C3)', async () => {
+    mockGetPostWithDetails.mockResolvedValue({
+      ...MOCK_POST,
+      deletedAt: new Date('2024-06-01T00:00:00.000Z'),
+    })
+    const res = await DetailGET({ request: makeRequest(), params: { postId: POST_ID } })
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error?.message ?? json.message).toBe('Post not found')
+  })
+
+  it('returns 404 with "Post not found" when post is merged (canonicalPostId set) (C3)', async () => {
+    mockGetPostWithDetails.mockResolvedValue({
+      ...MOCK_POST,
+      canonicalPostId: 'post_other' as unknown as typeof POST_ID,
+    })
+    const res = await DetailGET({ request: makeRequest(), params: { postId: POST_ID } })
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error?.message ?? json.message).toBe('Post not found')
   })
 })

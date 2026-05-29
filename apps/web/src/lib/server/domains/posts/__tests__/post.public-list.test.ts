@@ -259,4 +259,32 @@ describe('listPublicPostFeed', () => {
 
     expect(mockPostsFindFirst).not.toHaveBeenCalled()
   })
+
+  // I1 — cursor anchor query must include isNull(posts.deletedAt)
+  it('cursor anchor query includes isNull(posts.deletedAt) guard (I1)', async () => {
+    // Reuse a valid TypeID from sibling tests so toUuid() does not throw
+    const validId = 'post_01kssa4ttmf68rwn8jn633yxp3'
+    const cursorPost = makePost({ id: validId, createdAt: new Date('2026-03-01T00:00:00Z') })
+    mockPostsFindFirst.mockResolvedValue(cursorPost)
+    mockLimit.mockResolvedValue([])
+
+    const { listPublicPostFeed } = await import('../post.public-list')
+    await listPublicPostFeed({ sort: 'newest', cursor: validId, limit: 10 })
+
+    // The cursor findFirst call must filter by isNull(posts.deletedAt)
+    expect(mockPostsFindFirst).toHaveBeenCalled()
+    const findFirstArg = mockPostsFindFirst.mock.calls[0][0]
+    // where should be an and(...) combining eq(posts.id, ...) and isNull(posts.deletedAt)
+    expect(findFirstArg.where).toMatchObject({ _tag: 'and' })
+    const andArgs = findFirstArg.where.args as unknown[]
+    const hasDeletedAtGuard = andArgs.some(
+      (a) =>
+        typeof a === 'object' &&
+        a !== null &&
+        '_tag' in a &&
+        (a as { _tag: string })._tag === 'isNull'
+    )
+    expect(hasDeletedAtGuard).toBe(true)
+    expect(mockIsNull).toHaveBeenCalledWith(mockPosts.deletedAt)
+  })
 })
