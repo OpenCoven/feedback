@@ -1,14 +1,16 @@
 /**
- * Public post list query for the anonymous feed.
+ * Public post feed query for the anonymous feed (cursor-keyset paginated).
  *
- * Only returns posts on public boards that are not soft-deleted or merged.
- * Uses cursor-based keyset pagination (mirrors listInboxPosts in post.inbox.ts).
+ * Uses the core query builder with an explicit INNER JOIN on boards so that
+ * the boards.isPublic / boards.deletedAt filters are applied correctly.
+ * The relational API (db.query.*) re-aliases joined columns to the outer
+ * table, which would silently drop or misapply cross-table WHERE conditions.
  */
 
 import { db, eq, and, isNull, desc, sql, posts, boards } from '@/lib/server/db'
 import { toUuid, type PostId, type BoardId, type StatusId } from '@opencoven-feedback/ids'
 
-export interface PublicPostSummary {
+export interface PublicPostFeedSummary {
   id: PostId
   title: string
   voteCount: number
@@ -17,27 +19,28 @@ export interface PublicPostSummary {
   createdAt: string // ISO-8601
 }
 
-export interface ListPublicPostsParams {
+export interface ListPublicPostFeedParams {
   boardId?: BoardId
   sort?: 'newest' | 'votes'
   cursor?: string
   limit: number
 }
 
-export interface ListPublicPostsResult {
-  items: PublicPostSummary[]
+export interface ListPublicPostFeedResult {
+  items: PublicPostFeedSummary[]
   cursor: string | null
   hasMore: boolean
 }
 
-export async function listPublicPosts(
-  params: ListPublicPostsParams
-): Promise<ListPublicPostsResult> {
+export async function listPublicPostFeed(
+  params: ListPublicPostFeedParams
+): Promise<ListPublicPostFeedResult> {
   const { boardId, sort = 'newest', cursor, limit } = params
 
-  // Base conditions: public board, not soft-deleted, not merged into another post
+  // Base conditions: public board, board not soft-deleted, post not soft-deleted, not merged
   const conditions = [
     eq(boards.isPublic, true),
+    isNull(boards.deletedAt),
     isNull(posts.deletedAt),
     isNull(posts.canonicalPostId),
   ]
@@ -46,7 +49,7 @@ export async function listPublicPosts(
     conditions.push(eq(posts.boardId, boardId))
   }
 
-  // Cursor-based keyset pagination (same approach as listInboxPosts)
+  // Cursor-based keyset pagination
   if (cursor) {
     const cursorPost = await db.query.posts.findFirst({
       where: eq(posts.id, cursor as PostId),
@@ -73,29 +76,25 @@ export async function listPublicPosts(
     votes: [desc(posts.voteCount), desc(posts.createdAt), desc(posts.id)],
   }
 
-  const rawPosts = await db.query.posts.findMany({
-    columns: {
-      id: true,
-      title: true,
-      voteCount: true,
-      statusId: true,
-      boardId: true,
-      createdAt: true,
-    },
-    where: and(...conditions),
-    orderBy: orderByMap[sort],
-    limit: limit + 1,
-    with: {
-      board: {
-        columns: { isPublic: true },
-      },
-    },
-  })
+  const rawPosts = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      voteCount: posts.voteCount,
+      statusId: posts.statusId,
+      boardId: posts.boardId,
+      createdAt: posts.createdAt,
+    })
+    .from(posts)
+    .innerJoin(boards, eq(posts.boardId, boards.id))
+    .where(and(...conditions))
+    .orderBy(...orderByMap[sort])
+    .limit(limit + 1)
 
   const hasMore = rawPosts.length > limit
   const sliced = hasMore ? rawPosts.slice(0, limit) : rawPosts
 
-  const items: PublicPostSummary[] = sliced.map((post) => ({
+  const items: PublicPostFeedSummary[] = sliced.map((post) => ({
     id: post.id,
     title: post.title,
     voteCount: post.voteCount,
