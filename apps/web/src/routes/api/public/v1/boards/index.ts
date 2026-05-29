@@ -4,20 +4,27 @@ import { successResponse, handleDomainError } from '@/lib/server/domains/api/res
 export const Route = createFileRoute('/api/public/v1/boards/')({
   server: {
     handlers: {
+      /**
+       * GET /api/public/v1/boards
+       * Returns all public boards with post counts.
+       */
       GET: async () => {
         try {
-          const { listPublicBoardsWithStats } =
-            await import('@/lib/server/domains/boards/board.public')
-          const boards = await listPublicBoardsWithStats()
+          const { listBoardsWithDetails } =
+            await import('@/lib/server/domains/boards/board.service')
+
+          const boards = await listBoardsWithDetails()
 
           return successResponse(
-            boards.map((board) => ({
-              id: board.id,
-              name: board.name,
-              slug: board.slug,
-              description: board.description,
-              postCount: board.postCount,
-            }))
+            boards
+              .filter((b) => b.isPublic)
+              .map((b) => ({
+                id: b.id,
+                name: b.name,
+                slug: b.slug,
+                description: b.description,
+                postCount: b.postCount,
+              }))
           )
         } catch (error) {
           return handleDomainError(error)
