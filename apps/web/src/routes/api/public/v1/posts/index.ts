@@ -1,6 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import type { BoardId } from '@opencoven-feedback/ids'
-import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
+import {
+  successResponse,
+  createdResponse,
+  badRequestResponse,
+  handleDomainError,
+} from '@/lib/server/domains/api/responses'
+
+const submitPostSchema = z.object({
+  boardId: z.string().min(1, 'Board ID is required'),
+  title: z.string().min(1, 'Title is required').max(200),
+  content: z.string().max(10000).optional().default(''),
+})
 
 export const Route = createFileRoute('/api/public/v1/posts/')({
   server: {
@@ -50,6 +62,54 @@ export const Route = createFileRoute('/api/public/v1/posts/')({
             result.items.map((p) => ({ ...p, hasVoted: voted.has(p.id) })),
             { pagination: { cursor: result.cursor, hasMore: result.hasMore } }
           )
+        } catch (error) {
+          return handleDomainError(error)
+        }
+      },
+
+      /**
+       * POST /api/public/v1/posts
+       * Authenticated end-user post submission.
+       * requirePortalSession runs first — anonymous requests are rejected
+       * with 401 before any body parsing or DB work.
+       */
+      POST: async ({ request }) => {
+        try {
+          const { requirePortalSession } = await import('@/lib/server/domains/api/portal-auth')
+          const session = await requirePortalSession(request)
+
+          const body = await request.json()
+          const parsed = submitPostSchema.safeParse(body)
+          if (!parsed.success) {
+            return badRequestResponse('Invalid request body', {
+              errors: parsed.error.flatten().fieldErrors,
+            })
+          }
+
+          const { getBoardById } = await import('@/lib/server/domains/boards/board.service')
+          const board = await getBoardById(parsed.data.boardId as BoardId)
+          if (!board.isPublic) {
+            return badRequestResponse('Invalid board')
+          }
+
+          const { createPost } = await import('@/lib/server/domains/posts/post.service')
+          const result = await createPost(
+            {
+              boardId: parsed.data.boardId as BoardId,
+              title: parsed.data.title,
+              content: parsed.data.content,
+            },
+            {
+              principalId: session.principal.id,
+            }
+          )
+
+          return createdResponse({
+            id: result.id,
+            title: result.title,
+            boardId: result.boardId,
+            createdAt: result.createdAt.toISOString(),
+          })
         } catch (error) {
           return handleDomainError(error)
         }
