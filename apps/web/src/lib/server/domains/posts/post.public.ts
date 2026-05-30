@@ -84,6 +84,7 @@ export interface PostWithVotesAndAvatars {
 }
 
 interface PostListParams {
+  boardId?: import('@opencoven-feedback/ids').BoardId
   boardSlug?: string
   search?: string
   statusIds?: StatusId[]
@@ -98,14 +99,16 @@ interface PostListParams {
 }
 
 function buildPostFilterConditions(params: PostListParams) {
-  const { boardSlug, statusIds, statusSlugs, tagIds, search } = params
+  const { boardId, boardSlug, statusIds, statusSlugs, tagIds, search } = params
   const conditions = [
     eq(boards.isPublic, true),
     isNull(posts.canonicalPostId),
     isNull(posts.deletedAt),
   ]
 
-  if (boardSlug) {
+  if (boardId) {
+    conditions.push(eq(boards.id, boardId))
+  } else if (boardSlug) {
     conditions.push(eq(boards.slug, boardSlug))
   }
 
