@@ -41,12 +41,26 @@ vi.mock('@/lib/server/domains/users/user.attributes', () => ({
   mergeMetadata: vi.fn((_existing: string | null, valid: Record<string, unknown>) =>
     JSON.stringify({ ...valid })
   ),
+  EXTERNAL_ID_KEY: '_externalUserId',
+  extractExternalId: vi.fn((metadata: string | null) => {
+    if (!metadata) return null
+    try {
+      const parsed = JSON.parse(metadata) as Record<string, unknown>
+      return typeof parsed._externalUserId === 'string' ? parsed._externalUserId : null
+    } catch {
+      return null
+    }
+  }),
 }))
 vi.mock('@/lib/server/widget/identity-token', () => ({
   verifyHS256JWT: vi.fn(),
 }))
 
-import { extractCustomClaims, RESERVED_JWT_CLAIMS } from '../identify'
+import {
+  extractCustomClaims,
+  RESERVED_JWT_CLAIMS,
+  canIssueUnverifiedWidgetSession,
+} from '../identify'
 
 describe('Widget Identify — custom attributes from JWT claims', () => {
   beforeEach(() => {
@@ -166,5 +180,51 @@ describe('Widget Identify handler — attribute integration', () => {
       seat_count: 50,
       trial_ends: '2026-05-01T00:00:00Z',
     })
+  })
+})
+
+describe('Widget Identify — unverified session guard', () => {
+  it('blocks unverified identify from issuing sessions for team members', () => {
+    expect(
+      canIssueUnverifiedWidgetSession({
+        role: 'admin',
+        existingExternalId: 'external-user-1',
+        assertedExternalId: 'external-user-1',
+      })
+    ).toBe(false)
+    expect(
+      canIssueUnverifiedWidgetSession({
+        role: 'member',
+        existingExternalId: 'external-user-1',
+        assertedExternalId: 'external-user-1',
+      })
+    ).toBe(false)
+  })
+
+  it('allows unverified identify for portal users when the external id matches', () => {
+    expect(
+      canIssueUnverifiedWidgetSession({
+        role: 'user',
+        existingExternalId: 'external-user-1',
+        assertedExternalId: 'external-user-1',
+      })
+    ).toBe(true)
+  })
+
+  it('blocks unverified identify for existing users without a matching external id', () => {
+    expect(
+      canIssueUnverifiedWidgetSession({
+        role: 'user',
+        existingExternalId: null,
+        assertedExternalId: 'external-user-1',
+      })
+    ).toBe(false)
+    expect(
+      canIssueUnverifiedWidgetSession({
+        role: 'user',
+        existingExternalId: 'external-user-2',
+        assertedExternalId: 'external-user-1',
+      })
+    ).toBe(false)
   })
 })

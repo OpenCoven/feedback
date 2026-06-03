@@ -7,10 +7,13 @@ import { getWidgetConfig, getWidgetSecret } from '@/lib/server/domains/settings/
 import { getAllUserVotedPostIds } from '@/lib/server/domains/posts/post.public'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 import { resolveAndMergeAnonymousToken } from '@/lib/server/auth/identify-merge'
+import { isTeamMember } from '@/lib/shared/roles'
 import { verifyHS256JWT } from '@/lib/server/widget/identity-token'
 import {
   validateAndCoerceAttributes,
   mergeMetadata,
+  EXTERNAL_ID_KEY,
+  extractExternalId,
 } from '@/lib/server/domains/users/user.attributes'
 
 const identifySchema = z
@@ -54,6 +57,14 @@ export function extractCustomClaims(payload: Record<string, unknown>): Record<st
     }
   }
   return custom
+}
+
+export function canIssueUnverifiedWidgetSession(input: {
+  role: string | null | undefined
+  existingExternalId: string | null
+  assertedExternalId: string
+}): boolean {
+  return !isTeamMember(input.role) && input.existingExternalId === input.assertedExternalId
 }
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -177,21 +188,43 @@ export const Route = createFileRoute('/api/widget/identify')({
           const { valid } = await validateAndCoerceAttributes(customClaims)
           validAttrs = valid
         }
-        const hasAttrs = Object.keys(validAttrs).length > 0
+        const metadataUpdates = { ...validAttrs, [EXTERNAL_ID_KEY]: identified.id }
 
         // Find or create user
         let userRecord = await db.query.user.findFirst({
           where: eq(user.email, identified.email),
         })
+        let principalRecord:
+          | Awaited<ReturnType<typeof db.query.principal.findFirst>>
+          | undefined
 
         if (userRecord) {
+          principalRecord = await db.query.principal.findFirst({
+            where: eq(principal.userId, userRecord.id as UserId),
+          })
+
+          const existingExternalId = extractExternalId(userRecord.metadata ?? null)
+          if (
+            !body.ssoToken &&
+            !canIssueUnverifiedWidgetSession({
+              role: principalRecord?.role,
+              existingExternalId,
+              assertedExternalId: identified.id,
+            })
+          ) {
+            return jsonError(
+              'TOKEN_REQUIRED',
+              'ssoToken is required to identify this existing user',
+              403
+            )
+          }
+
           const updates: Record<string, string> = {}
           if (identified.name && identified.name !== userRecord.name) updates.name = identified.name
           if (identified.avatarURL && identified.avatarURL !== userRecord.image)
             updates.image = identified.avatarURL
-          if (hasAttrs) {
-            updates.metadata = mergeMetadata(userRecord.metadata ?? null, validAttrs, [])
-          }
+          const mergedMetadata = mergeMetadata(userRecord.metadata ?? null, metadataUpdates, [])
+          if (mergedMetadata !== userRecord.metadata) updates.metadata = mergedMetadata
 
           if (Object.keys(updates).length > 0) {
             await db.update(user).set(updates).where(eq(user.id, userRecord.id))
@@ -205,7 +238,7 @@ export const Route = createFileRoute('/api/widget/identify')({
               email: identified.email,
               emailVerified: false,
               image: identified.avatarURL ?? null,
-              metadata: hasAttrs ? JSON.stringify(validAttrs) : null,
+              metadata: JSON.stringify(metadataUpdates),
               createdAt: new Date(),
               updatedAt: new Date(),
             })
@@ -216,7 +249,7 @@ export const Route = createFileRoute('/api/widget/identify')({
         const userId = userRecord.id as UserId
 
         // Ensure principal record exists
-        let principalRecord = await db.query.principal.findFirst({
+        principalRecord ??= await db.query.principal.findFirst({
           where: eq(principal.userId, userId),
         })
 
