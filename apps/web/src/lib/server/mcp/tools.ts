@@ -843,7 +843,7 @@ Examples:
           case 'post': {
             const denied = requireScope(auth, 'read:feedback')
             if (denied) return denied
-            return await getPostDetails(args.id as PostId)
+            return await getPostDetails(args.id as PostId, isTeamMember(auth.role))
           }
           case 'changelog': {
             const denied = requireScope(auth, 'read:feedback')
@@ -2026,10 +2026,13 @@ async function searchArticles(args: SearchArgs): Promise<CallToolResult> {
 // Get details dispatchers
 // ============================================================================
 
-async function getPostDetails(postId: PostId): Promise<CallToolResult> {
+async function getPostDetails(
+  postId: PostId,
+  includePrivateComments: boolean
+): Promise<CallToolResult> {
   const [post, comments, mergedPosts] = await Promise.all([
     getPostWithDetails(postId),
-    getCommentsWithReplies(postId),
+    getCommentsWithReplies(postId, undefined, { includePrivate: includePrivateComments }),
     getMergedPosts(postId),
   ])
 

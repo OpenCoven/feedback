@@ -779,6 +779,52 @@ describe('MCP HTTP Handler', () => {
       expect(text.id).toBe('post_test')
       expect(text.title).toBe('Test Post')
       expect(text.comments).toEqual([])
+
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: true,
+      })
+    })
+
+    it('should hide private comments from OAuth portal users in get_details post results', async () => {
+      const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
+      vi.mocked(getDeveloperConfig)
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+
+      const { handleMcpRequest } = await import('../handler')
+      await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0' },
+          })
+        )
+      )
+
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      const response = await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'get_details',
+            arguments: { id: 'post_test' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: false,
+      })
     })
 
     // ── get_details tool (changelog) ────────────────────────────────────────
