@@ -11,6 +11,8 @@ import { verifyHS256JWT } from '@/lib/server/widget/identity-token'
 import {
   validateAndCoerceAttributes,
   mergeMetadata,
+  extractExternalId,
+  EXTERNAL_ID_KEY,
 } from '@/lib/server/domains/users/user.attributes'
 
 const identifySchema = z
@@ -177,21 +179,53 @@ export const Route = createFileRoute('/api/widget/identify')({
           const { valid } = await validateAndCoerceAttributes(customClaims)
           validAttrs = valid
         }
-        const hasAttrs = Object.keys(validAttrs).length > 0
-
-        // Find or create user
+        // Find or create a widget/portal user. Never bind widget identities to
+        // existing team-member accounts, and never let unsigned identify claims
+        // take over an existing account by email alone. The external widget id is
+        // stored in metadata and must match on subsequent identifies.
         let userRecord = await db.query.user.findFirst({
           where: eq(user.email, identified.email),
         })
 
+        let principalRecord: typeof principal.$inferSelect | undefined
+        const metadataUpdates: Record<string, unknown> = {
+          ...validAttrs,
+          [EXTERNAL_ID_KEY]: identified.id,
+        }
+
         if (userRecord) {
-          const updates: Record<string, string> = {}
+          principalRecord = await db.query.principal.findFirst({
+            where: eq(principal.userId, userRecord.id),
+          })
+
+          if (
+            principalRecord &&
+            (principalRecord.role !== 'user' || principalRecord.type !== 'user')
+          ) {
+            return jsonError(
+              'TEAM_MEMBER_ACCOUNT',
+              'Widget identify cannot authenticate team member accounts',
+              403
+            )
+          }
+
+          const existingExternalId = extractExternalId(userRecord.metadata ?? null)
+          if (existingExternalId && existingExternalId !== identified.id) {
+            return jsonError('EXTERNAL_ID_MISMATCH', 'Identity does not match this account', 409)
+          }
+          if (!existingExternalId && !body.ssoToken) {
+            return jsonError(
+              'VERIFIED_IDENTITY_REQUIRED',
+              'ssoToken is required to bind an existing account',
+              403
+            )
+          }
+
+          const updates: Record<string, unknown> = {}
           if (identified.name && identified.name !== userRecord.name) updates.name = identified.name
           if (identified.avatarURL && identified.avatarURL !== userRecord.image)
             updates.image = identified.avatarURL
-          if (hasAttrs) {
-            updates.metadata = mergeMetadata(userRecord.metadata ?? null, validAttrs, [])
-          }
+          updates.metadata = mergeMetadata(userRecord.metadata ?? null, metadataUpdates, [])
 
           if (Object.keys(updates).length > 0) {
             await db.update(user).set(updates).where(eq(user.id, userRecord.id))
@@ -205,7 +239,7 @@ export const Route = createFileRoute('/api/widget/identify')({
               email: identified.email,
               emailVerified: false,
               image: identified.avatarURL ?? null,
-              metadata: hasAttrs ? JSON.stringify(validAttrs) : null,
+              metadata: JSON.stringify(metadataUpdates),
               createdAt: new Date(),
               updatedAt: new Date(),
             })
@@ -216,9 +250,11 @@ export const Route = createFileRoute('/api/widget/identify')({
         const userId = userRecord.id as UserId
 
         // Ensure principal record exists
-        let principalRecord = await db.query.principal.findFirst({
-          where: eq(principal.userId, userId),
-        })
+        if (!principalRecord) {
+          principalRecord = await db.query.principal.findFirst({
+            where: eq(principal.userId, userId),
+          })
+        }
 
         if (!principalRecord) {
           const [created] = await db
