@@ -7,13 +7,12 @@ import { getWidgetConfig, getWidgetSecret } from '@/lib/server/domains/settings/
 import { getAllUserVotedPostIds } from '@/lib/server/domains/posts/post.public'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 import { resolveAndMergeAnonymousToken } from '@/lib/server/auth/identify-merge'
-import { isTeamMember } from '@/lib/shared/roles'
 import { verifyHS256JWT } from '@/lib/server/widget/identity-token'
 import {
   validateAndCoerceAttributes,
   mergeMetadata,
-  EXTERNAL_ID_KEY,
   extractExternalId,
+  EXTERNAL_ID_KEY,
 } from '@/lib/server/domains/users/user.attributes'
 
 const identifySchema = z
@@ -57,19 +56,6 @@ export function extractCustomClaims(payload: Record<string, unknown>): Record<st
     }
   }
   return custom
-}
-
-export function canIssueUnverifiedWidgetSession(input: {
-  role: string | null | undefined
-  type?: string | null | undefined
-  existingExternalId: string | null
-  assertedExternalId: string
-}): boolean {
-  return (
-    input.type !== 'team' &&
-    !isTeamMember(input.role) &&
-    input.existingExternalId === input.assertedExternalId
-  )
 }
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -193,42 +179,53 @@ export const Route = createFileRoute('/api/widget/identify')({
           const { valid } = await validateAndCoerceAttributes(customClaims)
           validAttrs = valid
         }
-        const metadataUpdates = { ...validAttrs, [EXTERNAL_ID_KEY]: identified.id }
-
-        // Find or create user
+        // Find or create a widget/portal user. Never bind widget identities to
+        // existing team-member accounts, and never let unsigned identify claims
+        // take over an existing account by email alone. The external widget id is
+        // stored in metadata and must match on subsequent identifies.
         let userRecord = await db.query.user.findFirst({
           where: eq(user.email, identified.email),
         })
-        let principalRecord: Awaited<ReturnType<typeof db.query.principal.findFirst>> | undefined
+
+        let principalRecord: typeof principal.$inferSelect | undefined
+        const metadataUpdates: Record<string, unknown> = {
+          ...validAttrs,
+          [EXTERNAL_ID_KEY]: identified.id,
+        }
 
         if (userRecord) {
           principalRecord = await db.query.principal.findFirst({
-            where: eq(principal.userId, userRecord.id as UserId),
+            where: eq(principal.userId, userRecord.id),
           })
 
-          const existingExternalId = extractExternalId(userRecord.metadata ?? null)
           if (
-            !body.ssoToken &&
-            !canIssueUnverifiedWidgetSession({
-              role: principalRecord?.role,
-              type: principalRecord?.type,
-              existingExternalId,
-              assertedExternalId: identified.id,
-            })
+            principalRecord &&
+            (principalRecord.role !== 'user' || principalRecord.type !== 'user')
           ) {
             return jsonError(
-              'TOKEN_REQUIRED',
-              'ssoToken is required to identify this existing user',
+              'TEAM_MEMBER_ACCOUNT',
+              'Widget identify cannot authenticate team member accounts',
               403
             )
           }
 
-          const updates: Record<string, string> = {}
+          const existingExternalId = extractExternalId(userRecord.metadata ?? null)
+          if (existingExternalId && existingExternalId !== identified.id) {
+            return jsonError('EXTERNAL_ID_MISMATCH', 'Identity does not match this account', 409)
+          }
+          if (!existingExternalId && !body.ssoToken) {
+            return jsonError(
+              'VERIFIED_IDENTITY_REQUIRED',
+              'ssoToken is required to bind an existing account',
+              403
+            )
+          }
+
+          const updates: Record<string, unknown> = {}
           if (identified.name && identified.name !== userRecord.name) updates.name = identified.name
           if (identified.avatarURL && identified.avatarURL !== userRecord.image)
             updates.image = identified.avatarURL
-          const mergedMetadata = mergeMetadata(userRecord.metadata ?? null, metadataUpdates, [])
-          if (mergedMetadata !== userRecord.metadata) updates.metadata = mergedMetadata
+          updates.metadata = mergeMetadata(userRecord.metadata ?? null, metadataUpdates, [])
 
           if (Object.keys(updates).length > 0) {
             await db.update(user).set(updates).where(eq(user.id, userRecord.id))
@@ -253,9 +250,11 @@ export const Route = createFileRoute('/api/widget/identify')({
         const userId = userRecord.id as UserId
 
         // Ensure principal record exists
-        principalRecord ??= await db.query.principal.findFirst({
-          where: eq(principal.userId, userId),
-        })
+        if (!principalRecord) {
+          principalRecord = await db.query.principal.findFirst({
+            where: eq(principal.userId, userId),
+          })
+        }
 
         if (!principalRecord) {
           const [created] = await db
