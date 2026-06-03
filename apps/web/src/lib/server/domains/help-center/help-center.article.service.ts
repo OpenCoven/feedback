@@ -99,6 +99,18 @@ export async function getPublicArticleBySlug(slug: string): Promise<HelpCenterAr
     throw new NotFoundError('ARTICLE_NOT_FOUND', `Article not found`)
   }
 
+  const publicCategory = await db.query.helpCenterCategories.findFirst({
+    where: and(
+      eq(helpCenterCategories.id, article.categoryId),
+      eq(helpCenterCategories.isPublic, true),
+      isNull(helpCenterCategories.deletedAt)
+    ),
+    columns: { id: true },
+  })
+  if (!publicCategory) {
+    throw new NotFoundError('ARTICLE_NOT_FOUND', `Article not found`)
+  }
+
   // Increment view count (fire and forget)
   db.update(helpCenterArticles)
     .set({ viewCount: sql`${helpCenterArticles.viewCount} + 1` })
