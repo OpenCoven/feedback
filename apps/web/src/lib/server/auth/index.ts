@@ -44,6 +44,12 @@ function makeStash<T>() {
 const magicLinkStash = makeStash<string>()
 const otpStash = makeStash<string>()
 
+// Better Auth uses this list to decide which providers may automatically
+// link accounts by matching email identity. Keep it intentionally narrow:
+// dynamic/custom OAuth providers are still available for sign-in, but must
+// not become trusted for account linking just because credentials exist.
+const TRUSTED_ACCOUNT_LINKING_PROVIDERS = ['github', 'google'] as const
+
 export const storeMagicLinkToken = (email: string, token: string) =>
   magicLinkStash.set(email, token)
 export const getMagicLinkToken = (email: string) => magicLinkStash.take(email)
@@ -89,7 +95,7 @@ async function createAuth() {
 
   // Build socialProviders config from DB-stored credentials
   const socialProviders: Record<string, Record<string, string>> = {}
-  const trustedProviders: string[] = []
+  const trustedProviders = [...TRUSTED_ACCOUNT_LINKING_PROVIDERS]
   const genericOAuthConfigs: Array<{
     providerId: string
     clientId: string
@@ -196,12 +202,11 @@ async function createAuth() {
         // Better-Auth's built-in JIT block. When false, the upstream
         // callback aborts in handleOAuthUserInfo BEFORE any user/
         // session is created, then redirects with `?error=signup_disabled`.
-        // Existing users link via accountLinking.trustedProviders even
-        // with this on. Picked up by createAuth() rebuilds via
+        // Custom OIDC/SSO is intentionally not auto-trusted for account
+        // linking by email. Picked up by createAuth() rebuilds via
         // resetAuth() / cross-pod invalidation when admins toggle it.
         disableSignUp: cfg.autoCreateUsers === false,
       })
-      trustedProviders.push('sso')
     }
   }
 
@@ -244,7 +249,6 @@ async function createAuth() {
         ...(creds.tokenUrl && { tokenUrl: creds.tokenUrl }),
         scopes: scopeStr.split(/\s+/).filter(Boolean),
       })
-      trustedProviders.push(provider.id)
     } else {
       // Built-in social providers
       const providerConfig: Record<string, string> = {
@@ -258,7 +262,6 @@ async function createAuth() {
         }
       }
       socialProviders[provider.id] = providerConfig
-      trustedProviders.push(provider.id)
     }
   }
 
