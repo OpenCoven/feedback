@@ -15,7 +15,7 @@ import {
   listPublicCategories,
   listPublicCategoryEditors,
   getCategoryById,
-  getCategoryBySlug,
+  getPublicCategoryBySlug,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -113,7 +113,7 @@ export const getCategoryFn = createServerFn({ method: 'GET' })
 export const getPublicCategoryBySlugFn = createServerFn({ method: 'GET' })
   .inputValidator(getCategoryBySlugSchema)
   .handler(async ({ data }) => {
-    const category = await getCategoryBySlug(data.slug)
+    const category = await getPublicCategoryBySlug(data.slug)
     return serializeCategory(category)
   })
 

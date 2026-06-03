@@ -4,6 +4,7 @@ import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 const mockArticleFindFirst = vi.fn()
 const mockArticleFindMany = vi.fn()
 const mockCategoryFindMany = vi.fn()
+const mockCategoryFindFirst = vi.fn()
 
 vi.mock('@/lib/server/db', () => ({
   db: {
@@ -13,6 +14,7 @@ vi.mock('@/lib/server/db', () => ({
         findMany: (...args: unknown[]) => mockArticleFindMany(...args),
       },
       helpCenterCategories: {
+        findFirst: (...args: unknown[]) => mockCategoryFindFirst(...args),
         findMany: (...args: unknown[]) => mockCategoryFindMany(...args),
       },
       principal: {
@@ -34,7 +36,13 @@ vi.mock('@/lib/server/db', () => ({
       }),
     })),
   },
-  helpCenterCategories: { id: 'id', slug: 'slug', name: 'name' },
+  helpCenterCategories: {
+    id: 'id',
+    slug: 'slug',
+    name: 'name',
+    isPublic: 'is_public',
+    deletedAt: 'deleted_at',
+  },
   helpCenterArticles: {
     id: 'id',
     slug: 'slug',
@@ -71,13 +79,16 @@ vi.mock('@/lib/server/db', () => ({
 }))
 
 let listArticles: typeof import('../help-center.article.query').listArticles
+let listPublicArticles: typeof import('../help-center.article.query').listPublicArticles
 let listPublicArticlesForCategory: typeof import('../help-center.article.query').listPublicArticlesForCategory
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  mockCategoryFindFirst.mockResolvedValue({ id: 'category_1' })
 
   const mod = await import('../help-center.article.query')
   listArticles = mod.listArticles
+  listPublicArticles = mod.listPublicArticles
   listPublicArticlesForCategory = mod.listPublicArticlesForCategory
 })
 
@@ -131,6 +142,17 @@ describe('listPublicArticlesForCategory', () => {
 
     const result = await listPublicArticlesForCategory('category_1')
     expect(result).toHaveLength(0)
+  })
+})
+
+describe('listPublicArticles', () => {
+  it('does not return articles when no public categories exist', async () => {
+    mockCategoryFindMany.mockResolvedValueOnce([])
+
+    const result = await listPublicArticles({ search: 'private' })
+
+    expect(result).toEqual({ items: [], nextCursor: null, hasMore: false })
+    expect(mockArticleFindMany).not.toHaveBeenCalled()
   })
 })
 

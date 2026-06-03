@@ -31,7 +31,17 @@ import type {
 // Article Queries
 // ============================================================================
 
-export async function listArticles(params: ListArticlesParams): Promise<ArticleListResult> {
+type InternalListArticlesParams = ListArticlesParams & { publicOnly?: boolean }
+
+async function listPublicCategoryIds(): Promise<HelpCenterCategoryId[]> {
+  const categories = await db.query.helpCenterCategories.findMany({
+    where: and(eq(helpCenterCategories.isPublic, true), isNull(helpCenterCategories.deletedAt)),
+    columns: { id: true },
+  })
+  return categories.map((cat) => cat.id as HelpCenterCategoryId)
+}
+
+export async function listArticles(params: InternalListArticlesParams): Promise<ArticleListResult> {
   const {
     categoryId,
     status = 'all',
@@ -40,6 +50,7 @@ export async function listArticles(params: ListArticlesParams): Promise<ArticleL
     limit = 20,
     showDeleted = false,
     sort = 'newest',
+    publicOnly = false,
   } = params
   const now = new Date()
 
@@ -51,6 +62,20 @@ export async function listArticles(params: ListArticlesParams): Promise<ArticleL
         sql`${helpCenterArticles.deletedAt} >= ${thirtyDaysAgo}`,
       ]
     : [isNull(helpCenterArticles.deletedAt)]
+
+  if (publicOnly) {
+    const publicCategoryIds = await listPublicCategoryIds()
+
+    if (categoryId && !publicCategoryIds.includes(categoryId as HelpCenterCategoryId)) {
+      return { items: [], nextCursor: null, hasMore: false }
+    }
+
+    if (publicCategoryIds.length === 0) {
+      return { items: [], nextCursor: null, hasMore: false }
+    }
+
+    conditions.push(inArray(helpCenterArticles.categoryId, publicCategoryIds))
+  }
 
   if (categoryId) {
     conditions.push(eq(helpCenterArticles.categoryId, categoryId as HelpCenterCategoryId))
@@ -188,10 +213,20 @@ export async function listPublicArticles(params: {
   cursor?: string
   limit?: number
 }): Promise<ArticleListResult> {
-  return listArticles({ ...params, status: 'published' })
+  return listArticles({ ...params, status: 'published', publicOnly: true })
 }
 
 export async function listPublicArticlesForCategory(categoryId: string) {
+  const category = await db.query.helpCenterCategories.findFirst({
+    where: and(
+      eq(helpCenterCategories.id, categoryId as HelpCenterCategoryId),
+      eq(helpCenterCategories.isPublic, true),
+      isNull(helpCenterCategories.deletedAt)
+    ),
+    columns: { id: true },
+  })
+  if (!category) return []
+
   return db
     .select({
       id: helpCenterArticles.id,
@@ -219,6 +254,9 @@ export async function listPublicArticlesForCategory(categoryId: string) {
 export async function listPublicCategoryEditors(): Promise<
   Record<string, Array<{ name: string; avatarUrl: string | null }>>
 > {
+  const publicCategoryIds = await listPublicCategoryIds()
+  if (publicCategoryIds.length === 0) return {}
+
   const rows = await db
     .select({
       categoryId: helpCenterArticles.categoryId,
@@ -232,6 +270,7 @@ export async function listPublicCategoryEditors(): Promise<
       and(
         isNotNull(helpCenterArticles.publishedAt),
         isNull(helpCenterArticles.deletedAt),
+        inArray(helpCenterArticles.categoryId, publicCategoryIds),
         inArray(principal.role, ['admin', 'member'])
       )
     )

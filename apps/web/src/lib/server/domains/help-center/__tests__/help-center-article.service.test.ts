@@ -79,6 +79,8 @@ vi.mock('@/lib/server/db', () => ({
     id: 'id',
     slug: 'slug',
     name: 'name',
+    isPublic: 'is_public',
+    deletedAt: 'deleted_at',
   },
   helpCenterArticles: {
     id: 'id',
@@ -125,6 +127,7 @@ vi.mock('@/lib/server/markdown-tiptap', () => ({
 }))
 
 let getArticleById: typeof import('../help-center.article.service').getArticleById
+let getPublicArticleBySlug: typeof import('../help-center.article.service').getPublicArticleBySlug
 let createArticle: typeof import('../help-center.article.service').createArticle
 let updateArticle: typeof import('../help-center.article.service').updateArticle
 let publishArticle: typeof import('../help-center.article.service').publishArticle
@@ -141,6 +144,7 @@ beforeEach(async () => {
 
   const mod = await import('../help-center.article.service')
   getArticleById = mod.getArticleById
+  getPublicArticleBySlug = mod.getPublicArticleBySlug
   createArticle = mod.createArticle
   updateArticle = mod.updateArticle
   publishArticle = mod.publishArticle
@@ -192,6 +196,32 @@ describe('getArticleById', () => {
     await expect(getArticleById('article_missing' as HelpCenterArticleId)).rejects.toMatchObject({
       code: 'ARTICLE_NOT_FOUND',
     })
+  })
+})
+
+describe('getPublicArticleBySlug', () => {
+  it('throws NotFoundError when the published article belongs to a private category', async () => {
+    mockArticleFindFirst.mockResolvedValue({
+      id: 'article_1' as HelpCenterArticleId,
+      slug: 'private-article',
+      title: 'Private Article',
+      content: 'Private content',
+      contentJson: null,
+      categoryId: 'category_private',
+      principalId: 'principal_1',
+      publishedAt: new Date(),
+      viewCount: 0,
+      helpfulCount: 0,
+      notHelpfulCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    mockCategoryFindFirst.mockResolvedValue(null)
+
+    await expect(getPublicArticleBySlug('private-article')).rejects.toMatchObject({
+      code: 'ARTICLE_NOT_FOUND',
+    })
+    expect(updateSetCalls).toHaveLength(0)
   })
 })
 

@@ -191,6 +191,20 @@ export async function getCategoryBySlug(slug: string): Promise<HelpCenterCategor
   return category
 }
 
+export async function getPublicCategoryBySlug(slug: string): Promise<HelpCenterCategory> {
+  const category = await db.query.helpCenterCategories.findFirst({
+    where: and(
+      eq(helpCenterCategories.slug, slug),
+      eq(helpCenterCategories.isPublic, true),
+      isNull(helpCenterCategories.deletedAt)
+    ),
+  })
+  if (!category) {
+    throw new NotFoundError('CATEGORY_NOT_FOUND', `Category with slug "${slug}" not found`)
+  }
+  return category
+}
+
 export async function createCategory(input: CreateCategoryInput): Promise<HelpCenterCategory> {
   const name = input.name?.trim()
   if (!name) throw new ValidationError('VALIDATION_ERROR', 'Name is required')
