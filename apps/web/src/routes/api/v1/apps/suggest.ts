@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
+import { APP_INTEGRATION_API_KEY_SCOPE } from '@/lib/server/domains/api-keys/api-key.service'
 import { badRequestResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { fromUuid } from '@opencoven-feedback/ids'
 import { db, posts, boards } from '@/lib/server/db'
@@ -13,7 +14,7 @@ export const Route = createFileRoute('/api/v1/apps/suggest')({
 
       GET: async ({ request }) => {
         try {
-          await withApiKeyAuth(request, { role: 'team' })
+          await withApiKeyAuth(request, { role: 'team', scope: APP_INTEGRATION_API_KEY_SCOPE })
           const url = new URL(request.url)
           const text = url.searchParams.get('text')?.trim()
           const limit = Math.min(Number(url.searchParams.get('limit')) || 5, 20)

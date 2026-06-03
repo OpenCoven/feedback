@@ -20,6 +20,8 @@ const API_KEY_PREFIX = 'qb_'
 /** Length of the random part of the key (in bytes, will be hex encoded) */
 const KEY_RANDOM_BYTES = 24 // 48 hex chars
 
+export const APP_INTEGRATION_API_KEY_SCOPE = 'apps:integrations'
+
 /** Map a database row to the public ApiKey shape (strips keyHash). */
 function toApiKey(row: ApiKey & Record<string, unknown>): ApiKey {
   return {
@@ -108,6 +110,7 @@ export async function createApiKey(
       createdById,
       principalId: servicePrincipal.id,
       expiresAt: input.expiresAt ?? null,
+      scopes: serializeScopes(input.scopes),
     })
     .returning()
 
@@ -126,9 +129,10 @@ export async function createApiKey(
  * Uses prefix-based DB lookup + timing-safe hash comparison to prevent
  * timing oracle attacks. Returns null if the key is invalid, expired, or revoked.
  *
- * If `scope` is provided, the key must carry that capability scope or the
- * call returns null. Used by /api/v1/internal/* endpoints which require
- * the `internal:tier-limits` scope.
+ * Scoped keys are capability keys: they are accepted only when the
+ * caller explicitly requires one of their scopes. Normal public REST API
+ * calls pass no scope, so a scoped key exposed to a browser cannot be
+ * replayed against broader team/admin endpoints.
  */
 export async function verifyApiKey(key: string, scope?: string): Promise<ApiKey | null> {
   if (!key || !key.startsWith(API_KEY_PREFIX)) return null
@@ -148,7 +152,7 @@ export async function verifyApiKey(key: string, scope?: string): Promise<ApiKey 
   if (!apiKey || !hashesMatch) return null
   if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return null
 
-  if (scope && !hasScope(apiKey.scopes, scope)) return null
+  if (!hasRequiredScope(apiKey.scopes, scope)) return null
 
   // Update last used timestamp (fire and forget)
   db.update(apiKeys)
@@ -162,14 +166,31 @@ export async function verifyApiKey(key: string, scope?: string): Promise<ApiKey 
   return toApiKey(apiKey)
 }
 
-function hasScope(scopesRaw: string | null, scope: string): boolean {
-  if (!scopesRaw) return false
+function serializeScopes(scopes: string[] | null | undefined): string | null {
+  if (!scopes?.length) return null
+
+  const uniqueScopes = Array.from(new Set(scopes.map((scope) => scope.trim()).filter(Boolean)))
+  return uniqueScopes.length ? JSON.stringify(uniqueScopes) : null
+}
+
+function parseScopes(scopesRaw: string | null): string[] | null {
+  if (!scopesRaw) return null
   try {
     const parsed = JSON.parse(scopesRaw)
-    return Array.isArray(parsed) && parsed.includes(scope)
+    return Array.isArray(parsed) ? parsed.filter((scope) => typeof scope === 'string') : []
   } catch {
-    return false
+    return []
   }
+}
+
+function hasRequiredScope(scopesRaw: string | null, requiredScope?: string): boolean {
+  const scopes = parseScopes(scopesRaw)
+
+  // Normal API requests must use normal API keys. Capability-scoped keys are
+  // intentionally rejected unless the endpoint opts into a matching scope.
+  if (!requiredScope) return scopes === null
+
+  return scopes?.includes(requiredScope) ?? false
 }
 
 /**
