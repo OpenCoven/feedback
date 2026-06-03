@@ -29,6 +29,7 @@ import { z } from 'zod'
 import { ConflictError, ForbiddenError } from '@/lib/shared/errors'
 import { httpsUrl } from '@/lib/shared/schemas/auth'
 import { SSO_OAUTH_CALLBACK_PATH } from '@/lib/shared/sso-test-keys'
+import { validateOidcDiscoveryForServerRuntime } from '@/lib/server/auth/oidc-discovery-validation'
 import { actorFromAuth, withAuditEvent } from '@/lib/server/audit/log'
 import { requireAuth } from './auth-helpers'
 
@@ -48,100 +49,7 @@ export const testSsoConnectionFn = createServerFn({ method: 'POST' })
     await requireAuth({ roles: ['admin'] })
     const { discoveryUrl } = data
 
-    // safeFetch validates the URL, connects to the *resolved IP*
-    // (closing the DNS-rebind window a bare checkUrlSafety + fetch
-    // leaves open), never follows redirects, and caps the body size.
-    const { safeFetch, SsrfError, checkUrlSafety } = await import('@/lib/server/content/ssrf-guard')
-
-    let res: Response
-    try {
-      res = await safeFetch(discoveryUrl, {
-        headers: { Accept: 'application/json' },
-        timeoutMs: 5000,
-        maxResponseBytes: 64 * 1024,
-      })
-    } catch (err) {
-      if (err instanceof SsrfError) {
-        const code =
-          err.reason === 'scheme-rejected'
-            ? 'invalid_url'
-            : err.reason === 'ssrf-rejected'
-              ? 'private_address'
-              : 'dns_error'
-        return { ok: false, error: code }
-      }
-      const code = (err as Error).name === 'TimeoutError' ? 'timeout' : 'fetch_error'
-      return { ok: false, error: code }
-    }
-    if (res.status >= 300 && res.status < 400) {
-      return { ok: false, error: 'redirected' }
-    }
-    if (!res.ok) {
-      // Surface the IdP's own error text so misconfigurations are
-      // self-diagnosable. Microsoft Entra returns JSON with
-      // `error_description` (e.g. AADSTS9... "tenant identifier
-      // invalid"); Okta uses `errorSummary`; generic OIDC uses
-      // `error_description`. safeFetch already capped the body size.
-      const errBody = await res.text()
-      let detail = ''
-      try {
-        const j = JSON.parse(errBody) as Record<string, unknown>
-        const desc = j.error_description ?? j.errorSummary ?? j.error ?? j.message
-        if (typeof desc === 'string' && desc.length > 0) detail = `: ${desc.slice(0, 200)}`
-      } catch {
-        const stripped = errBody
-          .replace(/<[^>]*>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-        if (stripped) detail = `: ${stripped.slice(0, 200)}`
-      }
-      return { ok: false, error: `http_${res.status}${detail}` }
-    }
-    const ct = res.headers.get('content-type') ?? ''
-    if (!ct.includes('application/json')) {
-      return { ok: false, error: 'wrong_content_type' }
-    }
-    const text = await res.text()
-    if (text.length === 0) {
-      return { ok: false, error: 'empty_body' }
-    }
-    let json: Record<string, unknown>
-    try {
-      json = JSON.parse(text)
-    } catch {
-      return { ok: false, error: 'invalid_json' }
-    }
-    const required = ['issuer', 'authorization_endpoint', 'token_endpoint', 'jwks_uri'] as const
-    for (const field of required) {
-      const v = json[field]
-      if (typeof v !== 'string' || v.length === 0) {
-        return { ok: false, error: `missing_field:${field}` }
-      }
-      try {
-        // Accept any URL — the IdP may legitimately use a different
-        // origin for endpoints (Okta does this for token URLs).
-        new URL(v)
-      } catch {
-        return { ok: false, error: `invalid_url_field:${field}` }
-      }
-    }
-    // SSRF-check the endpoints Better-Auth's genericOAuth plugin fetches
-    // server-side at runtime. authorization_endpoint is a browser
-    // redirect — the user's browser issues the request from their
-    // network, so a private address there doesn't open up our internal
-    // network. token_endpoint and jwks_uri are fetched by our process,
-    // so a malicious or misconfigured discovery doc returning private
-    // IPs there would be the SSRF vector. The two probes each do a DNS
-    // round-trip; run them in parallel.
-    const SSRF_CHECKED_ENDPOINTS = ['token_endpoint', 'jwks_uri'] as const
-    const safeties = await Promise.all(
-      SSRF_CHECKED_ENDPOINTS.map((field) => checkUrlSafety(json[field] as string))
-    )
-    const unsafeIndex = safeties.findIndex((s) => !s.safe)
-    if (unsafeIndex !== -1) {
-      return { ok: false, error: `unsafe_endpoint:${SSRF_CHECKED_ENDPOINTS[unsafeIndex]}` }
-    }
-    return { ok: true, issuer: json.issuer as string }
+    return validateOidcDiscoveryForServerRuntime(discoveryUrl)
   })
 
 const verifiedDomainId = z.string().regex(/^domain_/) as z.ZodType<`domain_${string}`>

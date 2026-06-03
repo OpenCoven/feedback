@@ -40,8 +40,11 @@ vi.mock('@/lib/server/domains/settings/tier-limits.service', () => ({
 
 vi.mock('@/lib/server/domains/settings/tier-enforce', () => ({ enforceFeatureGate: vi.fn() }))
 
-vi.mock('@/lib/server/content/ssrf-guard', () => ({
-  checkUrlSafety: vi.fn().mockResolvedValue({ safe: true }),
+vi.mock('@/lib/server/auth/oidc-discovery-validation', () => ({
+  validateOidcDiscoveryForServerRuntime: vi.fn().mockResolvedValue({
+    ok: true,
+    issuer: 'https://idp.example',
+  }),
 }))
 
 vi.mock('@/lib/server/auth/sso-secret', () => ({
@@ -92,6 +95,70 @@ describe('updateAuthConfigSchema — Zod boundary accepts autoProvisionRole', ()
         ssoOidc: { autoProvisionRole: 'root' },
       })
     ).toThrow()
+  })
+})
+
+describe('updateAuthConfig — SSO discovery endpoint SSRF validation', () => {
+  it('rejects changed discovery URLs whose token/JWKS metadata is unsafe', async () => {
+    const { db } = await import('@/lib/server/db')
+    const { validateOidcDiscoveryForServerRuntime } = await import(
+      '@/lib/server/auth/oidc-discovery-validation'
+    )
+    vi.mocked(validateOidcDiscoveryForServerRuntime).mockResolvedValueOnce({
+      ok: false,
+      error: 'unsafe_endpoint:jwks_uri',
+    })
+    vi.mocked(db.query.settings.findFirst).mockResolvedValueOnce({
+      id: 's1',
+      authConfig: JSON.stringify({
+        ssoOidc: {
+          enabled: false,
+          discoveryUrl: 'https://old-idp.example/.well-known/openid-configuration',
+          clientId: 'cid',
+        },
+      }),
+    } as never)
+
+    const { updateAuthConfig } = await import('../settings.service')
+    await expect(
+      updateAuthConfig({
+        ssoOidc: {
+          discoveryUrl: 'https://idp.example/.well-known/openid-configuration',
+        },
+      })
+    ).rejects.toThrow(/token or JWKS endpoints/i)
+    expect(validateOidcDiscoveryForServerRuntime).toHaveBeenCalledWith(
+      'https://idp.example/.well-known/openid-configuration'
+    )
+  })
+
+  it('validates discovery metadata before persisting a changed SSO discovery URL', async () => {
+    const { db } = await import('@/lib/server/db')
+    const { validateOidcDiscoveryForServerRuntime } = await import(
+      '@/lib/server/auth/oidc-discovery-validation'
+    )
+    vi.mocked(db.query.settings.findFirst).mockResolvedValueOnce({
+      id: 's1',
+      authConfig: JSON.stringify({
+        ssoOidc: {
+          enabled: false,
+          discoveryUrl: 'https://old-idp.example/.well-known/openid-configuration',
+          clientId: 'cid',
+        },
+      }),
+    } as never)
+
+    const { updateAuthConfig } = await import('../settings.service')
+    await expect(
+      updateAuthConfig({
+        ssoOidc: {
+          discoveryUrl: 'https://idp.example/.well-known/openid-configuration',
+        },
+      })
+    ).resolves.toBeDefined()
+    expect(validateOidcDiscoveryForServerRuntime).toHaveBeenCalledWith(
+      'https://idp.example/.well-known/openid-configuration'
+    )
   })
 })
 

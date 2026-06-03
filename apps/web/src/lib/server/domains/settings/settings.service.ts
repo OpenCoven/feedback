@@ -287,20 +287,26 @@ export async function updateAuthConfig(input: UpdateAuthConfigInput): Promise<Au
           )
         }
       }
-      // Block private/loopback/link-local discovery URLs at write time
-      // so the auth runtime never gets handed an SSRF target. Only when
-      // the URL actually changed — `checkUrlSafety` is a DNS round-trip,
-      // and an unchanged URL was already validated when it was written.
-      const discoveryUrlChanged = !prevSso || updated.ssoOidc.discoveryUrl !== prevSso.discoveryUrl
+      // Validate the discovery document before persisting a changed URL.
+      // The auth runtime fetches the discovery URL and then follows its
+      // server-side token_endpoint / jwks_uri metadata during sign-in, so
+      // checking only the discovery URL would still allow a public IdP URL
+      // to point runtime fetches at private/control-plane addresses.
+      const discoveryUrlChanged =
+        !prevSso || updated.ssoOidc.discoveryUrl !== prevSso.discoveryUrl
       if (discoveryUrlChanged && isHttps && updated.ssoOidc.discoveryUrl) {
-        const { checkUrlSafety } = await import('@/lib/server/content/ssrf-guard')
-        const safety = await checkUrlSafety(updated.ssoOidc.discoveryUrl)
-        if (!safety.safe) {
+        const { validateOidcDiscoveryForServerRuntime } = await import(
+          '@/lib/server/auth/oidc-discovery-validation'
+        )
+        const validation = await validateOidcDiscoveryForServerRuntime(
+          updated.ssoOidc.discoveryUrl
+        )
+        if (!validation.ok) {
           throw new ValidationError(
             'INVALID_SSO_CONFIG',
-            safety.reason === 'ssrf-rejected'
-              ? 'Discovery URL must point to a public IdP, not a private or loopback address.'
-              : 'Discovery URL is not a valid https:// URL.'
+            validation.error.startsWith('unsafe_endpoint:')
+              ? 'Discovery metadata must not point token or JWKS endpoints at private or loopback addresses.'
+              : 'Discovery URL must point to a reachable public OIDC discovery document.'
           )
         }
       }
