@@ -4,12 +4,14 @@ import {
   notFoundResponse,
   handleDomainError,
 } from '@/lib/server/domains/api/responses'
+import { requirePublicHelpCenterAccess } from '@/lib/server/help-center-access'
 
 export const Route = createFileRoute('/api/public/v1/help/articles/$slug')({
   server: {
     handlers: {
       GET: async ({ params }) => {
         try {
+          await requirePublicHelpCenterAccess()
           const { getPublicArticleBySlug } =
             await import('@/lib/server/domains/help-center/help-center.article.service')
           const article = await getPublicArticleBySlug(params.slug)

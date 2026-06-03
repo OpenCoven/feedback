@@ -6,6 +6,10 @@ vi.mock('@tanstack/react-router', () => ({
   createFileRoute: vi.fn(() => (opts: unknown) => ({ options: opts })),
 }))
 
+vi.mock('@/lib/server/help-center-access', () => ({
+  requirePublicHelpCenterAccess: vi.fn(async () => undefined),
+}))
+
 vi.mock('@/lib/server/domains/help-center/help-center.category.service', () => ({
   listPublicCategories: (...args: unknown[]) => mockListPublicCategories(...args),
 }))
