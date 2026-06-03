@@ -693,15 +693,14 @@ export const auth = {
     const url = new URL(request.url)
     const isMagicLink = url.pathname.includes('magic-link')
     if (isMagicLink) {
-      console.log(`[auth] magic-link request: ${request.method} ${url.pathname}${url.search}`)
+      // Magic-link query strings contain bearer auth tokens and redirect targets.
+      console.log(`[auth] magic-link request: ${request.method} ${url.pathname}`)
     }
     const authInstance = await getAuth()
     const response = await authInstance.handler(request)
     if (isMagicLink) {
-      const location = response.headers.get('location')
-      console.log(
-        `[auth] magic-link response: status=${response.status}, location=${location ?? 'none'}`
-      )
+      // Do not log the Location header; it may contain sensitive redirect parameters.
+      console.log(`[auth] magic-link response: status=${response.status}`)
     }
     return response
   },
