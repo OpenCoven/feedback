@@ -6,6 +6,9 @@ on:
 
 jobs:
   publish:
+    # Only publish from reviewed release tags. Manual dispatches against
+    # branches or unprotected tags are skipped before checkout/build scripts run.
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'widget-v') && github.ref_protected
     runs-on: ubuntu-latest
     permissions:
       contents: read
