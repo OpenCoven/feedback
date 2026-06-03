@@ -184,6 +184,20 @@ export const Route = createFileRoute('/api/widget/identify')({
           where: eq(user.email, identified.email),
         })
 
+        let principalRecord = userRecord
+          ? await db.query.principal.findFirst({
+              where: eq(principal.userId, userRecord.id as UserId),
+            })
+          : null
+
+        if (principalRecord && principalRecord.role !== 'user') {
+          return jsonError(
+            'IDENTITY_RESERVED',
+            'This email belongs to a workspace team member. Sign in to the portal instead.',
+            403
+          )
+        }
+
         if (userRecord) {
           const updates: Record<string, string> = {}
           if (identified.name && identified.name !== userRecord.name) updates.name = identified.name
@@ -216,10 +230,6 @@ export const Route = createFileRoute('/api/widget/identify')({
         const userId = userRecord.id as UserId
 
         // Ensure principal record exists
-        let principalRecord = await db.query.principal.findFirst({
-          where: eq(principal.userId, userId),
-        })
-
         if (!principalRecord) {
           const [created] = await db
             .insert(principal)

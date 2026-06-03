@@ -107,3 +107,18 @@ describe('identify branch resolution', () => {
     expect(resolveBranch({}, { identifyVerification: true })).toBe('rejected')
   })
 })
+
+describe('identify existing principal guard', () => {
+  function isReservedWidgetIdentity(principalRecord: { role: string } | null): boolean {
+    return !!principalRecord && principalRecord.role !== 'user'
+  }
+
+  it('allows existing portal users to identify in the widget', () => {
+    expect(isReservedWidgetIdentity({ role: 'user' })).toBe(false)
+  })
+
+  it('blocks workspace team principals from widget email identify', () => {
+    expect(isReservedWidgetIdentity({ role: 'admin' })).toBe(true)
+    expect(isReservedWidgetIdentity({ role: 'member' })).toBe(true)
+  })
+})

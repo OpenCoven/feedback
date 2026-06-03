@@ -1,11 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { UserId } from '@opencoven-feedback/ids'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { db, eq, principal } from '@/lib/server/db'
 import { isS3Configured, uploadImageFromFormData } from '@/lib/server/storage/s3'
 
 export async function handlePortalUpload({ request }: { request: Request }): Promise<Response> {
-  const session = await auth.api.getSession({ headers: request.headers })
+  const session = await auth.api.getSession({
+    headers: withoutAuthorizationHeader(request.headers),
+  })
   if (!session?.user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
