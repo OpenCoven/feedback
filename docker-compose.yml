@@ -65,8 +65,8 @@ services:
     container_name: quackback-mailpit
     restart: unless-stopped
     ports:
-      - '8025:8025' # Web UI
-      - '1025:1025' # SMTP
+      - '127.0.0.1:8025:8025' # Web UI
+      - '127.0.0.1:1025:1025' # SMTP
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8025/api/v1/info']
       interval: 5s
