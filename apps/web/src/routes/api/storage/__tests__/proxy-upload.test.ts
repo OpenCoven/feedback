@@ -19,7 +19,7 @@ vi.mock('@/lib/server/storage/s3', () => ({
 const mockConfig = { s3Proxy: true }
 vi.mock('@/lib/server/config', () => ({ config: mockConfig }))
 
-const { handleProxyUpload } = await import('../$.js')
+const { buildProxyObjectHeaders, handleProxyUpload } = await import('../$.js')
 
 const KEY = 'avatars/2024/01/abc123-photo.png'
 const CT = 'image/png'
@@ -50,6 +50,26 @@ beforeEach(() => {
   mockGetS3Config.mockReturnValue({ secretAccessKey: 'test-secret' })
   mockVerifyProxyUploadToken.mockReturnValue(true)
   mockUploadObject.mockResolvedValue(undefined)
+})
+
+describe('buildProxyObjectHeaders', () => {
+  it('forces active content to download from same-origin proxy responses', () => {
+    const headers = buildProxyObjectHeaders('uploads/2026/06/xss.html', 'text/html')
+
+    expect(headers['Content-Type']).toBe('text/html')
+    expect(headers['X-Content-Type-Options']).toBe('nosniff')
+    expect(headers['Content-Disposition']).toBe('attachment; filename="xss.html"')
+    expect(headers['Content-Security-Policy']).toBe('sandbox')
+  })
+
+  it('keeps supported raster images inline', () => {
+    const headers = buildProxyObjectHeaders('avatars/2026/06/photo.png', 'image/png')
+
+    expect(headers['Content-Type']).toBe('image/png')
+    expect(headers['X-Content-Type-Options']).toBe('nosniff')
+    expect(headers['Content-Disposition']).toBeUndefined()
+    expect(headers['Content-Security-Policy']).toBeUndefined()
+  })
 })
 
 describe('PUT /api/storage/* (proxy upload)', () => {

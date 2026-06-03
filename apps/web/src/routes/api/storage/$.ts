@@ -7,6 +7,32 @@ const PROXY_CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
 const KEY_PREFIX = '/api/storage/'
 
+const INLINE_PROXY_CONTENT_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+
+function isInlineProxyContentType(contentType: string): boolean {
+  return INLINE_PROXY_CONTENT_TYPES.has(contentType.split(';')[0]?.trim().toLowerCase() ?? '')
+}
+
+function attachmentFilename(key: string): string {
+  const filename = key.split('/').pop()?.replace(/[^a-zA-Z0-9._-]/g, '_')
+  return filename || 'download'
+}
+
+export function buildProxyObjectHeaders(key: string, contentType: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': contentType,
+    'Cache-Control': 'public, max-age=31536000, immutable',
+    'X-Content-Type-Options': 'nosniff',
+  }
+
+  if (!isInlineProxyContentType(contentType)) {
+    headers['Content-Disposition'] = `attachment; filename="${attachmentFilename(key)}"`
+    headers['Content-Security-Policy'] = 'sandbox'
+  }
+
+  return headers
+}
+
 function extractKey(url: URL): string | null {
   const key = decodeURIComponent(url.pathname.slice(KEY_PREFIX.length))
   return key && !key.includes('..') ? key : null
@@ -128,10 +154,7 @@ export const Route = createFileRoute('/api/storage/$')({
               if (Date.now() - cached.cachedAt < PROXY_CACHE_TTL) {
                 return new Response(cached.data, {
                   status: 200,
-                  headers: {
-                    'Content-Type': cached.contentType,
-                    'Cache-Control': 'public, max-age=31536000, immutable',
-                  },
+                  headers: buildProxyObjectHeaders(key, cached.contentType),
                 })
               }
               proxyCache.delete(key)
@@ -144,10 +167,7 @@ export const Route = createFileRoute('/api/storage/$')({
 
             return new Response(data, {
               status: 200,
-              headers: {
-                'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=31536000, immutable',
-              },
+              headers: buildProxyObjectHeaders(key, contentType),
             })
           }
 
