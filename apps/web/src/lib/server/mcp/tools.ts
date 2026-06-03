@@ -807,7 +807,7 @@ Examples:
         if (args.entity === 'changelogs') {
           return await searchChangelogs(args)
         }
-        return await searchPosts(args)
+        return await searchPosts(args, auth)
       } catch (err) {
         return errorResult(err)
       }
@@ -843,7 +843,7 @@ Examples:
           case 'post': {
             const denied = requireScope(auth, 'read:feedback')
             if (denied) return denied
-            return await getPostDetails(args.id as PostId)
+            return await getPostDetails(args.id as PostId, auth)
           }
           case 'changelog': {
             const denied = requireScope(auth, 'read:feedback')
@@ -1871,7 +1871,7 @@ Examples:
 // Search dispatchers
 // ============================================================================
 
-async function searchPosts(args: SearchArgs): Promise<CallToolResult> {
+async function searchPosts(args: SearchArgs, auth: McpAuthContext): Promise<CallToolResult> {
   const decoded = decodeSearchCursor(args.cursor)
   // Reject cursors from a different entity
   if (args.cursor && decoded.entity && decoded.entity !== 'posts') {
@@ -1905,6 +1905,8 @@ async function searchPosts(args: SearchArgs): Promise<CallToolResult> {
   const lastItem = result.items[result.items.length - 1]
   const nextCursor = result.hasMore && lastItem ? encodeSearchCursor('posts', lastItem.id) : null
 
+  const includeTeamOnlyFields = isTeamMember(auth.role)
+
   return compactJsonResult({
     posts: result.items.map((p) => ({
       id: p.id,
@@ -1918,7 +1920,7 @@ async function searchPosts(args: SearchArgs): Promise<CallToolResult> {
       authorName: p.authorName,
       ownerPrincipalId: p.ownerPrincipalId,
       tags: p.tags?.map((t) => ({ id: t.id, name: t.name })),
-      summary: p.summaryJson?.summary ?? null,
+      summary: includeTeamOnlyFields ? (p.summaryJson?.summary ?? null) : null,
       canonicalPostId: p.canonicalPostId ?? null,
       isCommentsLocked: p.isCommentsLocked,
       createdAt: p.createdAt,
@@ -2026,12 +2028,14 @@ async function searchArticles(args: SearchArgs): Promise<CallToolResult> {
 // Get details dispatchers
 // ============================================================================
 
-async function getPostDetails(postId: PostId): Promise<CallToolResult> {
+async function getPostDetails(postId: PostId, auth: McpAuthContext): Promise<CallToolResult> {
   const [post, comments, mergedPosts] = await Promise.all([
     getPostWithDetails(postId),
     getCommentsWithReplies(postId),
     getMergedPosts(postId),
   ])
+
+  const includeTeamOnlyFields = isTeamMember(auth.role)
 
   return jsonResult({
     id: post.id,
@@ -2055,8 +2059,8 @@ async function getPostDetails(postId: PostId): Promise<CallToolResult> {
           createdAt: post.pinnedComment.createdAt,
         }
       : null,
-    summaryJson: post.summaryJson ?? null,
-    summaryUpdatedAt: post.summaryUpdatedAt ?? null,
+    summaryJson: includeTeamOnlyFields ? (post.summaryJson ?? null) : null,
+    summaryUpdatedAt: includeTeamOnlyFields ? (post.summaryUpdatedAt ?? null) : null,
     canonicalPostId: post.canonicalPostId ?? null,
     mergedAt: post.mergedAt ?? null,
     isCommentsLocked: post.isCommentsLocked,

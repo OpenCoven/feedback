@@ -1524,6 +1524,73 @@ describe('MCP HTTP Handler', () => {
       expect(body.result.content[0].text).toContain('posts')
     })
 
+    it('should omit post summaries from OAuth portal user search results', async () => {
+      const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
+      const { listInboxPosts } = await import('@/lib/server/domains/posts/post.inbox')
+      vi.mocked(getDeveloperConfig).mockResolvedValueOnce({
+        mcpEnabled: true,
+        mcpPortalAccessEnabled: true,
+      })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      const { handleMcpRequest } = await import('../handler')
+      await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0' },
+          })
+        )
+      )
+      vi.mocked(listInboxPosts).mockResolvedValueOnce({
+        items: [
+          {
+            id: 'post_private_summary',
+            title: 'Private discussion',
+            content: 'Public post content',
+            voteCount: 1,
+            commentCount: 1,
+            boardId: 'board_test',
+            board: { name: 'Feedback' },
+            statusId: 'status_test',
+            authorName: 'Portal User',
+            ownerPrincipalId: null,
+            tags: [],
+            summaryJson: { summary: 'SECRET_ACME_CHURN_RISK', keyQuotes: [], nextSteps: [] },
+            canonicalPostId: null,
+            isCommentsLocked: false,
+            createdAt: new Date('2026-01-01'),
+            deletedAt: null,
+          },
+        ],
+        nextCursor: null,
+        hasMore: false,
+      })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      vi.mocked(getDeveloperConfig).mockResolvedValueOnce({
+        mcpEnabled: true,
+        mcpPortalAccessEnabled: true,
+      })
+
+      const response = await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'search',
+            arguments: { query: 'private' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as {
+        result: { content: Array<{ text: string }> }
+      }
+      const text = JSON.parse(body.result.content[0].text) as {
+        posts: Array<{ summary: string | null }>
+      }
+      expect(text.posts[0].summary).toBeNull()
+    })
+
     it('should deny triage_post for OAuth portal user (role enforcement)', async () => {
       const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
       vi.mocked(getDeveloperConfig).mockResolvedValueOnce({
