@@ -76,7 +76,7 @@ describe.each([
     const result = build(makeEvent()) as Record<string, string>
     expect(result[bodyKey]).toContain('Jane Doe')
     expect(result[bodyKey]).toContain('features')
-    expect(result[bodyKey]).toContain('View in Quackback')
+    expect(result[bodyKey]).toContain('View in OpenCoven Feedback')
   })
 
   it('falls back to email when authorName is missing', () => {
@@ -155,7 +155,7 @@ describe('Jira message builder', () => {
     const joined = texts.join(' ')
     expect(joined).toContain('Jane Doe')
     expect(joined).toContain('features')
-    expect(texts).toContain('View in Quackback')
+    expect(texts).toContain('View in OpenCoven Feedback')
   })
 
   it('returns fallback ADF for non post.created events', () => {

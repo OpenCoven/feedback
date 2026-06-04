@@ -37,7 +37,7 @@ describe('buildLinearIssueBody', () => {
     expect(result.description).toContain('**Submitted by:** Jane Doe')
     expect(result.description).toContain('**Board:** features')
     expect(result.description).toContain(
-      '[View in Quackback](https://feedback.example.com/b/features/posts/post_1)'
+      '[View in OpenCoven Feedback](https://feedback.example.com/b/features/posts/post_1)'
     )
   })
 

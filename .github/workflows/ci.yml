@@ -21,11 +21,11 @@ jobs:
       # Build the widget bundle first — apps/web imports
       # packages/widget/dist/browser.js via Vite ?raw, so it must exist
       # before the web build runs.
-      - run: bun run --filter @quackback/widget build
+      - run: bun run --filter @opencoven/feedback-widget build
       - run: bun run build
         env:
           SKIP_ENV_VALIDATION: true
-      - run: bun run --filter @quackback/web typecheck
+      - run: bun run --filter @opencoven-feedback/web typecheck
 
   test:
     runs-on: ubuntu-latest

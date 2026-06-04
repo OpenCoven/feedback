@@ -71,30 +71,30 @@ export function inferProvider(ctx: {
   const p = ctx.path
   if (!p) return null
   switch (p) {
-    case '@opencoven-feedback/sign-in/email':
-    case '@opencoven-feedback/sign-up/email':
+    case '/sign-in/email':
+    case '/sign-up/email':
       // Sign-up rides the same provider id as sign-in: the policy is
       // identical (verified-domain emails are blocked from password
       // sign-up, just like password sign-in).
       return 'credential'
-    case '@opencoven-feedback/sign-in/magic-link':
-    case '@opencoven-feedback/magic-link/verify':
-    case '@opencoven-feedback/email-otp/send-verification-otp':
-    case '@opencoven-feedback/sign-in/email-otp':
+    case '/sign-in/magic-link':
+    case '/magic-link/verify':
+    case '/email-otp/send-verification-otp':
+    case '/sign-in/email-otp':
       return 'magic-link'
-    case '@opencoven-feedback/sign-in/social': {
+    case '/sign-in/social': {
       const v = ctx.body?.provider
       return typeof v === 'string' ? v : null
     }
-    case '@opencoven-feedback/callback/:id': {
+    case '/callback/:id': {
       const v = ctx.params?.id
       return typeof v === 'string' ? v : null
     }
-    case '@opencoven-feedback/sign-in/oauth2': {
+    case '/sign-in/oauth2': {
       const v = ctx.body?.providerId
       return typeof v === 'string' ? v : null
     }
-    case '@opencoven-feedback/oauth2/callback/:providerId': {
+    case '/oauth2/callback/:providerId': {
       const v = ctx.params?.providerId
       return typeof v === 'string' ? v : null
     }
@@ -116,9 +116,9 @@ export function inferProvider(ctx: {
  * B can't see the email pre-session, so Layer C is the only gate.
  */
 export const SESSION_CREATING_CALLBACK_PATHS = new Set<string>([
-  '@opencoven-feedback/callback/:id',
-  '@opencoven-feedback/oauth2/callback/:providerId',
-  '@opencoven-feedback/sign-in/social',
+  '/callback/:id',
+  '/oauth2/callback/:providerId',
+  '/sign-in/social',
 ])
 
 /**
@@ -127,10 +127,10 @@ export const SESSION_CREATING_CALLBACK_PATHS = new Set<string>([
  * and Layer C (compensating cleanup) cover them instead.
  */
 const NO_EMAIL_BEFORE_PATHS = new Set<string>([
-  '@opencoven-feedback/sign-in/social',
-  '@opencoven-feedback/callback/:id',
-  '@opencoven-feedback/sign-in/oauth2',
-  '@opencoven-feedback/oauth2/callback/:providerId',
+  '/sign-in/social',
+  '/callback/:id',
+  '/sign-in/oauth2',
+  '/oauth2/callback/:providerId',
 ])
 
 /**
@@ -208,7 +208,7 @@ export async function handleSignInPreCheck(ctx: {
     } catch (auditErr) {
       console.error('[handleSignInPreCheck] audit emit failed (rate-limit):', auditErr)
     }
-    throw ctx.redirect('@opencoven-feedback/admin/login?error=rate_limited')
+    throw ctx.redirect('/admin/login?error=rate_limited')
   }
 
   const { getTenantSettings } = await import('@/lib/server/domains/settings/settings.service')
@@ -253,7 +253,7 @@ export async function handleSignInPreCheck(ctx: {
   if (
     isHardBound(provider, email, role, tenant?.authConfig, tenant?.verifiedDomains, ssoRegistered)
   ) {
-    throw ctx.redirect('@opencoven-feedback/admin/login?error=verified_domain_requires_sso')
+    throw ctx.redirect('/admin/login?error=verified_domain_requires_sso')
   }
 
   if (!principalRow) return
@@ -261,7 +261,7 @@ export async function handleSignInPreCheck(ctx: {
   const result = await isAuthMethodAllowed(provider, role, tenant)
   if (!result.allowed) {
     const isTeamRole = role === 'admin' || role === 'member'
-    const target = isTeamRole ? '@opencoven-feedback/admin/login' : '@opencoven-feedback/auth/login'
+    const target = isTeamRole ? '/admin/login' : '/auth/login'
     throw ctx.redirect(`${target}?error=${result.error ?? 'auth_method_blocked'}`)
   }
 
@@ -304,7 +304,7 @@ export async function handleSsoCallbackAfter(ctx: {
     newSession?: { user?: { id?: string }; session?: { token?: string } } | null
   }
 }): Promise<void> {
-  if (ctx.path !== '@opencoven-feedback/oauth2/callback/:providerId') return
+  if (ctx.path !== '/oauth2/callback/:providerId') return
   if (ctx.params?.providerId !== 'sso') return
   const userId = ctx.context?.newSession?.user?.id
   if (typeof userId !== 'string' || userId.length === 0) return
@@ -382,7 +382,7 @@ export async function handleAutoProvisionAfter(
     ReturnType<typeof import('@/lib/server/domains/settings/settings.service').getTenantSettings>
   >
 ): Promise<void> {
-  if (ctx.path !== '@opencoven-feedback/oauth2/callback/:providerId') return
+  if (ctx.path !== '/oauth2/callback/:providerId') return
   if (ctx.params?.providerId !== 'sso') return
 
   const userId = ctx.context?.newSession?.user?.id
@@ -552,9 +552,7 @@ export async function handleCallbackPolicyCleanup(
   const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
   const isTeamRole = role === 'admin' || role === 'member'
   const blockedRedirect = (errorCode: string) =>
-    ctx.redirect(
-      `${isTeamRole ? '@opencoven-feedback/admin/login' : '@opencoven-feedback/auth/login'}?error=${errorCode}`
-    )
+    ctx.redirect(`${isTeamRole ? '/admin/login' : '/auth/login'}?error=${errorCode}`)
 
   // Drop the user/account/principal rows iff the user record is brand-
   // new (created within the last 60s). Both blocking branches below
@@ -634,9 +632,9 @@ export async function handleCallbackPolicyCleanup(
  * complementary case: enrollment missing but required.
  */
 const CREDENTIAL_SIGN_IN_PATHS = new Set<string>([
-  '@opencoven-feedback/sign-in/email',
-  '@opencoven-feedback/sign-in/username',
-  '@opencoven-feedback/sign-in/phone-number',
+  '/sign-in/email',
+  '/sign-in/username',
+  '/sign-in/phone-number',
 ])
 
 export async function handleCredentialPostSignInGate(
@@ -696,7 +694,7 @@ export async function handleCredentialPostSignInGate(
   // otherwise the user is signed in despite the redirect. revokeSession
   // deletes the row and clears the cookie via Better-Auth's helper.
   await revokeSession(ctx as SessionCtx, token)
-  throw ctx.redirect('@opencoven-feedback/auth/two-factor-setup-required')
+  throw ctx.redirect('/auth/two-factor-setup-required')
 }
 
 /**
@@ -725,10 +723,7 @@ export async function handleCredentialPostSignInGate(
  * `/email-otp/send-verification-otp`) don't create a session, so
  * `newSession` is empty and the gate naturally short-circuits.
  */
-const MAGIC_LINK_VERIFY_PATHS = new Set<string>([
-  '@opencoven-feedback/magic-link/verify',
-  '@opencoven-feedback/sign-in/email-otp',
-])
+const MAGIC_LINK_VERIFY_PATHS = new Set<string>(['/magic-link/verify', '/sign-in/email-otp'])
 
 export async function handleMagicLinkPostSignInGate(
   ctx: {
@@ -784,8 +779,8 @@ export async function handleMagicLinkPostSignInGate(
   await revokeSession(ctx as SessionCtx, token)
   throw ctx.redirect(
     outcome === 'setup-required'
-      ? '@opencoven-feedback/auth/two-factor-setup-required'
-      : '@opencoven-feedback/admin/login?error=use_password_for_2fa'
+      ? '/auth/two-factor-setup-required'
+      : '/admin/login?error=use_password_for_2fa'
   )
 }
 
@@ -813,8 +808,8 @@ export async function handleMagicLinkPostSignInGate(
  * sign-in / settings page — mirrors `handleSignInSuccessAudit`.
  */
 const TWO_FACTOR_AUDIT_PATHS = {
-  enrollComplete: '@opencoven-feedback/two-factor/verify-totp',
-  disable: '@opencoven-feedback/two-factor/disable',
+  enrollComplete: '/two-factor/verify-totp',
+  disable: '/two-factor/disable',
 } as const
 
 export async function handleTwoFactorLifecycleAudit(ctx: {
