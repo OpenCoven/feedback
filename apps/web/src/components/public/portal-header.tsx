@@ -68,7 +68,9 @@ export function PortalHeader({
   // Team members can still reach /admin/login directly.
   const portalAuthEnabled = hasAnyPortalAuthMethod(settings?.publicPortalConfig?.oauth ?? {}, {
     ssoEnabled: registeredAuthProviders?.includes('sso') ?? false,
-    hasVerifiedDomain: (settings?.verifiedDomains ?? []).some((d) => d.verifiedAt !== null),
+    hasVerifiedDomain: (settings?.verifiedDomains ?? []).some(
+      (d: { verifiedAt: Date | string | null }) => d.verifiedAt !== null
+    ),
   })
 
   const authPopover = useAuthPopoverSafe()

@@ -10,6 +10,7 @@ import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 import { getIntegration } from '.'
 import { verifyOAuthState } from '@/lib/server/auth/oauth-state'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { db, principal, eq } from '@/lib/server/db'
 import {
   STATE_EXPIRY_MS,
@@ -160,7 +161,9 @@ export async function handleOAuthCallback(
 
   // Verify the current session matches the member who initiated the flow
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await auth.api.getSession({
+      headers: withoutAuthorizationHeader(request.headers),
+    })
     if (!session?.user) {
       return redirectResponse(errorUrl(tenantUrl, 'auth_required'))
     }

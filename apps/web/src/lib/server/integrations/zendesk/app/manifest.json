@@ -29,8 +29,8 @@
       "name": "api_key",
       "type": "text",
       "required": true,
-      "label": "API Key",
-      "helpText": "Your Quackback API key (starts with qb_)"
+      "label": "Sidebar App Key",
+      "helpText": "A Quackback API key restricted to sidebar app endpoints (starts with qb_)"
     }
   ]
 }

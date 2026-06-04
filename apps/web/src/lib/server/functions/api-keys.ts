@@ -11,9 +11,12 @@ import type { ApiKeyId } from '@/lib/server/domains/api-keys/api-key.service'
 // Schemas
 // ============================================
 
+const apiKeyScopes = ['apps:integrations'] as const
+
 const createApiKeySchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name must be 255 characters or less'),
   expiresAt: z.string().datetime().optional().nullable(),
+  scopes: z.array(z.enum(apiKeyScopes)).optional(),
 })
 
 const getApiKeySchema = z.object({
@@ -106,6 +109,7 @@ export const createApiKeyFn = createServerFn({ method: 'POST' })
         {
           name: data.name,
           expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+          scopes: data.scopes ?? null,
         },
         auth.principal.id
       )

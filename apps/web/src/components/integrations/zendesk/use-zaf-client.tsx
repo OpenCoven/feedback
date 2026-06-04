@@ -31,7 +31,7 @@ interface ZafState {
 
 /**
  * Hook that loads the ZAF SDK, initializes the client, and extracts
- * ticket context + API key from Zendesk settings.
+ * ticket context + restricted app key from Zendesk settings.
  *
  * Falls back to URL search params for local development.
  */
@@ -105,7 +105,7 @@ export function useZafClient(): ZafState {
       setState((s) => ({
         ...s,
         status: 'error',
-        error: 'API key not configured in Zendesk app settings',
+        error: 'Sidebar app key not configured in Zendesk app settings',
       }))
       return
     }

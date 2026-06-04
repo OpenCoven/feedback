@@ -28,6 +28,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
   const queryClient = useQueryClient()
   const [isPending, startTransition] = useTransition()
   const [name, setName] = useState('')
+  const [restrictToAppIntegrations, setRestrictToAppIntegrations] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +41,12 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
     }
 
     try {
-      const result = await createApiKeyFn({ data: { name: name.trim() } })
+      const result = await createApiKeyFn({
+        data: {
+          name: name.trim(),
+          scopes: restrictToAppIntegrations ? ['apps:integrations'] : undefined,
+        },
+      })
 
       // Invalidate queries to refresh the list
       startTransition(() => {
@@ -50,6 +56,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
 
       // Reset form and notify parent
       setName('')
+      setRestrictToAppIntegrations(false)
       onKeyCreated(result.apiKey, result.plainTextKey)
     } catch (err) {
       console.error('Failed to create API key:', err)
@@ -60,6 +67,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setName('')
+      setRestrictToAppIntegrations(false)
       setError(null)
     }
     onOpenChange(newOpen)
@@ -90,6 +98,23 @@ export function CreateApiKeyDialog({ open, onOpenChange, onKeyCreated }: CreateA
                 Give your key a descriptive name so you can identify it later.
               </p>
             </div>
+
+            <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={restrictToAppIntegrations}
+                onChange={(e) => setRestrictToAppIntegrations(e.target.checked)}
+                disabled={isPending}
+              />
+              <span className="space-y-1">
+                <span className="block font-medium">Restrict to sidebar app endpoints</span>
+                <span className="block text-xs text-muted-foreground">
+                  Use this for browser-based apps like the Zendesk sidebar. The key will only be
+                  accepted by /api/v1/apps/* endpoints.
+                </span>
+              </span>
+            </label>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
           <DialogFooter>

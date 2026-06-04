@@ -47,7 +47,10 @@ function extractBearerToken(authHeader: string | null): string | null {
  *   return errorResponse('UNAUTHORIZED', 'Invalid or missing API key', 401)
  * }
  */
-export async function requireApiKey(request: Request): Promise<ApiAuthContext | null> {
+export async function requireApiKey(
+  request: Request,
+  scope?: string
+): Promise<ApiAuthContext | null> {
   const authHeader = request.headers.get('authorization')
   const token = extractBearerToken(authHeader)
 
@@ -55,7 +58,7 @@ export async function requireApiKey(request: Request): Promise<ApiAuthContext | 
     return null
   }
 
-  const apiKey = await verifyApiKey(token)
+  const apiKey = await verifyApiKey(token, scope)
   if (!apiKey) {
     return null
   }
@@ -91,7 +94,7 @@ export type AuthLevel = 'team' | 'admin'
  */
 export async function withApiKeyAuth(
   request: Request,
-  options: { role: AuthLevel }
+  options: { role: AuthLevel; scope?: string }
 ): Promise<ApiAuthContext> {
   // Suspended / deleting workspaces are read-blocked at the API
   // chokepoint with 402 / 410. Self-hosters never set this — state
@@ -108,7 +111,7 @@ export async function withApiKeyAuth(
     throw new RateLimitError(rateLimit.retryAfter ?? 60)
   }
 
-  const auth = await requireApiKey(request)
+  const auth = await requireApiKey(request, options.scope)
 
   if (!auth) {
     throw new UnauthorizedError(

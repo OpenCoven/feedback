@@ -13,6 +13,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { PrincipalId, UserId } from '@opencoven-feedback/ids'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { db, principal, user, eq } from '@/lib/server/db'
 import { getPublicUrlOrNull } from '@/lib/server/storage/s3'
 
@@ -53,7 +54,9 @@ export async function handlePrincipalCard({
   request: Request
   params: { principalId: string }
 }): Promise<Response> {
-  const session = await auth.api.getSession({ headers: request.headers })
+  const session = await auth.api.getSession({
+    headers: withoutAuthorizationHeader(request.headers),
+  })
   if (!session?.user) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }

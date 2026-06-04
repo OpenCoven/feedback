@@ -1,23 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { SitemapArticle } from '@/lib/shared/help-center-sitemap'
+import { requirePublicHelpCenterAccess } from '@/lib/server/help-center-access'
 
 export const Route = createFileRoute('/hc/sitemap.xml')({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const [
-          { isFeatureEnabled },
           { listPublicCategories, listPublicArticles },
           { buildHelpCenterSitemapUrls },
           { renderSitemap },
         ] = await Promise.all([
-          import('@/lib/server/domains/settings/settings.service'),
           import('@/lib/server/domains/help-center/help-center.service'),
           import('@/lib/shared/help-center-sitemap'),
           import('@/lib/server/sitemap'),
         ])
 
-        if (!(await isFeatureEnabled('helpCenter'))) {
+        try {
+          await requirePublicHelpCenterAccess()
+        } catch {
           return new Response('Not Found', { status: 404 })
         }
 

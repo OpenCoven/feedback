@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
+import { APP_INTEGRATION_API_KEY_SCOPE } from '@/lib/server/domains/api-keys/api-key.service'
 import { badRequestResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { appJsonResponse, preflightResponse } from '@/lib/server/integrations/apps/cors'
 
@@ -10,7 +11,7 @@ export const Route = createFileRoute('/api/v1/apps/linked')({
 
       GET: async ({ request }) => {
         try {
-          await withApiKeyAuth(request, { role: 'team' })
+          await withApiKeyAuth(request, { role: 'team', scope: APP_INTEGRATION_API_KEY_SCOPE })
           const url = new URL(request.url)
           const integrationType = url.searchParams.get('integrationType')
           const externalId = url.searchParams.get('externalId')

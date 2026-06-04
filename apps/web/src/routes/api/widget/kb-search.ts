@@ -1,12 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { isFeatureEnabled } from '@/lib/server/domains/settings/settings.service'
 import { hybridSearch } from '@/lib/server/domains/help-center/help-center-search.service'
+import { requirePublicHelpCenterAccess } from '@/lib/server/help-center-access'
 
 export const Route = createFileRoute('/api/widget/kb-search')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        if (!(await isFeatureEnabled('helpCenter'))) {
+        try {
+          await requirePublicHelpCenterAccess()
+        } catch {
           return Response.json(
             { error: { code: 'NOT_FOUND', message: 'Knowledge base not found' } },
             { status: 404, headers: corsHeaders() }

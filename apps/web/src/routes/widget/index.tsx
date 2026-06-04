@@ -21,6 +21,33 @@ const searchSchema = z.object({
   board: z.string().optional(),
 })
 
+interface WidgetPortalPost {
+  id: string
+  title: string
+  voteCount: number
+  statusId: string | null
+  commentCount: number
+  board?: { id: string; name: string; slug: string }
+}
+
+interface WidgetPortalStatus {
+  id: string
+  name: string
+  color: string
+}
+
+interface WidgetPortalBoard {
+  id: string
+  name: string
+  slug: string
+  isPublic: boolean
+}
+
+type WidgetPost = Pick<
+  WidgetPortalPost,
+  'id' | 'title' | 'voteCount' | 'statusId' | 'commentCount' | 'board'
+>
+
 export const Route = createFileRoute('/widget/')({
   validateSearch: searchSchema,
   loader: async ({ context, location }) => {
@@ -41,7 +68,7 @@ export const Route = createFileRoute('/widget/')({
     )
 
     return {
-      posts: portalData.posts.items.map((p) => ({
+      posts: portalData.posts.items.map((p: WidgetPortalPost) => ({
         id: p.id,
         title: p.title,
         voteCount: p.voteCount,
@@ -50,14 +77,14 @@ export const Route = createFileRoute('/widget/')({
         board: p.board,
       })),
       postsHasMore: portalData.posts.hasMore,
-      statuses: portalData.statuses.map((s) => ({
+      statuses: portalData.statuses.map((s: WidgetPortalStatus) => ({
         id: s.id as string,
         name: s.name,
         color: s.color,
       })),
       boards: portalData.boards
-        .filter((b) => b.isPublic)
-        .map((b) => ({
+        .filter((b: WidgetPortalBoard) => b.isPublic)
+        .map((b: WidgetPortalBoard) => ({
           id: b.id as string,
           name: b.name,
           slug: b.slug,
@@ -110,7 +137,20 @@ function WidgetPage() {
     tabs,
     imageUploadsInWidget,
     defaultBoard,
-  } = Route.useLoaderData()
+  } = Route.useLoaderData() as {
+    posts: WidgetPost[]
+    postsHasMore: boolean
+    statuses: Array<{ id: string; name: string; color: string }>
+    boards: Array<{ id: string; name: string; slug: string }>
+    features: {
+      anonymousVoting: boolean
+      anonymousCommenting: boolean
+      anonymousPosting: boolean
+    }
+    tabs: Record<WidgetTab, boolean>
+    imageUploadsInWidget: boolean
+    defaultBoard?: string | null
+  }
   const { isIdentified, ensureSession } = useWidgetAuth()
   const canVote = isIdentified || features.anonymousVoting
 
@@ -128,7 +168,7 @@ function WidgetPage() {
     name: string
     icon: string | null
   } | null>(null)
-  const [createdPosts, setCreatedPosts] = useState<typeof posts>([])
+  const [createdPosts, setCreatedPosts] = useState<WidgetPost[]>([])
 
   const allPosts = useMemo(() => {
     const createdIds = new Set(createdPosts.map((p) => p.id))
@@ -289,7 +329,7 @@ function WidgetPage() {
           initialHasMore={postsHasMore}
           statuses={statuses}
           boards={boards}
-          defaultBoard={defaultBoard}
+          defaultBoard={defaultBoard ?? undefined}
           onPostSelect={handlePostSelect}
           onPostCreated={handlePostCreated}
           anonymousVotingEnabled={features.anonymousVoting}

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { withApiKeyAuth } from '@/lib/server/domains/api/auth'
+import { APP_INTEGRATION_API_KEY_SCOPE } from '@/lib/server/domains/api-keys/api-key.service'
 import { badRequestResponse, handleDomainError } from '@/lib/server/domains/api/responses'
 import { parseTypeId } from '@/lib/server/domains/api/validation'
 import type { PostId } from '@opencoven-feedback/ids'
@@ -19,7 +20,7 @@ export const Route = createFileRoute('/api/v1/apps/unlink')({
 
       POST: async ({ request }) => {
         try {
-          await withApiKeyAuth(request, { role: 'team' })
+          await withApiKeyAuth(request, { role: 'team', scope: APP_INTEGRATION_API_KEY_SCOPE })
 
           const body = await request.json()
           const parsed = unlinkSchema.safeParse(body)

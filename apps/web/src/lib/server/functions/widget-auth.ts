@@ -3,6 +3,7 @@ import { generateId } from '@opencoven-feedback/ids'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import type { Role } from '@/lib/server/auth'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { db, session, principal, eq, and, gt } from '@/lib/server/db'
 
 export interface WidgetAuthContext {
@@ -101,7 +102,7 @@ export async function getWidgetBetterAuthFallback(
 ): Promise<{ principalId: PrincipalId; type: string } | null> {
   try {
     const sessionResult = await auth.api.getSession({
-      headers: new Headers(request.headers),
+      headers: withoutAuthorizationHeader(request.headers),
     })
     if (!sessionResult?.user) return null
 

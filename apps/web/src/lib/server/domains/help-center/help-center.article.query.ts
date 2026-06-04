@@ -31,9 +31,12 @@ import type {
 // Article Queries
 // ============================================================================
 
-export async function listArticles(params: ListArticlesParams): Promise<ArticleListResult> {
+export async function listArticles(
+  params: ListArticlesParams & { categoryIds?: HelpCenterCategoryId[] }
+): Promise<ArticleListResult> {
   const {
     categoryId,
+    categoryIds: categoryIdsFilter,
     status = 'all',
     search,
     cursor,
@@ -54,6 +57,10 @@ export async function listArticles(params: ListArticlesParams): Promise<ArticleL
 
   if (categoryId) {
     conditions.push(eq(helpCenterArticles.categoryId, categoryId as HelpCenterCategoryId))
+  } else if (categoryIdsFilter?.length) {
+    conditions.push(
+      inArray(helpCenterArticles.categoryId, categoryIdsFilter as HelpCenterCategoryId[])
+    )
   }
 
   if (!showDeleted) {
@@ -182,16 +189,40 @@ export async function listArticles(params: ListArticlesParams): Promise<ArticleL
   }
 }
 
+async function listPublicCategoryIds(): Promise<HelpCenterCategoryId[]> {
+  const categories = await db.query.helpCenterCategories.findMany({
+    where: and(eq(helpCenterCategories.isPublic, true), isNull(helpCenterCategories.deletedAt)),
+    columns: { id: true },
+  })
+  return categories.map((category) => category.id as HelpCenterCategoryId)
+}
+
 export async function listPublicArticles(params: {
   categoryId?: string
   search?: string
   cursor?: string
   limit?: number
 }): Promise<ArticleListResult> {
-  return listArticles({ ...params, status: 'published' })
+  const publicCategoryIds = await listPublicCategoryIds()
+
+  if (params.categoryId && !publicCategoryIds.includes(params.categoryId as HelpCenterCategoryId)) {
+    return { items: [], nextCursor: null, hasMore: false }
+  }
+
+  if (!params.categoryId && publicCategoryIds.length === 0) {
+    return { items: [], nextCursor: null, hasMore: false }
+  }
+
+  return listArticles({
+    ...params,
+    categoryIds: params.categoryId ? undefined : publicCategoryIds,
+    status: 'published',
+  })
 }
 
 export async function listPublicArticlesForCategory(categoryId: string) {
+  const now = new Date()
+
   return db
     .select({
       id: helpCenterArticles.id,
@@ -205,11 +236,15 @@ export async function listPublicArticlesForCategory(categoryId: string) {
       authorAvatarUrl: principal.avatarUrl,
     })
     .from(helpCenterArticles)
+    .innerJoin(helpCenterCategories, eq(helpCenterCategories.id, helpCenterArticles.categoryId))
     .leftJoin(principal, eq(principal.id, helpCenterArticles.principalId))
     .where(
       and(
         eq(helpCenterArticles.categoryId, categoryId as HelpCenterCategoryId),
+        eq(helpCenterCategories.isPublic, true),
+        isNull(helpCenterCategories.deletedAt),
         isNotNull(helpCenterArticles.publishedAt),
+        lte(helpCenterArticles.publishedAt, now),
         isNull(helpCenterArticles.deletedAt)
       )
     )
@@ -219,6 +254,8 @@ export async function listPublicArticlesForCategory(categoryId: string) {
 export async function listPublicCategoryEditors(): Promise<
   Record<string, Array<{ name: string; avatarUrl: string | null }>>
 > {
+  const now = new Date()
+
   const rows = await db
     .select({
       categoryId: helpCenterArticles.categoryId,
@@ -227,10 +264,14 @@ export async function listPublicCategoryEditors(): Promise<
       avatarUrl: principal.avatarUrl,
     })
     .from(helpCenterArticles)
+    .innerJoin(helpCenterCategories, eq(helpCenterCategories.id, helpCenterArticles.categoryId))
     .innerJoin(principal, eq(principal.id, helpCenterArticles.principalId))
     .where(
       and(
+        eq(helpCenterCategories.isPublic, true),
+        isNull(helpCenterCategories.deletedAt),
         isNotNull(helpCenterArticles.publishedAt),
+        lte(helpCenterArticles.publishedAt, now),
         isNull(helpCenterArticles.deletedAt),
         inArray(principal.role, ['admin', 'member'])
       )
