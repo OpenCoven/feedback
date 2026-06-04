@@ -21,6 +21,18 @@ import type { JSONContent } from '@tiptap/react'
 const helpCenterApi = getRouteApi('/_portal/hc')
 const categoryApi = getRouteApi('/_portal/hc/articles/$categorySlug')
 
+interface HelpCategorySummary {
+  id: string
+  name: string
+  slug: string
+}
+
+interface HelpArticleNavItem {
+  id: string
+  slug: string
+  title: string
+}
+
 export const Route = createFileRoute('/_portal/hc/articles/$categorySlug/$articleSlug')({
   loader: async ({ params }) => {
     try {
@@ -72,7 +84,11 @@ export const Route = createFileRoute('/_portal/hc/articles/$categorySlug/$articl
 function ArticleDetailPage() {
   const { article } = Route.useLoaderData()
   const { categorySlug } = Route.useParams()
-  const { category, articles, allCategories } = categoryApi.useLoaderData()
+  const { category, articles, allCategories } = categoryApi.useLoaderData() as {
+    category: HelpCategorySummary
+    articles: HelpArticleNavItem[]
+    allCategories: HelpCategorySummary[]
+  }
   const { helpCenterConfig } = helpCenterApi.useLoaderData()
   const { baseUrl } = Route.useRouteContext()
 

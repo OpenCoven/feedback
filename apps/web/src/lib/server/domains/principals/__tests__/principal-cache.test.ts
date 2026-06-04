@@ -19,12 +19,17 @@ vi.mock('@/lib/server/redis', () => ({
 }))
 
 const mockFindFirst = vi.fn()
+const mockFindMany = vi.fn()
 const mockSelect = vi.fn()
 const mockUpdate = vi.fn()
+let updateSets: unknown[] = []
 
 vi.mock('@/lib/server/db', () => ({
   db: {
-    query: { principal: { findFirst: (...a: unknown[]) => mockFindFirst(...a) } },
+    query: {
+      principal: { findFirst: (...a: unknown[]) => mockFindFirst(...a) },
+      apiKeys: { findMany: (...a: unknown[]) => mockFindMany(...a) },
+    },
     select: (...a: unknown[]) => mockSelect(...a),
     update: (...a: unknown[]) => mockUpdate(...a),
   },
@@ -35,7 +40,10 @@ vi.mock('@/lib/server/db', () => ({
   or: vi.fn(),
   sql: vi.fn(() => ({ as: vi.fn() })),
   ilike: vi.fn(),
+  inArray: vi.fn(),
+  isNull: vi.fn(),
   principal: { id: 'id', userId: 'userId', role: 'role', type: 'type' },
+  apiKeys: { createdById: 'createdById', revokedAt: 'revokedAt' },
   user: {},
 }))
 
@@ -47,12 +55,17 @@ const TARGET_USER = 'user_target' as UserId
 
 beforeEach(() => {
   vi.clearAllMocks()
+  updateSets = []
   mockCacheDel.mockResolvedValue(undefined)
+  mockFindMany.mockResolvedValue([])
 
   // db.update(principal).set(...).where(...) chain — terminates as a Promise.
-  mockUpdate.mockReturnValue({
-    set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
-  })
+  mockUpdate.mockImplementation(() => ({
+    set: vi.fn((value) => {
+      updateSets.push(value)
+      return { where: vi.fn().mockResolvedValue(undefined) }
+    }),
+  }))
 
   // Both LAST_ADMIN guards in updateMemberRole + removeTeamMember run
   // db.select({count}).from(principal).where(...). Return count=2 so the
@@ -74,6 +87,24 @@ describe('updateMemberRole', () => {
     await updateMemberRole(TARGET, 'member', ACTING)
 
     expect(mockCacheDel).toHaveBeenCalledWith(`principal:user:${TARGET_USER}`)
+  })
+
+  it('syncs active API key service principal roles after a demotion', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: TARGET,
+      userId: TARGET_USER,
+      type: 'user',
+      role: 'admin',
+    })
+    mockFindMany.mockResolvedValue([
+      { principalId: 'principal_api_key_1' },
+      { principalId: 'principal_api_key_2' },
+    ])
+
+    await updateMemberRole(TARGET, 'member', ACTING)
+
+    expect(updateSets).toEqual(expect.arrayContaining([{ role: 'member' }, { role: 'member' }]))
+    expect(mockUpdate).toHaveBeenCalledTimes(2)
   })
 
   it('does not call cacheDel when the target principal has no userId', async () => {
@@ -103,5 +134,20 @@ describe('removeTeamMember', () => {
     await removeTeamMember(TARGET, ACTING)
 
     expect(mockCacheDel).toHaveBeenCalledWith(`principal:user:${TARGET_USER}`)
+  })
+
+  it('removes team access from active API key service principals after removal', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: TARGET,
+      userId: TARGET_USER,
+      type: 'user',
+      role: 'member',
+    })
+    mockFindMany.mockResolvedValue([{ principalId: 'principal_api_key_1' }])
+
+    await removeTeamMember(TARGET, ACTING)
+
+    expect(updateSets).toEqual(expect.arrayContaining([{ role: 'user' }]))
+    expect(mockUpdate).toHaveBeenCalledTimes(2)
   })
 })

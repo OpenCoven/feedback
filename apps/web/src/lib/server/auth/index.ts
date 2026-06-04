@@ -44,6 +44,12 @@ function makeStash<T>() {
 const magicLinkStash = makeStash<string>()
 const otpStash = makeStash<string>()
 
+// Better Auth uses this list to decide which providers may automatically
+// link accounts by matching email identity. Keep it intentionally narrow:
+// dynamic/custom OAuth providers are still available for sign-in, but must
+// not become trusted for account linking just because credentials exist.
+const TRUSTED_ACCOUNT_LINKING_PROVIDERS = ['github', 'google'] as const
+
 export const storeMagicLinkToken = (email: string, token: string) =>
   magicLinkStash.set(email, token)
 export const getMagicLinkToken = (email: string) => magicLinkStash.take(email)
@@ -89,7 +95,7 @@ async function createAuth() {
 
   // Build socialProviders config from DB-stored credentials
   const socialProviders: Record<string, Record<string, string>> = {}
-  const trustedProviders: string[] = []
+  const trustedProviders = [...TRUSTED_ACCOUNT_LINKING_PROVIDERS]
   const genericOAuthConfigs: Array<{
     providerId: string
     clientId: string
@@ -196,12 +202,11 @@ async function createAuth() {
         // Better-Auth's built-in JIT block. When false, the upstream
         // callback aborts in handleOAuthUserInfo BEFORE any user/
         // session is created, then redirects with `?error=signup_disabled`.
-        // Existing users link via accountLinking.trustedProviders even
-        // with this on. Picked up by createAuth() rebuilds via
+        // Custom OIDC/SSO is intentionally not auto-trusted for account
+        // linking by email. Picked up by createAuth() rebuilds via
         // resetAuth() / cross-pod invalidation when admins toggle it.
         disableSignUp: cfg.autoCreateUsers === false,
       })
-      trustedProviders.push('sso')
     }
   }
 
@@ -244,7 +249,6 @@ async function createAuth() {
         ...(creds.tokenUrl && { tokenUrl: creds.tokenUrl }),
         scopes: scopeStr.split(/\s+/).filter(Boolean),
       })
-      trustedProviders.push(provider.id)
     } else {
       // Built-in social providers
       const providerConfig: Record<string, string> = {
@@ -258,7 +262,6 @@ async function createAuth() {
         }
       }
       socialProviders[provider.id] = providerConfig
-      trustedProviders.push(provider.id)
     }
   }
 
@@ -434,8 +437,9 @@ async function createAuth() {
         // pushes their verification row out to 7 days post-mint.
         expiresIn: 60 * 10,
         disableSignUp: false,
-        // Outlook Safe Links / Slack unfurl can consume tokens before the user clicks.
-        allowedAttempts: 3,
+        // Keep tokens single-use. Scanner prefetch protection lives in
+        // /verify-magic-link, which requires browser JS/user action before
+        // hitting the Better Auth verification endpoint.
       }),
 
       emailOTP({
@@ -693,15 +697,14 @@ export const auth = {
     const url = new URL(request.url)
     const isMagicLink = url.pathname.includes('magic-link')
     if (isMagicLink) {
-      console.log(`[auth] magic-link request: ${request.method} ${url.pathname}${url.search}`)
+      // Magic-link query strings contain bearer auth tokens and redirect targets.
+      console.log(`[auth] magic-link request: ${request.method} ${url.pathname}`)
     }
     const authInstance = await getAuth()
     const response = await authInstance.handler(request)
     if (isMagicLink) {
-      const location = response.headers.get('location')
-      console.log(
-        `[auth] magic-link response: status=${response.status}, location=${location ?? 'none'}`
-      )
+      // Do not log the Location header; it may contain sensitive redirect parameters.
+      console.log(`[auth] magic-link response: status=${response.status}`)
     }
     return response
   },

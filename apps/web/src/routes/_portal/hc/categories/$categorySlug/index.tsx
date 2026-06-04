@@ -38,6 +38,29 @@ interface Author {
   avatarUrl: string | null
 }
 
+interface HelpCategorySummary {
+  id: string
+  parentId?: string | null
+  slug: string
+  name: string
+  icon?: string | null
+  description?: string | null
+}
+
+interface HelpArticleSummary {
+  id: string
+  slug: string
+  title: string
+  description?: string | null
+  readingTimeMinutes?: number
+  authorName?: string | null
+  authorAvatarUrl?: string | null
+}
+
+interface HelpSubcategorySummary extends HelpCategorySummary {
+  articles: HelpArticleSummary[]
+}
+
 function AuthorAvatar({ author, index }: { author: Author; index: number }) {
   const initials = author.name
     .split(' ')
@@ -102,7 +125,12 @@ function ArticleRow({
 
 function CategoryIndexPage() {
   const { categorySlug } = Route.useParams()
-  const { category, articles, allCategories, subcategories } = categoryApi.useLoaderData()
+  const { category, articles, allCategories, subcategories } = categoryApi.useLoaderData() as {
+    category: HelpCategorySummary
+    articles: HelpArticleSummary[]
+    allCategories: HelpCategorySummary[]
+    subcategories: HelpSubcategorySummary[]
+  }
   const { helpCenterConfig } = helpCenterApi.useLoaderData()
   const { baseUrl } = Route.useRouteContext()
 
@@ -187,7 +215,7 @@ function CategoryIndexPage() {
                         >
                           <Chevron className="h-3 w-3 shrink-0 opacity-40" />
                           <CategoryIcon
-                            icon={cat.icon}
+                            icon={cat.icon ?? null}
                             className="h-3.5 w-3.5 shrink-0 opacity-50"
                           />
                           <span className="min-w-0 truncate">{cat.name}</span>
@@ -227,7 +255,10 @@ function CategoryIndexPage() {
             {/* Category header */}
             <div className="mt-6 mb-8">
               <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-5">
-                <CategoryIcon icon={category.icon} className="w-8 h-8 text-primary-foreground" />
+                <CategoryIcon
+                  icon={category.icon ?? null}
+                  className="w-8 h-8 text-primary-foreground"
+                />
               </div>
               <h1 className="text-3xl font-bold text-foreground tracking-tight">{category.name}</h1>
               {category.description && (
@@ -266,7 +297,7 @@ function CategoryIndexPage() {
                     <section key={sub.id}>
                       <div className="rounded-xl border border-border/50 overflow-hidden divide-y divide-border/50 bg-card">
                         <div className="flex items-center gap-2.5 px-5 py-3 bg-muted/40">
-                          <CategoryIcon icon={sub.icon} className="w-5 h-5 shrink-0" />
+                          <CategoryIcon icon={sub.icon ?? null} className="w-5 h-5 shrink-0" />
                           <h2 className="text-sm font-semibold text-foreground">{sub.name}</h2>
                         </div>
                         {shown.length > 0 ? (

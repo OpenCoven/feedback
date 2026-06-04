@@ -17,6 +17,7 @@ export interface ApiKey {
 export interface CreateApiKeyInput {
   name: string
   expiresAt?: Date | null
+  scopes?: string[] | null
 }
 
 export interface CreateApiKeyResult {

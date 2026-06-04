@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { ApiKey } from '@/lib/server/domains/api-keys'
+import type { PostListItem } from '@/lib/server/domains/posts/post.types'
 import type { PrincipalId, ApiKeyId, UserId } from '@opencoven-feedback/ids'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
@@ -779,6 +780,52 @@ describe('MCP HTTP Handler', () => {
       expect(text.id).toBe('post_test')
       expect(text.title).toBe('Test Post')
       expect(text.comments).toEqual([])
+
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: true,
+      })
+    })
+
+    it('should hide private comments from OAuth portal users in get_details post results', async () => {
+      const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
+      vi.mocked(getDeveloperConfig)
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+
+      const { handleMcpRequest } = await import('../handler')
+      await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0' },
+          })
+        )
+      )
+
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      const response = await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'get_details',
+            arguments: { id: 'post_test' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: false,
+      })
     })
 
     // ── get_details tool (changelog) ────────────────────────────────────────
@@ -1522,6 +1569,73 @@ describe('MCP HTTP Handler', () => {
         result: { content: Array<{ text: string }> }
       }
       expect(body.result.content[0].text).toContain('posts')
+    })
+
+    it('should omit post summaries from OAuth portal user search results', async () => {
+      const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
+      const { listInboxPosts } = await import('@/lib/server/domains/posts/post.inbox')
+      vi.mocked(getDeveloperConfig).mockResolvedValueOnce({
+        mcpEnabled: true,
+        mcpPortalAccessEnabled: true,
+      })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      const { handleMcpRequest } = await import('../handler')
+      await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0' },
+          })
+        )
+      )
+      vi.mocked(listInboxPosts).mockResolvedValueOnce({
+        items: [
+          {
+            id: 'post_private_summary',
+            title: 'Private discussion',
+            content: 'Public post content',
+            voteCount: 1,
+            commentCount: 1,
+            boardId: 'board_test',
+            board: { id: 'board_test', name: 'Feedback', slug: 'feedback' },
+            statusId: 'status_test',
+            authorName: 'Portal User',
+            ownerPrincipalId: null,
+            tags: [],
+            summaryJson: { summary: 'SECRET_ACME_CHURN_RISK', keyQuotes: [], nextSteps: [] },
+            canonicalPostId: null,
+            isCommentsLocked: false,
+            createdAt: new Date('2026-01-01'),
+            deletedAt: null,
+          } as unknown as PostListItem,
+        ],
+        nextCursor: null,
+        hasMore: false,
+      })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      vi.mocked(getDeveloperConfig).mockResolvedValueOnce({
+        mcpEnabled: true,
+        mcpPortalAccessEnabled: true,
+      })
+
+      const response = await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'search',
+            arguments: { query: 'private' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as {
+        result: { content: Array<{ text: string }> }
+      }
+      const text = JSON.parse(body.result.content[0].text) as {
+        posts: Array<{ summary: string | null }>
+      }
+      expect(text.posts[0].summary).toBeNull()
     })
 
     it('should deny triage_post for OAuth portal user (role enforcement)', async () => {

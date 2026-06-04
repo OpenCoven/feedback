@@ -8,6 +8,7 @@ import type { UserId, PrincipalId, WorkspaceId } from '@opencoven-feedback/ids'
 import { generateId } from '@opencoven-feedback/ids'
 import type { Role } from '@/lib/server/auth'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { getSettings } from './workspace'
 import { db, principal, eq } from '@/lib/server/db'
@@ -52,6 +53,15 @@ async function getSessionDirect(): Promise<SessionResult | null> {
   }
 }
 
+async function getCookieSessionDirect(): Promise<SessionResult | null> {
+  try {
+    return await auth.api.getSession({ headers: withoutAuthorizationHeader(getRequestHeaders()) })
+  } catch (error) {
+    console.error('[auth] Failed to get cookie session:', error)
+    return null
+  }
+}
+
 export type { Role }
 
 export interface AuthContext {
@@ -91,7 +101,7 @@ export interface AuthContext {
 export async function requireAuth(options?: { roles?: Role[] }): Promise<AuthContext> {
   console.log(`[fn:auth-helpers] requireAuth: roles=${options?.roles?.join(',') ?? 'any'}`)
   try {
-    const session = await getSessionDirect()
+    const session = await getCookieSessionDirect()
     if (!session?.user) {
       throw new Error('Authentication required')
     }

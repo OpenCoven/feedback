@@ -15,6 +15,7 @@ function createUpdateChain() {
     updateWhereCalls.push(args)
     return chain
   })
+  chain.catch = vi.fn().mockResolvedValue(undefined)
   chain.returning = vi.fn().mockResolvedValue([
     {
       id: 'article_1' as HelpCenterArticleId,
@@ -79,6 +80,8 @@ vi.mock('@/lib/server/db', () => ({
     id: 'id',
     slug: 'slug',
     name: 'name',
+    isPublic: 'is_public',
+    deletedAt: 'deleted_at',
   },
   helpCenterArticles: {
     id: 'id',
@@ -132,6 +135,7 @@ let unpublishArticle: typeof import('../help-center.article.service').unpublishA
 let deleteArticle: typeof import('../help-center.article.service').deleteArticle
 let restoreArticle: typeof import('../help-center.article.service').restoreArticle
 let recordArticleFeedback: typeof import('../help-center.article.service').recordArticleFeedback
+let getPublicArticleBySlug: typeof import('../help-center.article.service').getPublicArticleBySlug
 
 beforeEach(async () => {
   vi.clearAllMocks()
@@ -148,6 +152,7 @@ beforeEach(async () => {
   deleteArticle = mod.deleteArticle
   restoreArticle = mod.restoreArticle
   recordArticleFeedback = mod.recordArticleFeedback
+  getPublicArticleBySlug = mod.getPublicArticleBySlug
 })
 
 describe('getArticleById', () => {
@@ -190,6 +195,45 @@ describe('getArticleById', () => {
     mockArticleFindFirst.mockResolvedValue(null)
 
     await expect(getArticleById('article_missing' as HelpCenterArticleId)).rejects.toMatchObject({
+      code: 'ARTICLE_NOT_FOUND',
+    })
+  })
+})
+
+describe('getPublicArticleBySlug', () => {
+  const publishedArticle = {
+    id: 'article_1' as HelpCenterArticleId,
+    slug: 'how-to-start',
+    title: 'How to Start',
+    content: 'Content here',
+    contentJson: null,
+    categoryId: 'category_1',
+    principalId: null,
+    publishedAt: new Date(),
+    viewCount: 5,
+    helpfulCount: 2,
+    notHelpfulCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+
+  it('returns a published article when its category is public', async () => {
+    mockArticleFindFirst.mockResolvedValue(publishedArticle)
+    mockCategoryFindFirst
+      .mockResolvedValueOnce({ id: 'category_1' })
+      .mockResolvedValueOnce({ id: 'category_1', slug: 'getting-started', name: 'Getting Started' })
+    mockPrincipalFindFirst.mockResolvedValue(null)
+
+    const result = await getPublicArticleBySlug('how-to-start')
+
+    expect(result.title).toBe('How to Start')
+  })
+
+  it('throws NotFoundError when the article category is not public', async () => {
+    mockArticleFindFirst.mockResolvedValue(publishedArticle)
+    mockCategoryFindFirst.mockResolvedValue(null)
+
+    await expect(getPublicArticleBySlug('how-to-start')).rejects.toMatchObject({
       code: 'ARTICLE_NOT_FOUND',
     })
   })
@@ -317,6 +361,7 @@ describe('createArticle', () => {
     const { db } = await import('@/lib/server/db')
     const chain: Record<string, unknown> = {}
     chain.values = vi.fn(() => chain)
+    chain.catch = vi.fn().mockResolvedValue(undefined)
     chain.returning = vi.fn().mockResolvedValue([
       {
         id: 'article_new' as HelpCenterArticleId,
@@ -482,6 +527,7 @@ describe('updateArticle authorId validation', () => {
     const chain: Record<string, unknown> = {}
     chain.set = vi.fn(() => chain)
     chain.where = vi.fn(() => chain)
+    chain.catch = vi.fn().mockResolvedValue(undefined)
     chain.returning = vi.fn().mockResolvedValue([
       {
         id: 'article_1' as HelpCenterArticleId,
@@ -523,6 +569,7 @@ describe('updateArticle authorId validation', () => {
     const chain: Record<string, unknown> = {}
     chain.set = vi.fn(() => chain)
     chain.where = vi.fn(() => chain)
+    chain.catch = vi.fn().mockResolvedValue(undefined)
     chain.returning = vi.fn().mockResolvedValue([
       {
         id: 'article_1' as HelpCenterArticleId,
@@ -641,6 +688,7 @@ describe('restoreArticle', () => {
       return chain
     })
     chain.where = vi.fn().mockReturnValue(chain)
+    chain.catch = vi.fn().mockResolvedValue(undefined)
     chain.returning = vi.fn().mockResolvedValue([
       {
         id: 'article_1' as HelpCenterArticleId,

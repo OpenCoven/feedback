@@ -119,6 +119,7 @@ let listCategories: typeof import('../help-center.category.service').listCategor
 let listPublicCategories: typeof import('../help-center.category.service').listPublicCategories
 let getCategoryById: typeof import('../help-center.category.service').getCategoryById
 let getCategoryBySlug: typeof import('../help-center.category.service').getCategoryBySlug
+let getPublicCategoryBySlug: typeof import('../help-center.category.service').getPublicCategoryBySlug
 let createCategory: typeof import('../help-center.category.service').createCategory
 let updateCategory: typeof import('../help-center.category.service').updateCategory
 let deleteCategory: typeof import('../help-center.category.service').deleteCategory
@@ -135,6 +136,7 @@ beforeEach(async () => {
   listPublicCategories = mod.listPublicCategories
   getCategoryById = mod.getCategoryById
   getCategoryBySlug = mod.getCategoryBySlug
+  getPublicCategoryBySlug = mod.getPublicCategoryBySlug
   createCategory = mod.createCategory
   updateCategory = mod.updateCategory
   deleteCategory = mod.deleteCategory
@@ -387,6 +389,32 @@ describe('getCategoryBySlug', () => {
     mockCategoryFindFirst.mockResolvedValue(null)
 
     await expect(getCategoryBySlug('nonexistent')).rejects.toMatchObject({
+      code: 'CATEGORY_NOT_FOUND',
+    })
+  })
+})
+
+describe('getPublicCategoryBySlug', () => {
+  it('returns public categories by slug', async () => {
+    mockCategoryFindFirst.mockResolvedValue({
+      id: 'category_1' as HelpCenterCategoryId,
+      slug: 'getting-started',
+      name: 'Getting Started',
+      description: null,
+      isPublic: true,
+      position: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    const result = await getPublicCategoryBySlug('getting-started')
+    expect(result.slug).toBe('getting-started')
+  })
+
+  it('throws NotFoundError when a category is not public', async () => {
+    mockCategoryFindFirst.mockResolvedValue(null)
+
+    await expect(getPublicCategoryBySlug('private-category')).rejects.toMatchObject({
       code: 'CATEGORY_NOT_FOUND',
     })
   })

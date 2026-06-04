@@ -12,8 +12,11 @@ import {
   or,
   sql,
   ilike,
+  inArray,
+  isNull,
   max,
   principal,
+  apiKeys,
   session,
   user,
   type Principal,
@@ -205,6 +208,24 @@ export async function countMembers(): Promise<number> {
   }
 }
 
+async function syncApiKeyServicePrincipalRolesForCreator(
+  createdById: PrincipalId,
+  role: 'admin' | 'member' | 'user'
+): Promise<void> {
+  const keys = await db.query.apiKeys.findMany({
+    where: and(eq(apiKeys.createdById, createdById), isNull(apiKeys.revokedAt)),
+    columns: { principalId: true },
+  })
+  const servicePrincipalIds = keys.map((key) => key.principalId)
+
+  if (servicePrincipalIds.length === 0) return
+
+  await db
+    .update(principal)
+    .set({ role })
+    .where(and(inArray(principal.id, servicePrincipalIds), eq(principal.type, 'service')))
+}
+
 /**
  * Update a team member's role
  * @throws ForbiddenError if trying to modify own role
@@ -248,8 +269,9 @@ export async function updateMemberRole(
       }
     }
 
-    // Update the role
+    // Update the human role and mirror it to active API keys owned by that human.
     await db.update(principal).set({ role: newRole }).where(eq(principal.id, principalId))
+    await syncApiKeyServicePrincipalRolesForCreator(principalId, newRole)
     if (targetMember.userId) {
       await cacheDel(CACHE_KEYS.PRINCIPAL_BY_USER(targetMember.userId))
     }
@@ -304,8 +326,9 @@ export async function removeTeamMember(
       }
     }
 
-    // Convert to portal user by setting role to 'user'
+    // Convert to portal user and remove team access from active API keys owned by that human.
     await db.update(principal).set({ role: 'user' }).where(eq(principal.id, principalId))
+    await syncApiKeyServicePrincipalRolesForCreator(principalId, 'user')
     if (targetMember.userId) {
       await cacheDel(CACHE_KEYS.PRINCIPAL_BY_USER(targetMember.userId))
     }

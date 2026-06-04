@@ -14,6 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { UserId } from '@opencoven-feedback/ids'
 import type { SQL } from 'drizzle-orm'
 import { auth } from '@/lib/server/auth'
+import { withoutAuthorizationHeader } from '@/lib/server/auth/session-headers'
 import { db, principal, user, eq, and, inArray, sql } from '@/lib/server/db'
 import type { Role } from '@/lib/shared/roles'
 import { incrementBucket } from '@/lib/server/utils/redis-rate-bucket'
@@ -53,7 +54,9 @@ function resolveSuggestAvatar(opts: {
 }
 
 export async function handleMentionSuggest({ request }: { request: Request }): Promise<Response> {
-  const session = await auth.api.getSession({ headers: request.headers })
+  const session = await auth.api.getSession({
+    headers: withoutAuthorizationHeader(request.headers),
+  })
   if (!session?.user) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }

@@ -55,6 +55,7 @@ import {
 } from '@/lib/shared/schemas/help-center'
 import { z } from 'zod'
 import { toIsoString, toIsoStringOrNull } from '@/lib/shared/utils'
+import { requirePublicHelpCenterAccess } from '@/lib/server/help-center-access'
 
 // ============================================================================
 // Helper: serialize article dates
@@ -98,6 +99,7 @@ export const listCategoriesFn = createServerFn({ method: 'GET' })
 export const listPublicCategoriesFn = createServerFn({ method: 'GET' })
   .inputValidator(z.object({}))
   .handler(async () => {
+    await requirePublicHelpCenterAccess()
     const categories = await listPublicCategories()
     return categories.map(serializeCategory)
   })
@@ -113,6 +115,7 @@ export const getCategoryFn = createServerFn({ method: 'GET' })
 export const getPublicCategoryBySlugFn = createServerFn({ method: 'GET' })
   .inputValidator(getCategoryBySlugSchema)
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const category = await getCategoryBySlug(data.slug)
     return serializeCategory(category)
   })
@@ -189,6 +192,7 @@ export const restoreArticleFn = createServerFn({ method: 'POST' })
 export const listPublicArticlesFn = createServerFn({ method: 'GET' })
   .inputValidator(listPublicArticlesSchema)
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const result = await listPublicArticles(data)
     return {
       ...result,
@@ -199,6 +203,7 @@ export const listPublicArticlesFn = createServerFn({ method: 'GET' })
 export const listPublicArticlesForCategoryFn = createServerFn({ method: 'GET' })
   .inputValidator(z.object({ categoryId: z.string() }))
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const articles = await listPublicArticlesForCategory(data.categoryId)
     return articles.map((a) => ({
       ...a,
@@ -209,6 +214,7 @@ export const listPublicArticlesForCategoryFn = createServerFn({ method: 'GET' })
 export const listPublicCategoryEditorsFn = createServerFn({ method: 'GET' })
   .inputValidator(z.object({}))
   .handler(async () => {
+    await requirePublicHelpCenterAccess()
     return listPublicCategoryEditors()
   })
 
@@ -223,6 +229,7 @@ export const getArticleFn = createServerFn({ method: 'GET' })
 export const getPublicArticleBySlugFn = createServerFn({ method: 'GET' })
   .inputValidator(getArticleBySlugSchema)
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const article = await getPublicArticleBySlug(data.slug)
     const { helpfulCount: _h, notHelpfulCount: _n, ...publicArticle } = serializeArticle(article)
     return publicArticle
@@ -280,6 +287,7 @@ export const deleteArticleFn = createServerFn({ method: 'POST' })
 export const recordArticleFeedbackFn = createServerFn({ method: 'POST' })
   .inputValidator(articleFeedbackSchema)
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const auth = await getOptionalAuth()
     await recordArticleFeedback(
       data.articleId as HelpCenterArticleId,
@@ -298,6 +306,7 @@ export const searchPublicArticlesFn = createServerFn({ method: 'GET' })
     z.object({ query: z.string().min(1), limit: z.number().int().min(1).max(20).optional() })
   )
   .handler(async ({ data }) => {
+    await requirePublicHelpCenterAccess()
     const { hybridSearch } =
       await import('@/lib/server/domains/help-center/help-center-search.service')
     return hybridSearch(data.query, data.limit ?? 10)

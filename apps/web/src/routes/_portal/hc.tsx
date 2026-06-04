@@ -1,5 +1,13 @@
-import { createFileRoute, notFound, Outlet } from '@tanstack/react-router'
+import { createFileRoute, notFound, Outlet, redirect } from '@tanstack/react-router'
 import type { FeatureFlags, HelpCenterConfig } from '@/lib/shared/types/settings'
+
+type HelpCenterAccessConfig = HelpCenterConfig & {
+  access?: 'public' | 'authenticated'
+}
+
+function requiresAuthentication(config: HelpCenterConfig | undefined): boolean {
+  return (config as HelpCenterAccessConfig | undefined)?.access === 'authenticated'
+}
 
 export const Route = createFileRoute('/_portal/hc')({
   beforeLoad: ({ context }) => {
@@ -10,14 +18,23 @@ export const Route = createFileRoute('/_portal/hc')({
 
     const helpCenterConfig = settings?.helpCenterConfig as HelpCenterConfig | undefined
     if (!helpCenterConfig?.enabled) throw notFound()
+
+    if (requiresAuthentication(helpCenterConfig) && !context.session?.user) {
+      throw redirect({ to: '/auth/login' })
+    }
   },
   loader: async ({ context }) => {
     const { settings } = context
     const helpCenterConfig = (settings?.helpCenterConfig as HelpCenterConfig | null) ?? null
     return { helpCenterConfig }
   },
-  head: () => {
-    return { meta: [] }
+  head: ({ loaderData }) => {
+    const helpCenterConfig = loaderData?.helpCenterConfig ?? undefined
+    return {
+      meta: requiresAuthentication(helpCenterConfig)
+        ? [{ name: 'robots', content: 'noindex, nofollow' }]
+        : [],
+    }
   },
   component: HelpCenterLayoutRoute,
 })

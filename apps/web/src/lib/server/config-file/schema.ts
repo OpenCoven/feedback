@@ -126,7 +126,7 @@ const authSchema = z
 export const quackbackConfigSchema = z
   .object({
     apiVersion: z.literal('quackback.io/v1'),
-    kind: z.literal('quackbackConfig'),
+    kind: z.literal('QuackbackConfig'),
     metadata: z.object({ source: z.string().optional() }).strict().optional(),
     spec: z
       .object({

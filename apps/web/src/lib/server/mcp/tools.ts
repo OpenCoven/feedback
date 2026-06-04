@@ -807,7 +807,7 @@ Examples:
         if (args.entity === 'changelogs') {
           return await searchChangelogs(args)
         }
-        return await searchPosts(args)
+        return await searchPosts(args, isTeamMember(auth.role))
       } catch (err) {
         return errorResult(err)
       }
@@ -843,7 +843,7 @@ Examples:
           case 'post': {
             const denied = requireScope(auth, 'read:feedback')
             if (denied) return denied
-            return await getPostDetails(args.id as PostId)
+            return await getPostDetails(args.id as PostId, isTeamMember(auth.role))
           }
           case 'changelog': {
             const denied = requireScope(auth, 'read:feedback')
@@ -1871,7 +1871,10 @@ Examples:
 // Search dispatchers
 // ============================================================================
 
-async function searchPosts(args: SearchArgs): Promise<CallToolResult> {
+async function searchPosts(
+  args: SearchArgs,
+  includeTeamOnlyFields: boolean
+): Promise<CallToolResult> {
   const decoded = decodeSearchCursor(args.cursor)
   // Reject cursors from a different entity
   if (args.cursor && decoded.entity && decoded.entity !== 'posts') {
@@ -1918,7 +1921,7 @@ async function searchPosts(args: SearchArgs): Promise<CallToolResult> {
       authorName: p.authorName,
       ownerPrincipalId: p.ownerPrincipalId,
       tags: p.tags?.map((t) => ({ id: t.id, name: t.name })),
-      summary: p.summaryJson?.summary ?? null,
+      summary: includeTeamOnlyFields ? (p.summaryJson?.summary ?? null) : null,
       canonicalPostId: p.canonicalPostId ?? null,
       isCommentsLocked: p.isCommentsLocked,
       createdAt: p.createdAt,
@@ -2026,10 +2029,13 @@ async function searchArticles(args: SearchArgs): Promise<CallToolResult> {
 // Get details dispatchers
 // ============================================================================
 
-async function getPostDetails(postId: PostId): Promise<CallToolResult> {
+async function getPostDetails(
+  postId: PostId,
+  includePrivateComments: boolean
+): Promise<CallToolResult> {
   const [post, comments, mergedPosts] = await Promise.all([
     getPostWithDetails(postId),
-    getCommentsWithReplies(postId),
+    getCommentsWithReplies(postId, undefined, { includePrivate: includePrivateComments }),
     getMergedPosts(postId),
   ])
 
