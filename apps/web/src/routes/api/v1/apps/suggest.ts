@@ -47,7 +47,7 @@ export const Route = createFileRoute('/api/v1/apps/suggest')({
             return appJsonResponse({ posts: resultPosts })
           }
 
-          // Vector similarity search across all boards
+          // Vector similarity search over public, active boards only
           const vectorStr = `[${embedding.join(',')}]`
           const minSimilarity = 0.5
 
@@ -66,6 +66,8 @@ export const Route = createFileRoute('/api/v1/apps/suggest')({
             .where(
               and(
                 isNull(posts.deletedAt),
+                eq(boards.isPublic, true),
+                isNull(boards.deletedAt),
                 sql`${posts.embedding} IS NOT NULL`,
                 sql`1 - (${posts.embedding} <=> ${vectorStr}::vector) >= ${minSimilarity}`
               )
