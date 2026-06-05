@@ -944,6 +944,12 @@ export const sendInvitationFn = createServerFn({ method: 'POST' })
       }
 
       if (existingUser) {
+        if (!existingUser.emailVerified) {
+          throw new Error(
+            'This email belongs to an unverified portal account. Ask the user to verify their email before inviting them.'
+          )
+        }
+
         // Check if they already have a team member role (admin or member)
         const existingPrincipal = await db.query.principal.findFirst({
           where: eq(principal.userId, existingUser.id),
@@ -952,7 +958,7 @@ export const sendInvitationFn = createServerFn({ method: 'POST' })
         if (existingPrincipal && existingPrincipal.role !== 'user') {
           throw new Error('A team member with this email already exists')
         }
-        // Portal users (role='user' or no member record) can be invited to become team members
+        // Verified portal users (role='user' or no member record) can be invited to become team members
       }
 
       const invitationId = generateId('invite')
