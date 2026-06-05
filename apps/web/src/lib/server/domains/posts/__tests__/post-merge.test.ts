@@ -9,6 +9,7 @@ import type { PostId, PrincipalId } from '@opencoven-feedback/ids'
 const mockPostsFindFirst = vi.fn()
 const mockPrincipalFindFirst = vi.fn()
 const mockBoardsFindFirst = vi.fn()
+const mockDbSelect = vi.fn()
 const mockDbUpdate = vi.fn()
 const mockDbExecute = vi.fn()
 const createActivity = vi.fn()
@@ -18,6 +19,24 @@ function createUpdateChain() {
   const chain: Record<string, unknown> = {}
   chain.set = vi.fn(() => chain)
   chain.where = vi.fn().mockResolvedValue(undefined)
+  return chain
+}
+
+type SelectChain = {
+  from: ReturnType<typeof vi.fn>
+  innerJoin: ReturnType<typeof vi.fn>
+  where: ReturnType<typeof vi.fn>
+  orderBy: ReturnType<typeof vi.fn>
+  limit: ReturnType<typeof vi.fn>
+}
+
+function createSelectChain(result: unknown[]): SelectChain {
+  const chain = {} as SelectChain
+  chain.from = vi.fn(() => chain)
+  chain.innerJoin = vi.fn(() => chain)
+  chain.where = vi.fn(() => chain)
+  chain.orderBy = vi.fn().mockResolvedValue(result)
+  chain.limit = vi.fn().mockResolvedValue(result)
   return chain
 }
 
@@ -31,6 +50,7 @@ vi.mock('@/lib/server/db', async () => {
         principal: { findFirst: (...args: unknown[]) => mockPrincipalFindFirst(...args) },
         boards: { findFirst: (...args: unknown[]) => mockBoardsFindFirst(...args) },
       },
+      select: (...args: unknown[]) => mockDbSelect(...args),
       update: (..._args: unknown[]) => {
         mockDbUpdate(..._args)
         return createUpdateChain()
@@ -39,11 +59,11 @@ vi.mock('@/lib/server/db', async () => {
     },
     posts: { id: 'post_id', canonicalPostId: 'canonical_post_id' },
     votes: { principalId: 'principal_id', postId: 'post_id' },
-    boards: { id: 'board_id', slug: 'board_slug' },
+    boards: { id: 'board_id', slug: 'board_slug', isPublic: 'is_public' },
     principal: { id: 'principal_id', displayName: 'display_name' },
-    eq: vi.fn(),
-    and: vi.fn(),
-    isNull: vi.fn(),
+    eq: vi.fn((left, right) => ({ op: 'eq', left, right })),
+    and: vi.fn((...args) => ({ op: 'and', args })),
+    isNull: vi.fn((value) => ({ op: 'isNull', value })),
     sql: realSql,
   }
 })
@@ -84,7 +104,8 @@ vi.mock('@opencoven-feedback/ids', async (importOriginal) => {
 })
 
 // Import after mocks
-const { mergePost, unmergePost } = await import('../post.merge')
+const { mergePost, unmergePost, getPublicMergedPosts, getPublicPostMergeInfo } =
+  await import('../post.merge')
 
 const POST_A = 'post_aaa' as PostId
 const POST_B = 'post_bbb' as PostId
@@ -111,7 +132,7 @@ describe('mergePost', () => {
       return Promise.resolve(mockPost())
     })
     mockPrincipalFindFirst.mockResolvedValue({ displayName: 'Author' })
-    mockBoardsFindFirst.mockResolvedValue({ id: 'board_mock', slug: 'feedback' })
+    mockBoardsFindFirst.mockResolvedValue({ id: 'board_mock', slug: 'feedback', isPublic: true })
     // Default: vote count recalculation returns 5
     mockDbExecute.mockResolvedValue([{ unique_voters: 5 }])
   })
@@ -154,6 +175,18 @@ describe('mergePost', () => {
     await expect(mergePost(POST_A, POST_B, ACTOR)).rejects.toThrow(
       /Cannot merge into a post that is itself merged/
     )
+  })
+
+  it('throws ValidationError when boards have different public visibility', async () => {
+    mockPostsFindFirst
+      .mockResolvedValueOnce(mockPost({ id: POST_A, boardId: 'private_board' }))
+      .mockResolvedValueOnce(mockPost({ id: POST_B, boardId: 'public_board' }))
+    mockBoardsFindFirst
+      .mockResolvedValueOnce({ slug: 'internal', isPublic: false })
+      .mockResolvedValueOnce({ slug: 'feedback', isPublic: true })
+
+    await expect(mergePost(POST_A, POST_B, ACTOR)).rejects.toThrow(/same public visibility/)
+    expect(mockDbUpdate).not.toHaveBeenCalled()
   })
 
   it('records activity on both posts after successful merge', async () => {
@@ -215,8 +248,8 @@ describe('mergePost', () => {
       .mockResolvedValueOnce(mockPost({ id: POST_A, title: 'Dup', boardId: 'board_a' }))
       .mockResolvedValueOnce(mockPost({ id: POST_B, title: 'Canon', boardId: 'board_b' }))
     mockBoardsFindFirst
-      .mockResolvedValueOnce({ slug: 'board-a' })
-      .mockResolvedValueOnce({ slug: 'board-b' })
+      .mockResolvedValueOnce({ slug: 'board-a', isPublic: true })
+      .mockResolvedValueOnce({ slug: 'board-b', isPublic: true })
 
     await mergePost(POST_A, POST_B, ACTOR)
 
@@ -238,10 +271,81 @@ describe('mergePost', () => {
   })
 })
 
+describe('public merge visibility helpers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('filters merged-post summaries through public-board visibility', async () => {
+    const mergedAt = new Date('2026-06-06T12:00:00.000Z')
+    const selectChain = createSelectChain([
+      {
+        id: POST_A,
+        title: 'Public duplicate',
+        voteCount: 4,
+        authorName: 'Author',
+        createdAt: new Date('2026-06-05T12:00:00.000Z'),
+        mergedAt,
+      },
+    ])
+    mockDbSelect.mockReturnValueOnce(selectChain)
+
+    const result = await getPublicMergedPosts(POST_B)
+
+    expect(result).toEqual([
+      {
+        id: POST_A,
+        title: 'Public duplicate',
+        voteCount: 4,
+        authorName: 'Author',
+        createdAt: new Date('2026-06-05T12:00:00.000Z'),
+        mergedAt,
+      },
+    ])
+    expect(selectChain.innerJoin).toHaveBeenCalled()
+    expect(JSON.stringify(vi.mocked(selectChain.where).mock.calls[0]?.[0])).toContain(
+      '"left":"is_public","right":true'
+    )
+  })
+
+  it('hides public merge info when the canonical target is not public or is deleted', async () => {
+    const mergedAt = new Date('2026-06-06T12:00:00.000Z')
+    mockDbSelect
+      .mockReturnValueOnce(createSelectChain([{ canonicalPostId: POST_B, mergedAt }]))
+      .mockReturnValueOnce(createSelectChain([]))
+
+    await expect(getPublicPostMergeInfo(POST_A)).resolves.toBeNull()
+  })
+
+  it('returns public merge info only after both post queries pass public-board filters', async () => {
+    const mergedAt = new Date('2026-06-06T12:00:00.000Z')
+    const mergedPostQuery = createSelectChain([{ canonicalPostId: POST_B, mergedAt }])
+    const canonicalPostQuery = createSelectChain([
+      { id: POST_B, title: 'Canonical public post', boardSlug: 'feedback' },
+    ])
+    mockDbSelect.mockReturnValueOnce(mergedPostQuery).mockReturnValueOnce(canonicalPostQuery)
+
+    const result = await getPublicPostMergeInfo(POST_A)
+
+    expect(result).toEqual({
+      canonicalPostId: POST_B,
+      canonicalPostTitle: 'Canonical public post',
+      canonicalPostBoardSlug: 'feedback',
+      mergedAt,
+    })
+    expect(JSON.stringify(vi.mocked(mergedPostQuery.where).mock.calls[0]?.[0])).toContain(
+      '"left":"is_public","right":true'
+    )
+    expect(JSON.stringify(vi.mocked(canonicalPostQuery.where).mock.calls[0]?.[0])).toContain(
+      '"left":"is_public","right":true'
+    )
+  })
+})
+
 describe('unmergePost', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockBoardsFindFirst.mockResolvedValue({ id: 'board_mock', slug: 'feedback' })
+    mockBoardsFindFirst.mockResolvedValue({ id: 'board_mock', slug: 'feedback', isPublic: true })
     mockDbExecute.mockResolvedValue([{ unique_voters: 3 }])
   })
 
@@ -301,8 +405,8 @@ describe('unmergePost', () => {
       )
       .mockResolvedValueOnce(mockPost({ id: POST_B, title: 'Canon', boardId: 'board_b' }))
     mockBoardsFindFirst
-      .mockResolvedValueOnce({ slug: 'board-a' })
-      .mockResolvedValueOnce({ slug: 'board-b' })
+      .mockResolvedValueOnce({ slug: 'board-a', isPublic: true })
+      .mockResolvedValueOnce({ slug: 'board-b', isPublic: true })
 
     await unmergePost(POST_A, ACTOR)
 

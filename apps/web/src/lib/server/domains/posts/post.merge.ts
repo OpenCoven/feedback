@@ -107,6 +107,28 @@ export async function mergePost(
     )
   }
 
+  const [duplicateBoard, canonicalBoard] = await Promise.all([
+    db.query.boards.findFirst({
+      where: eq(boards.id, duplicatePost.boardId),
+      columns: { slug: true, isPublic: true },
+    }),
+    db.query.boards.findFirst({
+      where: eq(boards.id, canonicalPost.boardId),
+      columns: { slug: true, isPublic: true },
+    }),
+  ])
+
+  if (!duplicateBoard || !canonicalBoard) {
+    throw new NotFoundError('BOARD_NOT_FOUND', 'One or both post boards could not be found')
+  }
+
+  if (duplicateBoard.isPublic !== canonicalBoard.isPublic) {
+    throw new ValidationError(
+      'INCOMPATIBLE_MERGE_VISIBILITY',
+      'Posts can only be merged when their boards have the same public visibility.'
+    )
+  }
+
   // Mark the duplicate post as merged
   await db
     .update(posts)
@@ -153,33 +175,21 @@ export async function mergePost(
   })
 
   // Dispatch post.merged event for webhooks and integrations
-  const [dupBoard, canBoard] = await Promise.all([
-    db.query.boards.findFirst({
-      where: eq(boards.id, duplicatePost.boardId),
-      columns: { slug: true },
-    }),
-    db.query.boards.findFirst({
-      where: eq(boards.id, canonicalPost.boardId),
-      columns: { slug: true },
-    }),
-  ])
-  if (dupBoard && canBoard) {
-    dispatchPostMerged(
-      buildEventActor({ principalId: actorPrincipalId, userId: actorUserId }),
-      {
-        id: duplicatePostId,
-        title: duplicatePost.title,
-        boardId: duplicatePost.boardId,
-        boardSlug: dupBoard.slug,
-      },
-      {
-        id: canonicalPostId,
-        title: canonicalPost.title,
-        boardId: canonicalPost.boardId,
-        boardSlug: canBoard.slug,
-      }
-    )
-  }
+  dispatchPostMerged(
+    buildEventActor({ principalId: actorPrincipalId, userId: actorUserId }),
+    {
+      id: duplicatePostId,
+      title: duplicatePost.title,
+      boardId: duplicatePost.boardId,
+      boardSlug: duplicateBoard.slug,
+    },
+    {
+      id: canonicalPostId,
+      title: canonicalPost.title,
+      boardId: canonicalPost.boardId,
+      boardSlug: canonicalBoard.slug,
+    }
+  )
 
   return {
     canonicalPost: { id: canonicalPostId, voteCount: newVoteCount },
@@ -337,6 +347,46 @@ export async function getMergedPosts(canonicalPostId: PostId): Promise<MergedPos
 }
 
 /**
+ * Get public-board posts merged into a canonical post.
+ *
+ * Public portal responses must not expose private/internal-board merged post
+ * metadata, even if an older cross-visibility merge exists.
+ */
+export async function getPublicMergedPosts(canonicalPostId: PostId): Promise<MergedPostSummary[]> {
+  const mergedPosts = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      voteCount: posts.voteCount,
+      createdAt: posts.createdAt,
+      mergedAt: posts.mergedAt,
+      authorName: sql<string | null>`(
+        SELECT m.display_name FROM ${principalTable} m
+        WHERE m.id = ${posts.principalId}
+      )`.as('author_name'),
+    })
+    .from(posts)
+    .innerJoin(boards, eq(posts.boardId, boards.id))
+    .where(
+      and(
+        eq(posts.canonicalPostId, canonicalPostId),
+        isNull(posts.deletedAt),
+        eq(boards.isPublic, true)
+      )
+    )
+    .orderBy(posts.mergedAt)
+
+  return mergedPosts.map((p) => ({
+    id: p.id,
+    title: p.title,
+    voteCount: p.voteCount,
+    authorName: p.authorName,
+    createdAt: p.createdAt,
+    mergedAt: p.mergedAt!,
+  }))
+}
+
+/**
  * Get merge info for a post that has been merged into another.
  * Returns null if the post is not merged.
  *
@@ -362,6 +412,52 @@ export async function getPostMergeInfo(postId: PostId): Promise<PostMergeInfo | 
     .from(posts)
     .innerJoin(boards, eq(posts.boardId, boards.id))
     .where(eq(posts.id, post.canonicalPostId))
+    .limit(1)
+
+  if (!canonicalPost[0]) {
+    return null
+  }
+
+  return {
+    canonicalPostId: canonicalPost[0].id,
+    canonicalPostTitle: canonicalPost[0].title,
+    canonicalPostBoardSlug: canonicalPost[0].boardSlug,
+    mergedAt: post.mergedAt,
+  }
+}
+
+/**
+ * Get merge info for a public portal post without exposing private canonical
+ * metadata. Returns null unless both the merged post and canonical target are
+ * on public boards and not deleted.
+ */
+export async function getPublicPostMergeInfo(postId: PostId): Promise<PostMergeInfo | null> {
+  const mergedPost = await db
+    .select({
+      canonicalPostId: posts.canonicalPostId,
+      mergedAt: posts.mergedAt,
+    })
+    .from(posts)
+    .innerJoin(boards, eq(posts.boardId, boards.id))
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt), eq(boards.isPublic, true)))
+    .limit(1)
+
+  const post = mergedPost[0]
+  if (!post?.canonicalPostId || !post.mergedAt) {
+    return null
+  }
+
+  const canonicalPost = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      boardSlug: boards.slug,
+    })
+    .from(posts)
+    .innerJoin(boards, eq(posts.boardId, boards.id))
+    .where(
+      and(eq(posts.id, post.canonicalPostId), isNull(posts.deletedAt), eq(boards.isPublic, true))
+    )
     .limit(1)
 
   if (!canonicalPost[0]) {
