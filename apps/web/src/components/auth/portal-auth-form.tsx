@@ -463,7 +463,7 @@ export function PortalAuthForm({
           <p className="text-sm text-muted-foreground">
             We sent a verification link to{' '}
             <span className="font-medium text-foreground">{email}</span>. Verify your email to
-            finish creating your account.
+            finish creating your account. If you don&apos;t see it, check spam or try signing in again to resend the verification email.
           </p>
         </div>
         {onModeSwitch && (
