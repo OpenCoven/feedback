@@ -406,6 +406,8 @@ export const saveUseCaseFn = createServerFn({ method: 'POST' })
         // (same rationale as setupWorkspaceFn): no settings row yet to
         // read managedFieldPaths from. The reconciler will overwrite on
         // its next tick if the file owns these fields.
+        await ensureAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
+
         const setupState: SetupState = {
           version: 1,
           steps: { core: true, workspace: false, boards: false },

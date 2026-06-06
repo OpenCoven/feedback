@@ -196,4 +196,18 @@ describe('saveUseCaseFn onboarding admin promotion', () => {
     })
     expect(hoisted.mockInvalidateSettingsCache).toHaveBeenCalledOnce()
   })
+
+  it('rejects before inserting settings on fresh install when another human principal exists', async () => {
+    hoisted.mockGetSettings.mockResolvedValue(null)
+    hoisted.mockPrincipalFindFirst
+      .mockResolvedValueOnce({ id: 'principal_attacker', userId: 'user_attacker', role: 'user' })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'principal_other', userId: 'user_other', role: 'user' })
+
+    await expect(saveUseCaseFn({ data: { useCase: 'saas' } })).rejects.toThrow(
+      'Only admin can complete setup'
+    )
+
+    expect(hoisted.mockInsertValues).not.toHaveBeenCalled()
+  })
 })
