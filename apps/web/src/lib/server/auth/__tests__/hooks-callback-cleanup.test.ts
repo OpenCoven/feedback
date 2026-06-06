@@ -65,8 +65,8 @@ vi.mock('@/lib/server/domains/platform-credentials/platform-credential.service',
   hasPlatformCredentials: (...a: unknown[]) => mockHasPlatformCredentials(...a),
 }))
 
-// Default mirrors production: registered iff admin enabled SSO. Tests
-// for tier-downgrade / missing-secret override.
+// Retained for UI/registration code paths; hard-binding itself should
+// not depend on runtime registration.
 const mockIsSsoActuallyRegistered = vi.fn(
   async (sso: { enabled?: boolean } | undefined, _tier: unknown) => sso?.enabled === true
 )
@@ -506,7 +506,7 @@ describe('handleCallbackPolicyCleanup — hard-binding branch (enforced verified
     expect(ctx.redirect).not.toHaveBeenCalled()
   })
 
-  it('fails open: google at an enforced domain passes through when SSO is not actually registered', async () => {
+  it('fails closed: google at an enforced domain is blocked when SSO is not actually registered', async () => {
     mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
     mockIsSsoActuallyRegistered.mockResolvedValue(false)
     const ctx = ctxFor({
@@ -516,18 +516,16 @@ describe('handleCallbackPolicyCleanup — hard-binding branch (enforced verified
       email: 'a@acme.com',
       token: 'tok',
     })
-    // googleEnabled so the method-allowed fall-through also passes —
-    // the point is the hard-binding branch must NOT fire when SSO
-    // isn't viable (self-lockout guard).
-    await handleCallbackPolicyCleanup(
-      ctx,
-      tenantSettings({
-        googleEnabled: true,
-        verifiedDomains: [makeVerifiedDomain('acme.com', true)],
-      })
-    )
-    expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
-    expect(ctx.redirect).not.toHaveBeenCalled()
+    await expect(
+      handleCallbackPolicyCleanup(
+        ctx,
+        tenantSettings({
+          googleEnabled: true,
+          verifiedDomains: [makeVerifiedDomain('acme.com', true)],
+        })
+      )
+    ).rejects.toThrow(/verified_domain_requires_sso/)
+    expect(mockSessionDeleteWhere).toHaveBeenCalled()
   })
 
   it('revokes + wipes shells when brand-new user lands via /sign-in/social with credential at enforced domain', async () => {

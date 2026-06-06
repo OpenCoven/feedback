@@ -7,11 +7,10 @@
  *    binding (SSO *is* the enforced method). OAuth-callback paths are
  *    gated in Layer C (`handleCallbackPolicyCleanup`); Layer B handles
  *    password / magic-link pre-session.
- *  - Master switch `ssoOidc.enabled=false` disables enforcement
- *    indirectly via `isSsoActuallyRegistered`.
- *  - Runtime fail-open: callers pass `ssoActuallyRegistered`; when
- *    false (tier downgrade, missing secret) the branch is dormant to
- *    prevent self-lockout.
+ *  - Master switch `ssoOidc.enabled=false` disables enforcement for
+ *    explicitly disabled SSO only. Runtime registration failures (tier
+ *    downgrade, missing secret) must still fail closed for enforced
+ *    domains.
  */
 import { describe, it, expect } from 'vitest'
 import { isHardBound, isSsoConfigured, type AuthProvider } from '../auth-restrictions'
@@ -55,9 +54,8 @@ const callIsHardBound = (
   email: string | null | undefined,
   role: 'admin' | 'member' | 'user',
   authConfig: AuthConfig | undefined,
-  verifiedDomains: readonly VerifiedDomain[] | undefined,
-  ssoRegistered = true
-) => isHardBound(provider, email, role, authConfig, verifiedDomains, ssoRegistered)
+  verifiedDomains: readonly VerifiedDomain[] | undefined
+) => isHardBound(provider, email, role, authConfig, verifiedDomains)
 
 describe('isSsoConfigured — master-switch helper', () => {
   it('returns true when ssoOidc.enabled === true', () => {
@@ -141,79 +139,34 @@ describe('isHardBound — provider gate (only `sso` is exempt)', () => {
       callIsHardBound('google', 'a@acme.com', 'admin', configWithSso(), [verifiedDomain])
     ).toBe(false)
   })
-
-  it('fails open for social OAuth when SSO is not actually registered', () => {
-    expect(
-      callIsHardBound('google', 'a@acme.com', 'admin', configWithSso(), [enforcedDomain], false)
-    ).toBe(false)
-  })
 })
 
-describe('isHardBound — runtime fail-open (ssoActuallyRegistered=false)', () => {
-  it('fails open even with an enforced verified-domain row', () => {
+describe('isHardBound — runtime registration failures still fail closed', () => {
+  it('blocks credential at an enforced verified-domain row when SSO is configured', () => {
     expect(
-      callIsHardBound(
-        'credential',
-        'a@acme.com',
-        'admin',
-        configWithSso(),
-        [enforcedDomain],
-        /* ssoRegistered */ false
-      )
-    ).toBe(false)
+      callIsHardBound('credential', 'a@acme.com', 'admin', configWithSso(), [enforcedDomain])
+    ).toBe(true)
   })
 
-  it('fails open for magic-link too', () => {
+  it('blocks magic-link at an enforced verified-domain row when SSO is configured', () => {
     expect(
-      callIsHardBound(
-        'magic-link',
-        'a@acme.com',
-        'admin',
-        configWithSso(),
-        [enforcedDomain],
-        /* ssoRegistered */ false
-      )
-    ).toBe(false)
-  })
-
-  it('still blocks when registered=true and policy says so (regression: param does not invert)', () => {
-    expect(
-      callIsHardBound(
-        'credential',
-        'a@acme.com',
-        'admin',
-        configWithSso(),
-        [enforcedDomain],
-        /* ssoRegistered */ true
-      )
+      callIsHardBound('magic-link', 'a@acme.com', 'admin', configWithSso(), [enforcedDomain])
     ).toBe(true)
   })
 })
 
 describe('isHardBound — master switch (ssoOidc.enabled)', () => {
-  it('returns false when ssoOidc is absent (never configured) and registered=false', () => {
-    expect(
-      callIsHardBound(
-        'credential',
-        'a@acme.com',
-        'admin',
-        baseConfig,
-        [enforcedDomain],
-        /* ssoRegistered */ false
-      )
-    ).toBe(false)
+  it('returns false when ssoOidc is absent (never configured)', () => {
+    expect(callIsHardBound('credential', 'a@acme.com', 'admin', baseConfig, [enforcedDomain])).toBe(
+      false
+    )
   })
 
-  it('returns false when ssoOidc.enabled=false and registered=false (stale enforced row)', () => {
+  it('returns false when ssoOidc.enabled=false (stale enforced row)', () => {
     expect(
-      callIsHardBound(
-        'credential',
-        'a@acme.com',
-        'admin',
-        configWithSso({ enabled: false }),
-        [enforcedDomain],
-        /* ssoRegistered */ false
-      )
+      callIsHardBound('credential', 'a@acme.com', 'admin', configWithSso({ enabled: false }), [
+        enforcedDomain,
+      ])
     ).toBe(false)
   })
 })
