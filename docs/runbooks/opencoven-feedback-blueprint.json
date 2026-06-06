@@ -1,0 +1,248 @@
+{
+  "canonicalSource": "opencoven-feedback",
+  "workspace": {
+    "name": "OpenCoven",
+    "slug": "opencoven",
+    "publicPortalPurpose": "Public roadmap, feedback intake, bug reports, feature requests, release notes, and product changelogs for OpenCoven projects."
+  },
+  "products": [
+    {
+      "slug": "coven",
+      "publicName": "Coven",
+      "summary": "Harness substrate and CLI for persistent agent workspaces.",
+      "boards": ["feature-requests", "bug-reports", "developer-experience", "integrations"],
+      "releaseTrack": "coven-runtime"
+    },
+    {
+      "slug": "cast-codes",
+      "publicName": "CastCodes",
+      "summary": "Canonical application for interacting with OpenCoven.",
+      "boards": ["feature-requests", "bug-reports", "developer-experience"],
+      "releaseTrack": "cast-codes"
+    },
+    {
+      "slug": "feedback",
+      "publicName": "OpenCoven Feedback",
+      "summary": "Public feedback, roadmap, changelog, and agentic product operations portal.",
+      "boards": ["feature-requests", "bug-reports", "developer-experience", "integrations"],
+      "releaseTrack": "feedback-platform"
+    },
+    {
+      "slug": "coven-code",
+      "publicName": "Coven Code",
+      "summary": "Local-first CLI and TUI for Coven agent workflows.",
+      "boards": ["feature-requests", "bug-reports", "developer-experience"],
+      "releaseTrack": "coven-code"
+    }
+  ],
+  "boards": [
+    {
+      "slug": "feature-requests",
+      "name": "Feature Requests",
+      "description": "Public ideas, product requests, and workflow improvements.",
+      "acceptedIntake": ["portal", "github-issues", "discord", "agent-created"],
+      "defaultStatus": "open"
+    },
+    {
+      "slug": "bug-reports",
+      "name": "Bug Reports",
+      "description": "Publicly track reproducible bugs, crashes, regressions, and broken workflows.",
+      "acceptedIntake": ["portal", "github-issues", "support-thread", "agent-created"],
+      "defaultStatus": "under_review"
+    },
+    {
+      "slug": "developer-experience",
+      "name": "Developer Experience",
+      "description": "DX, docs, CLI, SDK, install, release, and contribution workflow feedback.",
+      "acceptedIntake": ["portal", "github-issues", "discord", "release-review"],
+      "defaultStatus": "open"
+    },
+    {
+      "slug": "integrations",
+      "name": "Integrations",
+      "description": "Requests and bugs for GitHub, Linear, Discord, MCP, harnesses, and external systems.",
+      "acceptedIntake": ["portal", "github-issues", "discord", "agent-created"],
+      "defaultStatus": "open"
+    },
+    {
+      "slug": "desktop-experience",
+      "name": "Desktop Experience",
+      "description": "macOS, app shell, notifications, onboarding, and native workflow feedback.",
+      "acceptedIntake": ["portal", "github-issues", "support-thread", "agent-created"],
+      "defaultStatus": "open"
+    }
+  ],
+  "roadmaps": [
+    {
+      "slug": "castcodes",
+      "name": "CastCodes",
+      "description": "Canonical application roadmap for interacting with OpenCoven.",
+      "public": true
+    },
+    {
+      "slug": "coven",
+      "name": "Coven",
+      "description": "Harness substrate, CLI, and runtime roadmap for persistent agent workspaces.",
+      "public": true
+    },
+    {
+      "slug": "opencoven-feedback",
+      "name": "OpenCoven Feedback",
+      "description": "Public feedback, roadmap, changelog, and agentic product operations roadmap.",
+      "public": true
+    },
+    {
+      "slug": "coven-mobile-application",
+      "name": "Coven Mobile",
+      "description": "Mobile OpenCoven surface and companion app work.",
+      "public": true
+    },
+    {
+      "slug": "coven-code",
+      "name": "Coven Code",
+      "description": "Local-first CLI and TUI for Coven agent workflows.",
+      "public": true
+    },
+    {
+      "slug": "internal-triage",
+      "name": "Internal Triage",
+      "description": "Private holding lane for sensitive reports, duplicates, security context, and unclear items.",
+      "public": false
+    }
+  ],
+  "statuses": [
+    {
+      "slug": "open",
+      "name": "Open",
+      "showOnRoadmap": false,
+      "meaning": "New public intake that has not been accepted for roadmap visibility."
+    },
+    {
+      "slug": "under_review",
+      "name": "Under Review",
+      "showOnRoadmap": false,
+      "meaning": "Needs maintainer or product review before acceptance."
+    },
+    {
+      "slug": "planned",
+      "name": "Planned",
+      "showOnRoadmap": true,
+      "meaning": "Accepted and publicly visible, but not actively in progress."
+    },
+    {
+      "slug": "in_progress",
+      "name": "In Progress",
+      "showOnRoadmap": true,
+      "meaning": "Assigned and actively moving toward a concrete release."
+    },
+    {
+      "slug": "complete",
+      "name": "Complete",
+      "showOnRoadmap": true,
+      "meaning": "Shipped or otherwise resolved publicly."
+    },
+    {
+      "slug": "closed",
+      "name": "Closed",
+      "showOnRoadmap": false,
+      "meaning": "Not planned, duplicate, invalid, or handled outside the public roadmap."
+    }
+  ],
+  "tags": [
+    "product:coven",
+    "product:cast-codes",
+    "product:feedback",
+    "area:docs",
+    "area:cli",
+    "area:desktop",
+    "area:agents",
+    "area:integrations",
+    "source:github",
+    "source:discord",
+    "source:release",
+    "priority:p0",
+    "priority:p1",
+    "priority:p2"
+  ],
+  "changelogKinds": [
+    "release",
+    "feature",
+    "fix",
+    "docs",
+    "breaking-change",
+    "security-note",
+    "roadmap-update"
+  ],
+  "helpCenter": {
+    "categories": [
+      {
+        "slug": "getting-started",
+        "name": "Getting Started",
+        "description": "Start here to understand OpenCoven, CastCodes, Coven, and Coven Code."
+      },
+      {
+        "slug": "products",
+        "name": "Products",
+        "description": "Learn what each public OpenCoven product surface does."
+      },
+      {
+        "slug": "feedback-and-roadmaps",
+        "name": "Feedback and Roadmaps",
+        "description": "Use public feedback, product roadmaps, and statuses effectively."
+      },
+      {
+        "slug": "releases-and-changelog",
+        "name": "Releases and Changelog",
+        "description": "Follow verified releases, shipped work, and historical milestones."
+      },
+      {
+        "slug": "agents-and-safety",
+        "name": "Agents and Safety",
+        "description": "Understand how agents help with public OpenCoven product work safely."
+      },
+      {
+        "slug": "grimoire",
+        "name": "Grimoire",
+        "description": "Learn OpenCoven language, concepts, and public lore boundaries."
+      }
+    ],
+    "articleRules": [
+      "Use Title Case for help center article titles.",
+      "Keep articles comprehensive enough to answer the user question, but short enough to scan.",
+      "Use public-safe language and avoid private infrastructure, secrets, unreleased sensitive context, and raw personal data."
+    ]
+  },
+  "releaseWorkflow": [
+    "Collect merged PRs, shipped feedback posts, and notable docs changes.",
+    "Draft one changelog entry per product release or public milestone.",
+    "Link shipped feedback posts to the changelog entry before publishing.",
+    "Move linked posts to complete while keeping them on the relevant product roadmap.",
+    "Publish the changelog only after the release artifact or deployed change is verified."
+  ],
+  "agentRules": [
+    "Do not include secrets, private tokens, private infrastructure URLs, customer-private logs, or raw personal data in public posts, comments, roadmaps, or changelogs.",
+    "Summarize private context into public-safe language before posting anything visible.",
+    "Use Title Case for public feedback and changelog titles, with short subject-verb-object phrasing where possible.",
+    "Use OpenCoven Feedback as the canonical public source of truth; GitHub issues, releases, Discord, and support threads are inputs or announcement channels.",
+    "Keep security reports private until Val explicitly approves a sanitized public note.",
+    "For duplicate feedback, merge into the highest-signal canonical post and preserve public attribution through comments or linked evidence where safe.",
+    "When an item ships, update status, product roadmap membership, and changelog links in the same operating pass."
+  ],
+  "cadence": {
+    "daily": [
+      "Review new incoming feedback and obvious duplicates.",
+      "Promote clear bugs or feature requests into the right board.",
+      "Flag sensitive items for private handling instead of public posting."
+    ],
+    "weekly": [
+      "Review product roadmap drift before Weekly Open Coven.",
+      "Prepare a short public roadmap update from accepted changes.",
+      "Check changelog drafts against shipped artifacts and release notes."
+    ],
+    "release": [
+      "Create or update the changelog draft.",
+      "Link related posts and roadmap items.",
+      "Publish only after verification evidence exists."
+    ]
+  }
+}
