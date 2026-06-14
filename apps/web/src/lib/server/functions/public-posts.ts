@@ -697,7 +697,7 @@ export const findSimilarPostsFn = createServerFn({ method: 'GET' })
   .handler(async ({ data }): Promise<SimilarPost[]> => {
     console.log(`[fn:public-posts] findSimilarPostsFn: title="${data.title.slice(0, 30)}..."`)
     try {
-      const { db, posts, boards, postStatuses, and, isNull, desc, sql, inArray } =
+      const { db, posts, boards, postStatuses, and, eq, isNull, desc, sql, inArray } =
         await import('@/lib/server/db')
       const { generateEmbedding } =
         await import('@/lib/server/domains/embeddings/embedding.service')
@@ -721,8 +721,10 @@ export const findSimilarPostsFn = createServerFn({ method: 'GET' })
             ),
         })
         .from(posts)
+        .innerJoin(boards, eq(posts.boardId, boards.id))
         .where(
           and(
+            eq(boards.isPublic, true),
             isNull(posts.deletedAt),
             isNull(posts.canonicalPostId),
             sql`${posts.searchVector} @@ plainto_tsquery('english', ${searchQuery})`
@@ -751,8 +753,10 @@ export const findSimilarPostsFn = createServerFn({ method: 'GET' })
               score: sql<number>`1 - (${posts.embedding} <=> ${vectorStr}::vector)`.as('score'),
             })
             .from(posts)
+            .innerJoin(boards, eq(posts.boardId, boards.id))
             .where(
               and(
+                eq(boards.isPublic, true),
                 isNull(posts.deletedAt),
                 isNull(posts.canonicalPostId),
                 sql`${posts.embedding} IS NOT NULL`,
@@ -831,7 +835,7 @@ export const findSimilarPostsFn = createServerFn({ method: 'GET' })
         db
           .select({ id: boards.id, slug: boards.slug })
           .from(boards)
-          .where(inArray(boards.id, boardIds)),
+          .where(and(inArray(boards.id, boardIds), eq(boards.isPublic, true))),
       ])
 
       const statusMap = new Map(statusesResult.map((s) => [String(s.id), s]))
