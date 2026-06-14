@@ -14,8 +14,10 @@ import {
   principal,
   user,
   postStatuses,
-  and,
   eq,
+  and,
+  ne,
+  sql,
   DEFAULT_STATUSES,
 } from '@/lib/server/db'
 import { invalidateSettingsCache } from '@/lib/server/domains/settings/settings.helpers'
@@ -25,36 +27,53 @@ import { isPathManaged } from '@/lib/server/config-file/managed-paths'
 import { slugify } from '@/lib/shared/utils'
 import { getSetupState } from '@/lib/shared/db-types'
 
-async function ensureOnboardingAdminPrincipal(userId: UserId, logLabel: string): Promise<void> {
-  const existing = await db.query.principal.findFirst({
-    where: eq(principal.userId, userId),
-  })
+/** Onboarding promotes the acting user to admin during bootstrap only.
+ *  Once another human principal exists, onboarding endpoints must not
+ *  promote a different non-admin principal. */
+async function ensureAdminPrincipal(userId: UserId, logLabel: string): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext('quackback:onboarding_bootstrap_admin'))`
+    )
 
-  if (existing && isAdmin(existing.role)) {
-    return
-  }
-
-  const existingAdmin = await db.query.principal.findFirst({
-    where: and(eq(principal.role, 'admin'), eq(principal.type, 'user')),
-    columns: { id: true },
-  })
-
-  if (existingAdmin) {
-    throw new Error('Only admin can complete setup')
-  }
-
-  if (!existing) {
-    console.log(`[fn:onboarding] ${logLabel}: creating admin principal for first onboarding user`)
-    await db.insert(principal).values({
-      id: generateId('principal'),
-      userId,
-      role: 'admin',
-      createdAt: new Date(),
+    const existing = await tx.query.principal.findFirst({
+      where: eq(principal.userId, userId),
     })
-  } else {
-    console.log(`[fn:onboarding] ${logLabel}: upgrading first onboarding user to admin`)
-    await db.update(principal).set({ role: 'admin' }).where(eq(principal.userId, userId))
-  }
+    if (existing && isAdmin(existing.role)) {
+      return
+    }
+
+    const existingAdmin = await tx.query.principal.findFirst({
+      where: and(eq(principal.role, 'admin'), eq(principal.type, 'user')),
+      columns: { id: true },
+    })
+    if (existingAdmin) {
+      throw new Error('Only admin can complete setup')
+    }
+
+    const existingHumanPrincipal = await tx.query.principal.findFirst({
+      where: existing
+        ? and(eq(principal.type, 'user'), ne(principal.id, existing.id))
+        : eq(principal.type, 'user'),
+      columns: { id: true },
+    })
+    if (existingHumanPrincipal) {
+      throw new Error('Only admin can complete setup')
+    }
+
+    if (!existing) {
+      console.log(`[fn:onboarding] ${logLabel}: creating admin principal for first onboarding user`)
+      await tx.insert(principal).values({
+        id: generateId('principal'),
+        userId,
+        role: 'admin',
+        createdAt: new Date(),
+      })
+    } else {
+      console.log(`[fn:onboarding] ${logLabel}: upgrading first onboarding user to admin`)
+      await tx.update(principal).set({ role: 'admin' }).where(eq(principal.userId, userId))
+    }
+  })
 }
 
 /**
@@ -138,9 +157,21 @@ export const setupWorkspaceFn = createServerFn({ method: 'POST' })
 
       let setupState: SetupState | null = getSetupState(existingSettings?.setupState ?? null)
 
-      // First authenticated user may bootstrap an install, but once a human admin
-      // exists, onboarding mutations require the acting user to already be admin.
-      await ensureOnboardingAdminPrincipal(session.user.id as UserId, 'setupWorkspaceFn')
+      // Fresh install (no settings): first authenticated user becomes admin.
+      // Settings exist + workspace step done: require existing admin.
+      // Settings exist + workspace step not done: ensure user becomes admin.
+      if (!existingSettings) {
+        await ensureAdminPrincipal(session.user.id as UserId, 'setupWorkspaceFn')
+      } else if (setupState?.steps?.workspace) {
+        const principalRecord = await db.query.principal.findFirst({
+          where: eq(principal.userId, session.user.id as UserId),
+        })
+        if (!principalRecord || !isAdmin(principalRecord.role)) {
+          throw new Error('Only admin can complete setup')
+        }
+      } else {
+        await ensureAdminPrincipal(session.user.id as UserId, 'setupWorkspaceFn')
+      }
 
       // Check if onboarding is already complete
       if (setupState?.steps?.core && setupState?.steps?.workspace && setupState?.steps?.boards) {
@@ -354,7 +385,9 @@ export const saveUseCaseFn = createServerFn({ method: 'POST' })
           steps: { core: true, workspace: false, boards: false },
         }
 
-        await ensureOnboardingAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
+        if (!setupState.steps.workspace) {
+          await ensureAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
+        }
 
         const updatedState: SetupState = { ...setupState, useCase: data.useCase }
 
@@ -373,13 +406,15 @@ export const saveUseCaseFn = createServerFn({ method: 'POST' })
         // (same rationale as setupWorkspaceFn): no settings row yet to
         // read managedFieldPaths from. The reconciler will overwrite on
         // its next tick if the file owns these fields.
+        await ensureAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
+
         const setupState: SetupState = {
           version: 1,
           steps: { core: true, workspace: false, boards: false },
           useCase: data.useCase,
         }
 
-        await ensureOnboardingAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
+        await ensureAdminPrincipal(session.user.id as UserId, 'saveUseCaseFn')
 
         await db.insert(settings).values({
           id: generateId('workspace'),
