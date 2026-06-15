@@ -24,7 +24,6 @@ const { state, principalTable, settingsTable, postStatusesTable, userTable } = v
     statusesExist: true,
   },
   principalTable: {
-    id: 'principal.id',
     userId: 'principal.userId',
     role: 'principal.role',
     type: 'principal.type',
@@ -88,20 +87,23 @@ function matchesWhere(row: Record<string, unknown>, where: unknown): boolean {
   if (clause.op === 'and') {
     return clause.conditions?.every((condition) => matchesWhere(row, condition)) ?? false
   }
-  if (clause.op === 'ne') {
-    if (clause.col === principalTable.id) return row.id !== clause.value
-    return false
-  }
   if (clause.col === principalTable.userId) return row.userId === clause.value
-  if (clause.col === principalTable.id) return row.id === clause.value
   if (clause.col === principalTable.role) return row.role === clause.value
   if (clause.col === principalTable.type) return row.type === clause.value
   if (clause.col === settingsTable.id) return row.id === clause.value
   return false
 }
 
-vi.mock('@/lib/server/db', () => {
-  const dbMock = {
+vi.mock('@/lib/server/db', () => ({
+  USE_CASE_TYPES: ['feedback', 'roadmap', 'changelog'],
+  DEFAULT_STATUSES: [],
+  principal: principalTable,
+  settings: settingsTable,
+  postStatuses: postStatusesTable,
+  user: userTable,
+  eq: (col: string, value: unknown) => ({ op: 'eq', col, value }),
+  and: (...conditions: unknown[]) => ({ op: 'and', conditions }),
+  db: {
     query: {
       principal: {
         findFirst: async ({ where }: { where: unknown }) =>
@@ -150,24 +152,8 @@ vi.mock('@/lib/server/db', () => {
         },
       }),
     }),
-    execute: async () => undefined,
-    transaction: async (fn: (tx: unknown) => unknown) => fn(dbMock),
-  }
-
-  return {
-    USE_CASE_TYPES: ['saas', 'consumer', 'marketplace', 'internal'],
-    DEFAULT_STATUSES: [],
-    principal: principalTable,
-    settings: settingsTable,
-    postStatuses: postStatusesTable,
-    user: userTable,
-    eq: (col: string, value: unknown) => ({ op: 'eq', col, value }),
-    and: (...conditions: unknown[]) => ({ op: 'and', conditions }),
-    ne: (col: string, value: unknown) => ({ op: 'ne', col, value }),
-    sql: (strings: TemplateStringsArray, ...values: unknown[]) => ({ strings, values }),
-    db: dbMock,
-  }
-})
+  },
+}))
 
 beforeEach(() => {
   state.sessionUserId = 'user_attacker'
@@ -197,7 +183,7 @@ describe('onboarding authorization', () => {
     const { setupWorkspaceFn } = await import('../onboarding')
 
     await expect(
-      setupWorkspaceFn({ data: { workspaceName: 'Pwned Workspace', useCase: 'saas' } })
+      setupWorkspaceFn({ data: { workspaceName: 'Pwned Workspace', useCase: 'feedback' } })
     ).rejects.toThrow('Only admin can complete setup')
 
     expect(state.principals.find((row) => row.userId === 'user_attacker')?.role).toBe('user')
@@ -208,7 +194,7 @@ describe('onboarding authorization', () => {
   it('does not let saveUseCaseFn mutate settings when another human admin exists', async () => {
     const { saveUseCaseFn } = await import('../onboarding')
 
-    await expect(saveUseCaseFn({ data: { useCase: 'saas' } })).rejects.toThrow(
+    await expect(saveUseCaseFn({ data: { useCase: 'roadmap' } })).rejects.toThrow(
       'Only admin can complete setup'
     )
 
@@ -225,9 +211,9 @@ describe('onboarding authorization', () => {
 
     const { saveUseCaseFn } = await import('../onboarding')
 
-    await saveUseCaseFn({ data: { useCase: 'saas' } })
+    await saveUseCaseFn({ data: { useCase: 'feedback' } })
 
     expect(state.principals.find((row) => row.userId === 'user_attacker')?.role).toBe('admin')
-    expect(JSON.parse(state.currentSettings!.setupState).useCase).toBe('saas')
+    expect(JSON.parse(state.currentSettings!.setupState).useCase).toBe('feedback')
   })
 })
