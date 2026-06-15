@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockIsS3Configured = vi.fn(() => true)
-const mockGeneratePresignedGetUrl = vi.fn(
-  async (key: string) => `https://s3.example/${key}?signed=1`
-)
+const mockGeneratePresignedGetUrl = vi.fn(async (key: string) => `https://s3.example/${key}?signed=1`)
 const mockGetS3Object = vi.fn()
 
 vi.mock('@/lib/server/storage/s3', () => ({
@@ -29,9 +27,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockConfig.s3Proxy = true
   mockIsS3Configured.mockReturnValue(true)
-  mockGeneratePresignedGetUrl.mockImplementation(
-    async (key: string) => `https://s3.example/${key}?signed=1`
-  )
+  mockGeneratePresignedGetUrl.mockImplementation(async (key: string) => `https://s3.example/${key}?signed=1`)
   mockGetS3Object.mockResolvedValue({
     body: streamFromText('file-body'),
     contentType: 'image/png',

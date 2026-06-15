@@ -15,19 +15,21 @@ const SAFE_PROXY_IMAGE_TYPES = new Set([
 
 const KEY_PREFIX = '/api/storage/'
 
+function extractKey(url: URL): string | null {
+  const key = decodeURIComponent(url.pathname.slice(KEY_PREFIX.length))
+  return key && !key.includes('..') ? key : null
+}
+
 function getMediaType(contentType: string): string {
   return contentType.split(';', 1)[0].trim().toLowerCase()
 }
 
-function attachmentFilename(key: string): string {
-  const filename = key
-    .split('/')
-    .pop()
-    ?.replace(/[^a-zA-Z0-9._-]/g, '_')
-  return filename || 'download'
+function getAttachmentFilename(key: string): string {
+  const filename = key.split('/').pop() || 'download'
+  return filename.replace(/[\r\n"]/g, '_')
 }
 
-export function buildProxyObjectHeaders(key: string, contentType: string): Record<string, string> {
+function buildProxyGetHeaders(key: string, contentType: string): HeadersInit {
   const mediaType = getMediaType(contentType)
   const headers: Record<string, string> = {
     'Cache-Control': 'public, max-age=31536000, immutable',
@@ -38,16 +40,10 @@ export function buildProxyObjectHeaders(key: string, contentType: string): Recor
     headers['Content-Type'] = contentType
   } else {
     headers['Content-Type'] = 'application/octet-stream'
-    headers['Content-Disposition'] = `attachment; filename="${attachmentFilename(key)}"`
-    headers['Content-Security-Policy'] = 'sandbox'
+    headers['Content-Disposition'] = `attachment; filename="${getAttachmentFilename(key)}"`
   }
 
   return headers
-}
-
-function extractKey(url: URL): string | null {
-  const key = decodeURIComponent(url.pathname.slice(KEY_PREFIX.length))
-  return key && !key.includes('..') ? key : null
 }
 
 // Reads up to maxBytes from the request body stream, cancelling early if exceeded.
@@ -144,7 +140,7 @@ export async function handleProxyGet({ request }: { request: Request }): Promise
         if (Date.now() - cached.cachedAt < PROXY_CACHE_TTL) {
           return new Response(cached.data, {
             status: 200,
-            headers: buildProxyObjectHeaders(key, cached.contentType),
+            headers: buildProxyGetHeaders(key, cached.contentType),
           })
         }
         proxyCache.delete(key)
@@ -157,7 +153,7 @@ export async function handleProxyGet({ request }: { request: Request }): Promise
 
       return new Response(data, {
         status: 200,
-        headers: buildProxyObjectHeaders(key, contentType),
+        headers: buildProxyGetHeaders(key, contentType),
       })
     }
 
