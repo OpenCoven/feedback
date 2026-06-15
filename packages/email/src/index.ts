@@ -20,6 +20,7 @@ import { PostMentionEmail } from './templates/post-mention'
 import { ChangelogPublishedEmail } from './templates/changelog-published'
 import { FeedbackLinkedEmail } from './templates/feedback-linked'
 import { PasswordResetEmail } from './templates/password-reset'
+import { EmailVerificationEmail } from './templates/email-verification'
 import { RecoveryCodeUsedEmail } from './templates/recovery-code-used'
 import { NewSignInEmail } from './templates/new-sign-in'
 
@@ -259,6 +260,39 @@ export async function sendMagicLinkEmail(params: SendMagicLinkParams): Promise<E
     to,
     subject: 'Your Quackback sign-in link',
     react: MagicLinkEmail({ signInUrl, code, logoUrl }),
+  })
+}
+
+// ============================================================================
+// Email Verification
+// ============================================================================
+
+interface SendEmailVerificationParams {
+  to: string
+  verificationUrl: string
+  logoUrl?: string
+}
+
+export async function sendEmailVerificationEmail(
+  params: SendEmailVerificationParams
+): Promise<EmailResult> {
+  const { to, verificationUrl, logoUrl } = params
+
+  if (getProvider() === 'console') {
+    console.log('\n┌────────────────────────────────────────────────────────────')
+    console.log('│ [DEV] Email Verification')
+    console.log('├────────────────────────────────────────────────────────────')
+    console.log(`│ To: ${to}`)
+    console.log(`│ Verification link: ${verificationUrl}`)
+    console.log('└────────────────────────────────────────────────────────────\n')
+    return { sent: false }
+  }
+
+  console.log(`[Email] Sending email verification to ${to}`)
+  return sendEmail({
+    to,
+    subject: 'Verify your Quackback email',
+    react: EmailVerificationEmail({ verificationUrl, logoUrl }),
   })
 }
 
@@ -671,6 +705,7 @@ export { NewCommentEmail } from './templates/new-comment'
 export { PostMentionEmail } from './templates/post-mention'
 export { ChangelogPublishedEmail } from './templates/changelog-published'
 export { FeedbackLinkedEmail } from './templates/feedback-linked'
+export { EmailVerificationEmail } from './templates/email-verification'
 export { PasswordResetEmail } from './templates/password-reset'
 export { RecoveryCodeUsedEmail } from './templates/recovery-code-used'
 export { NewSignInEmail } from './templates/new-sign-in'

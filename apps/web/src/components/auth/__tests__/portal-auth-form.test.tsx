@@ -2,6 +2,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 
+const { postAuthSuccessMock } = vi.hoisted(() => ({
+  postAuthSuccessMock: vi.fn(),
+}))
+
 vi.mock('@/lib/client/auth-client', () => ({
   authClient: {
     signIn: {
@@ -12,6 +16,16 @@ vi.mock('@/lib/client/auth-client', () => ({
     signUp: { email: vi.fn() },
     requestPasswordReset: vi.fn(),
   },
+}))
+
+vi.mock('@/lib/client/hooks/use-auth-broadcast', () => ({
+  postAuthSuccess: postAuthSuccessMock,
+  usePopupTracker: () => ({
+    trackPopup: vi.fn(),
+    clearPopup: vi.fn(),
+    hasPopup: vi.fn(() => false),
+    focusPopup: vi.fn(() => false),
+  }),
 }))
 
 // OAuth buttons reach into broadcast/popup hooks that aren't relevant
@@ -90,10 +104,12 @@ vi.mock('@/components/ui/input-otp', () => ({
 }))
 
 import { PortalAuthForm } from '../portal-auth-form'
+import { PortalAuthFormInline } from '../portal-auth-form-inline'
 import { authClient } from '@/lib/client/auth-client'
 
 const signInEmailOtpMock = authClient.signIn.emailOtp as ReturnType<typeof vi.fn>
 const signInOauth2Mock = authClient.signIn.oauth2 as ReturnType<typeof vi.fn>
+const signUpEmailMock = authClient.signUp.email as ReturnType<typeof vi.fn>
 
 // Mock fetch globally; per-test override the response.
 const fetchMock = vi.fn()
@@ -103,6 +119,7 @@ beforeEach(() => {
 afterEach(() => {
   fetchMock.mockReset()
   lookupMock.mockReset()
+  postAuthSuccessMock.mockReset()
 })
 
 function okResponse(body: object = { ok: true }) {
@@ -260,6 +277,71 @@ describe('PortalAuthForm — Stage 1 → Stage 2 dispatch', () => {
     expect(screen.getByText(/new sign-ups are off/i)).toBeInTheDocument()
     // No password field shown in blocked state
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
+  })
+
+  it('keeps password signup on the email-verification step without broadcasting auth success', async () => {
+    lookupMock.mockResolvedValue({
+      kind: 'methods',
+      authConfig: { password: true, magicLink: false },
+      ssoEnabled: false,
+    })
+    signUpEmailMock.mockResolvedValue({ data: {}, error: null })
+    render(
+      <PortalAuthForm mode="signup" authConfig={{ password: true, magicLink: false }} openSignup />
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'new-user@example.com' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }))
+    await screen.findByLabelText(/^password$/i)
+
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: 'hunter222' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
+
+    await screen.findByRole('heading', { name: /check your email/i })
+    expect(screen.getByText(/new-user@example.com/i)).toBeInTheDocument()
+    expect(screen.getByText(/check spam/i)).toBeInTheDocument()
+    expect(signUpEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'new-user@example.com', password: 'hunter222' })
+    )
+    expect(postAuthSuccessMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps inline password signup on the email-verification step without broadcasting auth success', async () => {
+    lookupMock.mockResolvedValue({
+      kind: 'methods',
+      authConfig: { password: true, magicLink: false },
+      ssoEnabled: false,
+    })
+    signUpEmailMock.mockResolvedValue({ data: {}, error: null })
+    render(
+      <PortalAuthFormInline
+        mode="signup"
+        authConfig={{ found: false, oauth: { password: true, magicLink: false }, openSignup: true }}
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: 'inline-user@example.com' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }))
+    await screen.findByLabelText(/^password$/i)
+
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: 'hunter333' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
+
+    await screen.findByRole('heading', { name: /check your email/i })
+    expect(screen.getByText(/inline-user@example.com/i)).toBeInTheDocument()
+    expect(screen.getByText(/check spam/i)).toBeInTheDocument()
+    expect(signUpEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'inline-user@example.com', password: 'hunter333' })
+    )
+    expect(postAuthSuccessMock).not.toHaveBeenCalled()
   })
 
   it('back link from Stage 2 returns to Stage 1 and clears the password', async () => {

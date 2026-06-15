@@ -86,7 +86,9 @@ async function createAuth() {
     twoFactor: twoFactorTable,
     eq,
   } = await import('@/lib/server/db')
-  const { sendPasswordResetEmail, isEmailConfigured } = await import('@opencoven-feedback/email')
+  const { sendEmailVerificationEmail, sendPasswordResetEmail, isEmailConfigured } = await import(
+    '@opencoven-feedback/email'
+  )
   const { getPlatformCredentials } =
     await import('@/lib/server/domains/platform-credentials/platform-credential.service')
   const { getAllAuthProviders } = await import('./auth-providers')
@@ -329,7 +331,8 @@ async function createAuth() {
       enabled: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
-      autoSignIn: true,
+      autoSignIn: false,
+      requireEmailVerification: true,
       async sendResetPassword({ user, url }) {
         if (!isEmailConfigured()) {
           console.warn(
@@ -343,6 +346,23 @@ async function createAuth() {
         await sendPasswordResetEmail({ to: user.email, resetLink: url, logoUrl })
       },
       resetPasswordTokenExpiresIn: 60 * 60 * 24, // 24 hours
+    },
+
+    emailVerification: {
+      sendOnSignUp: true,
+      sendOnSignIn: true,
+      autoSignInAfterVerification: true,
+      async sendVerificationEmail({ user, url }) {
+        if (!isEmailConfigured()) {
+          console.warn(
+            `[auth] Email verification requested for ${user.email} but email is not configured. Link will be logged to the console.`
+          )
+        }
+        const { getEmailSafeUrl } = await import('@/lib/server/storage/s3')
+        const settings = await db.query.settings.findFirst({ columns: { logoKey: true } })
+        const logoUrl = getEmailSafeUrl(settings?.logoKey) ?? undefined
+        await sendEmailVerificationEmail({ to: user.email, verificationUrl: url, logoUrl })
+      },
     },
 
     // Account linking - allow users to link multiple OAuth providers to their account

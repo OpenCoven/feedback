@@ -142,6 +142,10 @@ export const acceptInvitationFn = createServerFn({ method: 'POST' })
         )
       }
 
+      if (!session.user.emailVerified) {
+        throw new Error('Please verify your email address before accepting this invitation.')
+      }
+
       // Atomically claim the invitation with a conditional update to prevent
       // double-accept race conditions (e.g., double-click, network retry).
       const [claimed] = await db

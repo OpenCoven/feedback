@@ -126,6 +126,7 @@ export function PortalAuthFormInline({
   const passwordEnabled = authConfig?.oauth?.password ?? true
   const magicLinkEnabled = authConfig?.oauth?.magicLink ?? false
   const openSignup = authConfig?.openSignup
+  const callbackUrl = '/'
   const methodsDefaultStep: AuthFormStep =
     !passwordEnabled && magicLinkEnabled ? 'email' : 'credentials'
 
@@ -139,6 +140,7 @@ export function PortalAuthFormInline({
     | { stage: 'sso-unavailable' }
     | { stage: 'closed-signup' }
     | { stage: 'sso-redirecting' }
+    | { stage: 'verify-email' }
 
   // Invitation flow: the email is server-known, so Stage 1 is moot.
   const [view, setView] = useState<View>(
@@ -282,10 +284,14 @@ export function PortalAuthFormInline({
           name: name.trim() || email.split('@')[0],
           email,
           password,
+          callbackURL: callbackUrl,
         })
         if (result.error) {
           throw new Error(result.error.message || 'Failed to create account')
         }
+        setView({ stage: 'verify-email' })
+        setLoadingAction(null)
+        return
       } else {
         // Stash the current page so the twoFactor client can splice it
         // onto its `/auth/two-factor` redirect — the inline form lives
@@ -296,6 +302,7 @@ export function PortalAuthFormInline({
         const result = await authClient.signIn.email({
           email,
           password,
+          callbackURL: callbackUrl,
         })
         if (result.error) {
           throw new Error(result.error.message || 'Invalid email or password')
@@ -568,6 +575,35 @@ export function PortalAuthFormInline({
               </>
             )}
           </p>
+        )}
+      </div>
+    )
+  }
+
+  // ============================================================
+  // Email verification required after password sign-up
+  // ============================================================
+  if (view.stage === 'verify-email') {
+    return (
+      <div className="space-y-4 text-center">
+        <EnvelopeIcon className="mx-auto h-8 w-8 text-primary" />
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Check your email</h2>
+          <p className="text-sm text-muted-foreground">
+            We sent a verification link to{' '}
+            <span className="font-medium text-foreground">{email}</span>. Verify your email to
+            finish creating your account. If you don&apos;t see it, check spam or try signing in
+            again to resend the verification email.
+          </p>
+        </div>
+        {onModeSwitch && (
+          <button
+            type="button"
+            onClick={() => onModeSwitch('login')}
+            className="text-sm text-primary hover:underline font-medium"
+          >
+            Back to sign in
+          </button>
         )}
       </div>
     )
