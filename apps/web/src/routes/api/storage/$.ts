@@ -5,39 +5,27 @@ import { createFileRoute } from '@tanstack/react-router'
 const proxyCache = new Map<string, { data: ArrayBuffer; contentType: string; cachedAt: number }>()
 const PROXY_CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
-const SAFE_PROXY_IMAGE_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/avif',
-])
-
 const KEY_PREFIX = '/api/storage/'
 
-function getMediaType(contentType: string): string {
-  return contentType.split(';', 1)[0].trim().toLowerCase()
+const INLINE_PROXY_CONTENT_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+
+function isInlineProxyContentType(contentType: string): boolean {
+  return INLINE_PROXY_CONTENT_TYPES.has(contentType.split(';')[0]?.trim().toLowerCase() ?? '')
 }
 
 function attachmentFilename(key: string): string {
-  const filename = key
-    .split('/')
-    .pop()
-    ?.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const filename = key.split('/').pop()?.replace(/[^a-zA-Z0-9._-]/g, '_')
   return filename || 'download'
 }
 
 export function buildProxyObjectHeaders(key: string, contentType: string): Record<string, string> {
-  const mediaType = getMediaType(contentType)
   const headers: Record<string, string> = {
+    'Content-Type': contentType,
     'Cache-Control': 'public, max-age=31536000, immutable',
     'X-Content-Type-Options': 'nosniff',
   }
 
-  if (SAFE_PROXY_IMAGE_TYPES.has(mediaType)) {
-    headers['Content-Type'] = contentType
-  } else {
-    headers['Content-Type'] = 'application/octet-stream'
+  if (!isInlineProxyContentType(contentType)) {
     headers['Content-Disposition'] = `attachment; filename="${attachmentFilename(key)}"`
     headers['Content-Security-Policy'] = 'sandbox'
   }
@@ -118,64 +106,6 @@ export async function handleProxyUpload({ request }: { request: Request }): Prom
   return new Response(null, { status: 200 })
 }
 
-export async function handleProxyGet({ request }: { request: Request }): Promise<Response> {
-  const { isS3Configured, generatePresignedGetUrl, getS3Object } =
-    await import('@/lib/server/storage/s3')
-  const { config } = await import('@/lib/server/config')
-
-  if (!isS3Configured()) {
-    return Response.json({ error: 'Storage not configured' }, { status: 503 })
-  }
-
-  const url = new URL(request.url)
-  const key = extractKey(url)
-
-  if (!key) {
-    return Response.json({ error: 'Invalid storage key' }, { status: 400 })
-  }
-
-  // Force proxy for email embeds (?email=1) since email clients don't follow redirects
-  const forceProxy = url.searchParams.has('email')
-
-  try {
-    if (config.s3Proxy || forceProxy) {
-      const cached = proxyCache.get(key)
-      if (cached) {
-        if (Date.now() - cached.cachedAt < PROXY_CACHE_TTL) {
-          return new Response(cached.data, {
-            status: 200,
-            headers: buildProxyObjectHeaders(key, cached.contentType),
-          })
-        }
-        proxyCache.delete(key)
-      }
-
-      const { body, contentType } = await getS3Object(key)
-      const data = await new Response(body).arrayBuffer()
-
-      proxyCache.set(key, { data, contentType, cachedAt: Date.now() })
-
-      return new Response(data, {
-        status: 200,
-        headers: buildProxyObjectHeaders(key, contentType),
-      })
-    }
-
-    const presignedUrl = await generatePresignedGetUrl(key)
-
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: presignedUrl,
-        'Cache-Control': 'public, max-age=86400',
-      },
-    })
-  } catch (error) {
-    console.error('Error serving storage object:', error)
-    return Response.json({ error: 'Failed to resolve storage URL' }, { status: 500 })
-  }
-}
-
 export const Route = createFileRoute('/api/storage/$')({
   server: {
     handlers: {
@@ -198,7 +128,63 @@ export const Route = createFileRoute('/api/storage/$')({
        * Otherwise, redirects to a presigned S3 URL (302) so the browser fetches
        * directly from S3 — no bytes are proxied through the server.
        */
-      GET: handleProxyGet,
+      GET: async ({ request }) => {
+        const { isS3Configured, generatePresignedGetUrl, getS3Object } =
+          await import('@/lib/server/storage/s3')
+        const { config } = await import('@/lib/server/config')
+
+        if (!isS3Configured()) {
+          return Response.json({ error: 'Storage not configured' }, { status: 503 })
+        }
+
+        const url = new URL(request.url)
+        const key = extractKey(url)
+
+        if (!key) {
+          return Response.json({ error: 'Invalid storage key' }, { status: 400 })
+        }
+
+        // Force proxy for email embeds (?email=1) since email clients don't follow redirects
+        const forceProxy = url.searchParams.has('email')
+
+        try {
+          if (config.s3Proxy || forceProxy) {
+            const cached = proxyCache.get(key)
+            if (cached) {
+              if (Date.now() - cached.cachedAt < PROXY_CACHE_TTL) {
+                return new Response(cached.data, {
+                  status: 200,
+                  headers: buildProxyObjectHeaders(key, cached.contentType),
+                })
+              }
+              proxyCache.delete(key)
+            }
+
+            const { body, contentType } = await getS3Object(key)
+            const data = await new Response(body).arrayBuffer()
+
+            proxyCache.set(key, { data, contentType, cachedAt: Date.now() })
+
+            return new Response(data, {
+              status: 200,
+              headers: buildProxyObjectHeaders(key, contentType),
+            })
+          }
+
+          const presignedUrl = await generatePresignedGetUrl(key)
+
+          return new Response(null, {
+            status: 302,
+            headers: {
+              Location: presignedUrl,
+              'Cache-Control': 'public, max-age=86400',
+            },
+          })
+        } catch (error) {
+          console.error('Error serving storage object:', error)
+          return Response.json({ error: 'Failed to resolve storage URL' }, { status: 500 })
+        }
+      },
     },
   },
 })
