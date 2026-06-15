@@ -147,7 +147,10 @@ export async function getPublicPostDetail(
         SELECT ${postUuid}::uuid
         UNION ALL
         SELECT p.id FROM ${posts} p
-        WHERE p.canonical_post_id = ${postUuid}::uuid AND p.deleted_at IS NULL
+        INNER JOIN ${boards} b ON b.id = p.board_id
+        WHERE p.canonical_post_id = ${postUuid}::uuid
+          AND p.deleted_at IS NULL
+          AND b.is_public = true
       )
       ${options?.includePrivateComments ? sql`` : sql`AND c.is_private = false`}
       GROUP BY c.id, m.display_name, m.avatar_key, m.avatar_url, scf.name, scf.color, sct.name, sct.color

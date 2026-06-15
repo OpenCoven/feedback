@@ -25,7 +25,7 @@ import {
   getVotedPostIdsByUserId,
 } from '@/lib/server/domains/posts/post.public'
 import { getPublicPostDetail } from '@/lib/server/domains/posts/post.public.detail'
-import { getPostMergeInfo, getMergedPosts } from '@/lib/server/domains/posts/post.merge'
+import { getPublicPostMergeInfo, getPublicMergedPosts } from '@/lib/server/domains/posts/post.merge'
 import { listPublicStatuses } from '@/lib/server/domains/statuses/status.service'
 import { listPublicTags } from '@/lib/server/domains/tags/tag.service'
 import { getSubscriptionStatus } from '@/lib/server/domains/subscriptions/subscription.service'
@@ -202,10 +202,10 @@ export const fetchPublicPostDetail = createServerFn({ method: 'GET' })
     // Fetch merge info for this post
     const postId = data.postId as PostId
     const [mergeInfo, mergedPostsList] = await Promise.all([
-      getPostMergeInfo(postId).then((info) =>
+      getPublicPostMergeInfo(postId).then((info) =>
         info ? { ...info, mergedAt: toISOString(info.mergedAt) } : null
       ),
-      getMergedPosts(postId),
+      getPublicMergedPosts(postId),
     ])
 
     return {
