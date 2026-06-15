@@ -4,6 +4,7 @@ import type { HelpCenterArticleId } from '@opencoven-feedback/ids'
 const mockArticleFindFirst = vi.fn()
 const mockArticleFindMany = vi.fn()
 const mockCategoryFindMany = vi.fn()
+const mockCategoryFindFirst = vi.fn()
 
 vi.mock('@/lib/server/db', () => ({
   db: {
@@ -13,6 +14,7 @@ vi.mock('@/lib/server/db', () => ({
         findMany: (...args: unknown[]) => mockArticleFindMany(...args),
       },
       helpCenterCategories: {
+        findFirst: (...args: unknown[]) => mockCategoryFindFirst(...args),
         findMany: (...args: unknown[]) => mockCategoryFindMany(...args),
       },
       principal: {
@@ -82,6 +84,7 @@ let listPublicArticlesForCategory: typeof import('../help-center.article.query')
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  mockCategoryFindFirst.mockResolvedValue({ id: 'category_1' })
 
   const mod = await import('../help-center.article.query')
   listArticles = mod.listArticles
@@ -115,8 +118,7 @@ describe('listPublicArticlesForCategory', () => {
     const orderByMock = vi.fn().mockResolvedValue(mockArticles)
     const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock })
     const leftJoinMock = vi.fn().mockReturnValue({ where: whereMock })
-    const innerJoinMock = vi.fn().mockReturnValue({ leftJoin: leftJoinMock })
-    const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock })
+    const fromMock = vi.fn().mockReturnValue({ leftJoin: leftJoinMock })
     vi.mocked(db.select).mockReturnValueOnce({ from: fromMock } as never)
 
     const result = await listPublicArticlesForCategory('category_1')
@@ -135,8 +137,7 @@ describe('listPublicArticlesForCategory', () => {
     const orderByMock = vi.fn().mockResolvedValue([])
     const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock })
     const leftJoinMock = vi.fn().mockReturnValue({ where: whereMock })
-    const innerJoinMock = vi.fn().mockReturnValue({ leftJoin: leftJoinMock })
-    const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock })
+    const fromMock = vi.fn().mockReturnValue({ leftJoin: leftJoinMock })
     vi.mocked(db.select).mockReturnValueOnce({ from: fromMock } as never)
 
     const result = await listPublicArticlesForCategory('category_1')
@@ -144,26 +145,14 @@ describe('listPublicArticlesForCategory', () => {
   })
 })
 
-
 describe('listPublicArticles', () => {
-  it('returns no articles when the requested category is not public', async () => {
-    mockCategoryFindMany.mockResolvedValue([{ id: 'category_public' }])
+  it('does not return articles when no public categories exist', async () => {
+    mockCategoryFindMany.mockResolvedValueOnce([])
 
-    const result = await listPublicArticles({ categoryId: 'category_hidden' })
+    const result = await listPublicArticles({ search: 'private' })
 
     expect(result).toEqual({ items: [], nextCursor: null, hasMore: false })
     expect(mockArticleFindMany).not.toHaveBeenCalled()
-  })
-
-  it('restricts public article listings to public category IDs', async () => {
-    const { inArray } = await import('@/lib/server/db')
-    mockCategoryFindMany.mockResolvedValue([{ id: 'category_public' }])
-    mockArticleFindMany.mockResolvedValue([])
-
-    await listPublicArticles({ limit: 20 })
-
-    expect(mockArticleFindMany).toHaveBeenCalled()
-    expect(inArray).toHaveBeenCalledWith('category_id', ['category_public'])
   })
 })
 
