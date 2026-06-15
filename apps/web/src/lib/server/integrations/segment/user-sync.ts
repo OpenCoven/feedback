@@ -27,25 +27,27 @@ const MAX_ERROR_BODY_LENGTH = 300
 
 export const segmentUserSync: UserSyncHandler = {
   async handleIdentify(request, body, config, _secrets): Promise<UserIdentifyPayload | Response> {
-    // Verify HMAC-SHA1 signature if a shared secret is configured.
-    // Segment signs the raw body with the source's shared secret.
-    const incomingSecret = config.incomingSecret as string | undefined
-    if (incomingSecret) {
-      const signature = request.headers.get('x-signature')
-      if (!signature) {
-        return new Response('Missing x-signature header', { status: 401 })
-      }
+    // Segment identify webhooks mutate user metadata, so require a shared secret
+    // and verify every inbound request before parsing the payload.
+    const incomingSecret = config.incomingSecret
+    if (typeof incomingSecret !== 'string' || incomingSecret.trim().length === 0) {
+      return new Response('Segment incoming secret is not configured', { status: 401 })
+    }
 
-      const expected = createHmac('sha1', incomingSecret).update(body).digest('base64')
-      try {
-        const sigBuf = Buffer.from(signature, 'base64')
-        const expBuf = Buffer.from(expected, 'base64')
-        if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
-          return new Response('Invalid signature', { status: 401 })
-        }
-      } catch {
+    const signature = request.headers.get('x-signature')
+    if (!signature) {
+      return new Response('Missing x-signature header', { status: 401 })
+    }
+
+    const expected = createHmac('sha1', incomingSecret).update(body).digest('base64')
+    try {
+      const sigBuf = Buffer.from(signature, 'base64')
+      const expBuf = Buffer.from(expected, 'base64')
+      if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
         return new Response('Invalid signature', { status: 401 })
       }
+    } catch {
+      return new Response('Invalid signature', { status: 401 })
     }
 
     let payload: Record<string, unknown>

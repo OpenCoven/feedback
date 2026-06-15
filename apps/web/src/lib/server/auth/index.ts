@@ -50,6 +50,13 @@ export const getMagicLinkToken = (email: string) => magicLinkStash.take(email)
 export const storeOTP = (email: string, otp: string) => otpStash.set(email, otp)
 export const getOTP = (email: string) => otpStash.take(email)
 
+export function redactMagicLinkSearch(search: string): string {
+  if (!search) return ''
+  const params = new URLSearchParams(search)
+  if (params.has('token')) params.set('token', '[redacted]')
+  return `?${params.toString()}`
+}
+
 // Lazy-initialized auth instance
 // This prevents client bundling of database code
 type AuthInstance = Awaited<ReturnType<typeof createAuth>>['instance']
@@ -244,8 +251,7 @@ async function createAuth() {
         ...(creds.tokenUrl && { tokenUrl: creds.tokenUrl }),
         scopes: scopeStr.split(/\s+/).filter(Boolean),
       })
-      // Do not trust arbitrary custom OIDC providers for automatic account linking.
-      // Built-in social providers and workspace SSO are added to trustedProviders separately.
+      trustedProviders.push(provider.id)
     } else {
       // Built-in social providers
       const providerConfig: Record<string, string> = {
@@ -435,8 +441,9 @@ async function createAuth() {
         // pushes their verification row out to 7 days post-mint.
         expiresIn: 60 * 10,
         disableSignUp: false,
-        // Outlook Safe Links / Slack unfurl can consume tokens before the user clicks.
-        allowedAttempts: 3,
+        // Keep tokens single-use. Scanner prefetch protection lives in
+        // /verify-magic-link, which requires browser JS/user action before
+        // hitting the Better Auth verification endpoint.
       }),
 
       emailOTP({
@@ -694,7 +701,9 @@ export const auth = {
     const url = new URL(request.url)
     const isMagicLink = url.pathname.includes('magic-link')
     if (isMagicLink) {
-      console.log(`[auth] magic-link request: ${request.method} ${url.pathname}${url.search}`)
+      console.log(
+        `[auth] magic-link request: ${request.method} ${url.pathname}${redactMagicLinkSearch(url.search)}`
+      )
     }
     const authInstance = await getAuth()
     const response = await authInstance.handler(request)

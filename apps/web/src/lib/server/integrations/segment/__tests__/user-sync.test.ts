@@ -1,5 +1,62 @@
+import { createHmac } from 'crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { segmentUserSync } from '../user-sync'
+
+describe('segmentUserSync.handleIdentify', () => {
+  const body = JSON.stringify({
+    type: 'identify',
+    userId: 'external-user-1',
+    traits: { email: 'user@example.com', plan: 'pro' },
+  })
+
+  it('rejects unsigned identify requests when no incoming secret is configured', async () => {
+    const request = new Request('https://example.com/api/integrations/segment/identify', {
+      method: 'POST',
+    })
+
+    const result = await segmentUserSync.handleIdentify?.(request, body, {}, {})
+
+    expect(result).toBeInstanceOf(Response)
+    expect((result as Response).status).toBe(401)
+    await expect((result as Response).text()).resolves.toBe(
+      'Segment incoming secret is not configured'
+    )
+  })
+
+  it('rejects identify requests when an incoming secret is configured but the signature is missing', async () => {
+    const request = new Request('https://example.com/api/integrations/segment/identify', {
+      method: 'POST',
+    })
+
+    const result = await segmentUserSync.handleIdentify?.(
+      request,
+      body,
+      { incomingSecret: 'segment-secret' },
+      {}
+    )
+
+    expect(result).toBeInstanceOf(Response)
+    expect((result as Response).status).toBe(401)
+    await expect((result as Response).text()).resolves.toBe('Missing x-signature header')
+  })
+
+  it('accepts identify requests with a valid signature', async () => {
+    const incomingSecret = 'segment-secret'
+    const signature = createHmac('sha1', incomingSecret).update(body).digest('base64')
+    const request = new Request('https://example.com/api/integrations/segment/identify', {
+      method: 'POST',
+      headers: { 'x-signature': signature },
+    })
+
+    const result = await segmentUserSync.handleIdentify?.(request, body, { incomingSecret }, {})
+
+    expect(result).toEqual({
+      email: 'user@example.com',
+      externalUserId: 'external-user-1',
+      attributes: { email: 'user@example.com', plan: 'pro' },
+    })
+  })
+})
 
 describe('segmentUserSync.syncSegmentMembership', () => {
   beforeEach(() => {

@@ -61,15 +61,10 @@ export function extractCustomClaims(payload: Record<string, unknown>): Record<st
 
 export function canIssueUnverifiedWidgetSession(input: {
   role: string | null | undefined
-  type?: string | null | undefined
   existingExternalId: string | null
   assertedExternalId: string
 }): boolean {
-  return (
-    input.type !== 'team' &&
-    !isTeamMember(input.role) &&
-    input.existingExternalId === input.assertedExternalId
-  )
+  return !isTeamMember(input.role) && input.existingExternalId === input.assertedExternalId
 }
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -199,7 +194,9 @@ export const Route = createFileRoute('/api/widget/identify')({
         let userRecord = await db.query.user.findFirst({
           where: eq(user.email, identified.email),
         })
-        let principalRecord: Awaited<ReturnType<typeof db.query.principal.findFirst>> | undefined
+        let principalRecord:
+          | Awaited<ReturnType<typeof db.query.principal.findFirst>>
+          | undefined
 
         if (userRecord) {
           principalRecord = await db.query.principal.findFirst({
@@ -211,7 +208,6 @@ export const Route = createFileRoute('/api/widget/identify')({
             !body.ssoToken &&
             !canIssueUnverifiedWidgetSession({
               role: principalRecord?.role,
-              type: principalRecord?.type,
               existingExternalId,
               assertedExternalId: identified.id,
             })

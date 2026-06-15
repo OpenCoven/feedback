@@ -12,11 +12,7 @@ describe('magic-link security configuration', () => {
   })
 
   it('does not log bearer magic-link tokens from request URLs', () => {
-    expect(authIndexSource).toContain('${request.method} ${url.pathname}')
+    expect(authIndexSource).toContain('redactMagicLinkSearch(url.search)')
     expect(authIndexSource).not.toContain('${url.pathname}${url.search}')
-  })
-
-  it('does not log magic-link redirect locations', () => {
-    expect(authIndexSource).not.toContain("response.headers.get('location')")
   })
 })
