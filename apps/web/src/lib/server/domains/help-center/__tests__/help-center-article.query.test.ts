@@ -144,6 +144,7 @@ describe('listPublicArticlesForCategory', () => {
   })
 })
 
+
 describe('listPublicArticles', () => {
   it('returns no articles when the requested category is not public', async () => {
     mockCategoryFindMany.mockResolvedValue([{ id: 'category_public' }])

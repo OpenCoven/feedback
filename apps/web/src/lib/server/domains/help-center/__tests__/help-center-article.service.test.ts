@@ -200,6 +200,7 @@ describe('getArticleById', () => {
   })
 })
 
+
 describe('getPublicArticleBySlug', () => {
   const publishedArticle = {
     id: 'article_1' as HelpCenterArticleId,
