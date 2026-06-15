@@ -21,8 +21,7 @@ ALTER TABLE "user" ADD COLUMN "two_factor_enabled" boolean NOT NULL DEFAULT fals
 
 -- sso_verified_domain: per-domain SSO verification + per-row `enforced`
 -- flag. Replaces the previous single `auth_config.ssoOidc.domain`
--- object + workspace-wide `ssoOidc.enforced` boolean (neither of which
--- ever shipped in a release).
+-- object + workspace-wide `ssoOidc.enforced` boolean.
 CREATE TABLE "sso_verified_domain" (
   "id" uuid PRIMARY KEY,
   "name" text NOT NULL,
@@ -32,6 +31,74 @@ CREATE TABLE "sso_verified_domain" (
   "created_at" timestamptz NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX "sso_verified_domain_name_unique" ON "sso_verified_domain" ("name");
+
+-- Preserve any legacy single-domain SSO state. Runtime enforcement now reads
+-- only from `sso_verified_domain`, so a tenant with
+-- `auth_config.ssoOidc.domain` + `ssoOidc.enforced=true` must get an
+-- equivalent verified-domain row before those JSON keys are removed.
+WITH legacy_sso_domains AS (
+  SELECT
+    lower(trim(auth_config::jsonb #>> '{ssoOidc,domain,name}')) AS name,
+    COALESCE(
+      NULLIF(auth_config::jsonb #>> '{ssoOidc,domain,verificationToken}', ''),
+      NULLIF(auth_config::jsonb #>> '{ssoOidc,domain,verification_token}', ''),
+      'LEGACY-' || upper(substr(md5(auth_config::jsonb #>> '{ssoOidc,domain,name}'), 1, 24))
+    ) AS verification_token,
+    COALESCE(
+      NULLIF(auth_config::jsonb #>> '{ssoOidc,domain,verifiedAt}', ''),
+      NULLIF(auth_config::jsonb #>> '{ssoOidc,domain,verified_at}', '')
+    )::timestamptz AS verified_at,
+    CASE lower(trim(COALESCE(auth_config::jsonb -> 'ssoOidc' ->> 'enforced', '')))
+      WHEN 'true' THEN true
+      WHEN 'false' THEN false
+      ELSE false
+    END AS enforced
+  FROM settings
+  WHERE auth_config IS NOT NULL
+    AND auth_config::jsonb #> '{ssoOidc,domain}' IS NOT NULL
+)
+INSERT INTO "sso_verified_domain" (
+  "id",
+  "name",
+  "verification_token",
+  "verified_at",
+  "enforced",
+  "created_at"
+)
+SELECT
+  gen_random_uuid(),
+  name,
+  verification_token,
+  verified_at,
+  enforced,
+  now()
+FROM legacy_sso_domains
+WHERE name IS NOT NULL
+  AND name <> ''
+ON CONFLICT ("name") DO UPDATE
+  SET "verified_at" = COALESCE("sso_verified_domain"."verified_at", EXCLUDED."verified_at"),
+      "enforced" = "sso_verified_domain"."enforced" OR EXCLUDED."enforced";
+
+-- Strip the legacy single-domain keys after the table-backed row exists.
+-- The final auth_config_version bump below covers this auth-config write.
+UPDATE settings
+SET auth_config = (
+  CASE
+    WHEN NULLIF(trim(auth_config::jsonb #>> '{ssoOidc,domain,name}'), '') IS NOT NULL
+      THEN auth_config::jsonb #- '{ssoOidc,domain}'
+    ELSE auth_config::jsonb
+  END
+    #- '{ssoOidc,enforced}'
+)::text
+WHERE auth_config IS NOT NULL
+  AND auth_config::jsonb -> 'ssoOidc' IS NOT NULL
+  AND (
+    (
+      (auth_config::jsonb) -> 'ssoOidc' ? 'domain'
+      AND NULLIF(trim(auth_config::jsonb #>> '{ssoOidc,domain,name}'), '') IS NOT NULL
+    )
+    OR (auth_config::jsonb) -> 'ssoOidc' ? 'enforced'
+  );
 
 -- two_factor: TOTP shared secret + recovery backup codes (symmetric-
 -- encrypted by Better-Auth at write time; we never store plaintext).
