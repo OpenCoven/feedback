@@ -47,6 +47,13 @@ export type AuthProviderId =
   | 'sso' // genericOAuth provider id 'sso'
   | string // social ('google'|'github'|...) or other generic OAuth
 
+const AUTH_PATH_PREFIX = '@opencoven-feedback'
+
+function normalizeAuthPath(path: string | undefined): string | undefined {
+  if (!path) return undefined
+  return path.startsWith(`${AUTH_PATH_PREFIX}/`) ? path.slice(AUTH_PATH_PREFIX.length) : path
+}
+
 /**
  * Map a Better-Auth `ctx.path` template to the conceptual provider id
  * the policy table operates on. Returns `null` for paths that aren't
@@ -68,7 +75,7 @@ export function inferProvider(ctx: {
   params?: Record<string, unknown>
   body?: Record<string, unknown>
 }): AuthProviderId | null {
-  const p = ctx.path
+  const p = normalizeAuthPath(ctx.path)
   if (!p) return null
   switch (p) {
     case '/sign-in/email':
@@ -115,11 +122,78 @@ export function inferProvider(ctx: {
  * session synchronously without going through `/callback/:id` — Layer
  * B can't see the email pre-session, so Layer C is the only gate.
  */
-export const SESSION_CREATING_CALLBACK_PATHS = new Set<string>([
+const OAUTH_CALLBACK_POLICY_PATHS = new Set<string>([
   '/callback/:id',
   '/oauth2/callback/:providerId',
   '/sign-in/social',
 ])
+
+const TWO_FACTOR_SESSION_COMPLETION_PATHS = new Set<string>([
+  '/two-factor/verify',
+  '/two-factor/verify-totp',
+  '/two-factor/verify-otp',
+  '/two-factor/verify-backup-code',
+])
+
+export const SESSION_CREATING_CALLBACK_PATHS = new Set<string>([
+  ...OAUTH_CALLBACK_POLICY_PATHS,
+  ...TWO_FACTOR_SESSION_COMPLETION_PATHS,
+])
+
+const TWO_FACTOR_POLICY_PROVIDER_COOKIE = 'quackback.2fa_policy_provider'
+const TWO_FACTOR_POLICY_COOKIE_MAX_AGE = 10 * 60
+
+type TwoFactorPolicyCookieCtx = {
+  context?: { secret?: string }
+  getSignedCookie?: (
+    name: string,
+    secret: string
+  ) => string | undefined | Promise<string | undefined>
+  setSignedCookie?: (
+    name: string,
+    value: string,
+    secret: string,
+    attrs?: Record<string, unknown>
+  ) => unknown | Promise<unknown>
+  setCookie?: (name: string, value: string, opts?: Record<string, unknown>) => unknown
+}
+
+async function rememberTwoFactorPolicyProvider(
+  ctx: TwoFactorPolicyCookieCtx,
+  userId: string,
+  provider: AuthProviderId
+): Promise<void> {
+  if (!ctx.setSignedCookie || typeof ctx.context?.secret !== 'string') return
+  await ctx.setSignedCookie(
+    TWO_FACTOR_POLICY_PROVIDER_COOKIE,
+    `${userId}:${provider}`,
+    ctx.context.secret,
+    {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: TWO_FACTOR_POLICY_COOKIE_MAX_AGE,
+    }
+  )
+}
+
+async function consumeTwoFactorPolicyProvider(
+  ctx: TwoFactorPolicyCookieCtx,
+  userId: string
+): Promise<AuthProviderId | null> {
+  if (!ctx.getSignedCookie || typeof ctx.context?.secret !== 'string') return null
+  const value = await ctx.getSignedCookie(TWO_FACTOR_POLICY_PROVIDER_COOKIE, ctx.context.secret)
+  if (!value) return null
+  ctx.setCookie?.(TWO_FACTOR_POLICY_PROVIDER_COOKIE, '', { path: '/', maxAge: 0 })
+
+  const separator = value.indexOf(':')
+  if (separator <= 0) return null
+  const cookieUserId = value.slice(0, separator)
+  const provider = value.slice(separator + 1)
+  if (cookieUserId !== userId || !provider) return null
+  return provider
+}
 
 /**
  * Paths where the email isn't in `ctx.body` — Layer B can't gate them
@@ -522,13 +596,26 @@ export async function handleCallbackPolicyCleanup(
     ReturnType<typeof import('@/lib/server/domains/settings/settings.service').getTenantSettings>
   >
 ): Promise<void> {
-  if (!SESSION_CREATING_CALLBACK_PATHS.has(ctx.path ?? '')) return
+  const path = normalizeAuthPath(ctx.path)
+  if (!SESSION_CREATING_CALLBACK_PATHS.has(path ?? '')) return
   const userId = ctx.context?.newSession?.user?.id
   const userEmail = ctx.context?.newSession?.user?.email
   const token = ctx.context?.newSession?.session?.token
-  if (typeof userId !== 'string' || typeof token !== 'string') return
+  if (typeof userId !== 'string') return
 
-  const provider = inferProvider(ctx as Parameters<typeof inferProvider>[0])
+  let provider = inferProvider(ctx as Parameters<typeof inferProvider>[0])
+  if (provider && path && OAUTH_CALLBACK_POLICY_PATHS.has(path) && typeof token !== 'string') {
+    // Better-Auth's 2FA plugin can turn a successful first-factor
+    // callback into a pending challenge by deleting the provisional
+    // session and issuing the final session later from `/two-factor/*`.
+    // Keep the first-factor provider in a signed, short-lived cookie
+    // so the completion endpoint is evaluated against the same policy.
+    await rememberTwoFactorPolicyProvider(ctx as TwoFactorPolicyCookieCtx, userId, provider)
+  }
+
+  if (!provider && path && TWO_FACTOR_SESSION_COMPLETION_PATHS.has(path)) {
+    provider = await consumeTwoFactorPolicyProvider(ctx as TwoFactorPolicyCookieCtx, userId)
+  }
   if (!provider) return
 
   const {
@@ -592,7 +679,7 @@ export async function handleCallbackPolicyCleanup(
     typeof userEmail === 'string' &&
     isHardBound(provider, userEmail, role, tenant?.authConfig, verifiedDomains, ssoRegistered)
   ) {
-    await revokeSession(ctx as SessionCtx, token)
+    if (typeof token === 'string') await revokeSession(ctx as SessionCtx, token)
     await wipeBrandNewShellsIfFresh()
     throw blockedRedirect('verified_domain_requires_sso')
   }
@@ -602,7 +689,7 @@ export async function handleCallbackPolicyCleanup(
   const result = await isAuthMethodAllowed(provider, role, tenant)
   if (result.allowed) return
 
-  await revokeSession(ctx as SessionCtx, token)
+  if (typeof token === 'string') await revokeSession(ctx as SessionCtx, token)
   await wipeBrandNewShellsIfFresh()
   throw blockedRedirect(result.error ?? 'auth_method_blocked')
 }

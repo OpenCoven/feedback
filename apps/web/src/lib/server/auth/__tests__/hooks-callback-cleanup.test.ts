@@ -31,6 +31,9 @@ const mockPrincipalDeleteWhere = vi.fn(async () => undefined)
 const mockDeleteSessionCookie = vi.fn()
 const mockGetPublicPortalConfig = vi.fn()
 const mockHasPlatformCredentials = vi.fn()
+const mockGetSignedCookie = vi.fn()
+const mockSetSignedCookie = vi.fn()
+const mockSetCookie = vi.fn()
 
 vi.mock('@/lib/server/db', () => ({
   db: {
@@ -103,6 +106,7 @@ function ctxFor(opts: {
   userId?: string
   email?: string
   token?: string
+  secret?: string
 }) {
   return {
     path: opts.path,
@@ -113,7 +117,11 @@ function ctxFor(opts: {
         user: opts.userId ? { id: opts.userId, email: opts.email } : undefined,
         session: opts.token ? { token: opts.token } : undefined,
       },
+      secret: opts.secret,
     },
+    getSignedCookie: mockGetSignedCookie,
+    setSignedCookie: mockSetSignedCookie,
+    setCookie: mockSetCookie,
     redirect: vi.fn((url: string) => new Error(`REDIRECT:${url}`)),
   }
 }
@@ -127,6 +135,8 @@ beforeEach(() => {
   })
   mockHasPlatformCredentials.mockResolvedValue(true)
   mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
+  mockGetSignedCookie.mockResolvedValue(undefined)
+  mockSetSignedCookie.mockResolvedValue(undefined)
 })
 
 // ============================================================
@@ -184,6 +194,67 @@ describe('handleCallbackPolicyCleanup — guards', () => {
     // 'a@external.com' is not at an enforced domain (none configured)
     // and no principal exists → return without running the
     // method-allowed gate.
+    expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+})
+
+describe('handleCallbackPolicyCleanup — two-factor deferred OAuth policy', () => {
+  it('remembers the first-factor provider when an OAuth callback defers final session issuance to 2FA', async () => {
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor({
+      path: '/oauth2/callback/:providerId',
+      providerParam: 'google',
+      userId: 'user_1',
+      email: 'a@external.com',
+      secret: 'test-secret',
+    })
+
+    await handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: true }))
+
+    expect(mockSetSignedCookie).toHaveBeenCalledWith(
+      'quackback.2fa_policy_provider',
+      'user_1:google',
+      'test-secret',
+      expect.objectContaining({ httpOnly: true, maxAge: 600 })
+    )
+  })
+
+  it('applies the remembered OAuth provider policy on /two-factor/verify-totp session creation', async () => {
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    mockUserFindFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 60 * 60_000) })
+    mockGetSignedCookie.mockResolvedValue('user_1:google')
+    const ctx = ctxFor({
+      path: '/two-factor/verify-totp',
+      userId: 'user_1',
+      email: 'a@external.com',
+      token: 'tok',
+      secret: 'test-secret',
+    })
+
+    await expect(
+      handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: false }))
+    ).rejects.toThrow(/\/admin\/login\?error=oauth_method_not_allowed/)
+
+    expect(mockSetCookie).toHaveBeenCalledWith('quackback.2fa_policy_provider', '', {
+      path: '/',
+      maxAge: 0,
+    })
+    expect(mockSessionDeleteWhere).toHaveBeenCalled()
+    expect(mockDeleteSessionCookie).toHaveBeenCalled()
+  })
+
+  it('skips two-factor verification without a remembered first-factor provider', async () => {
+    const ctx = ctxFor({
+      path: '/two-factor/verify-totp',
+      userId: 'user_1',
+      email: 'a@external.com',
+      token: 'tok',
+      secret: 'test-secret',
+    })
+
+    await handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: false }))
+
     expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
     expect(ctx.redirect).not.toHaveBeenCalled()
   })
