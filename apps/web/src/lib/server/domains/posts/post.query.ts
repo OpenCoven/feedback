@@ -151,6 +151,7 @@ export async function getPostWithDetails(postId: PostId): Promise<PostWithDetail
       id: board.id,
       name: board.name,
       slug: board.slug,
+      isPublic: board.isPublic,
     },
     tags: postTagsResult.map((t) => ({
       id: t.id,
@@ -171,13 +172,12 @@ export async function getPostWithDetails(postId: PostId): Promise<PostWithDetail
  *
  * @param postId - Post ID to fetch comments for
  * @param principalId - Principal ID to check for reactions (optional)
- * @param options - Options: includePrivate controls whether team-only private comments are returned
  * @returns Result containing nested comment tree or an error
  */
 export async function getCommentsWithReplies(
   postId: PostId,
   principalId?: PrincipalId,
-  options?: { includePrivate?: boolean }
+  opts?: { publicOnly?: boolean }
 ): Promise<CommentTreeNode[]> {
   // Verify post exists and belongs to organization
   const post = await db.query.posts.findFirst({ where: eq(posts.id, postId) })
@@ -197,14 +197,16 @@ export async function getCommentsWithReplies(
   })
   const postIds = [postId, ...mergedPosts.map((p) => p.id)] as PostId[]
 
-  const postFilter =
+  // Build the where clause for comments
+  const basePostWhere =
     postIds.length === 1 ? eq(comments.postId, postId) : inArray(comments.postId, postIds)
-  const commentFilter =
-    options?.includePrivate === false ? and(postFilter, eq(comments.isPrivate, false)) : postFilter
+  const commentsWhere = opts?.publicOnly
+    ? and(basePostWhere, eq(comments.isPrivate, false))
+    : basePostWhere
 
   // Get all comments with reactions, author info, and status changes (including from merged posts)
   const allComments = await db.query.comments.findMany({
-    where: commentFilter,
+    where: commentsWhere,
     with: {
       reactions: true,
       author: {
@@ -227,5 +229,7 @@ export async function getCommentsWithReplies(
     statusChange: toStatusChange(c.statusChangeFrom, c.statusChangeTo),
   }))
 
-  return buildCommentTree(commentsWithAuthor, principalId)
+  return buildCommentTree(commentsWithAuthor, principalId, {
+    pruneDeleted: opts?.publicOnly ?? false,
+  })
 }

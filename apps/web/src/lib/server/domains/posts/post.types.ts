@@ -66,6 +66,7 @@ export interface PostWithDetails extends Post {
     id: BoardId
     name: string
     slug: string
+    isPublic: boolean
   }
   tags: Array<{
     id: TagId

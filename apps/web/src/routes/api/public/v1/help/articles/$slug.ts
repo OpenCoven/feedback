@@ -1,25 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
-import {
-  successResponse,
-  notFoundResponse,
-  handleDomainError,
-} from '@/lib/server/domains/api/responses'
-import { requirePublicHelpCenterAccess } from '@/lib/server/help-center-access'
+import { successResponse, handleDomainError } from '@/lib/server/domains/api/responses'
+import { getPublicArticleBySlug } from '@/lib/server/domains/help-center/help-center.service'
 
 export const Route = createFileRoute('/api/public/v1/help/articles/$slug')({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ request: _request, params }) => {
         try {
-          await requirePublicHelpCenterAccess()
-          const { getPublicArticleBySlug } =
-            await import('@/lib/server/domains/help-center/help-center.article.service')
           const article = await getPublicArticleBySlug(params.slug)
-
-          if (!article) {
-            return notFoundResponse('Help center article')
-          }
-
           return successResponse({
             id: article.id,
             slug: article.slug,
