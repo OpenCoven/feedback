@@ -68,7 +68,7 @@ import {
   removePostFromRoadmap,
 } from '@/lib/server/domains/roadmaps/roadmap.service'
 import { getTypeIdPrefix, isTypeId, isValidTypeId } from '@opencoven-feedback/ids'
-import { isTeamMember } from '@/lib/shared/roles'
+import { isAdmin, isTeamMember } from '@/lib/shared/roles'
 import { truncate } from '@/lib/shared/utils/string'
 import {
   listArticles,
@@ -189,10 +189,24 @@ async function requireHelpCenter(): Promise<CallToolResult | null> {
   }
 }
 
-/** Combined gate: feature flag + scope + team role for help center write tools. */
+/** Return an error if the user doesn't have an admin role. */
+function requireAdminRole(auth: McpAuthContext): CallToolResult | null {
+  if (isAdmin(auth.role)) return null
+  return {
+    isError: true,
+    content: [
+      {
+        type: 'text',
+        text: 'Error: This operation requires an admin role.',
+      },
+    ],
+  }
+}
+
+/** Combined gate: feature flag + scope + admin role for help center write tools. */
 async function requireHelpCenterWrite(auth: McpAuthContext): Promise<CallToolResult | null> {
   return (
-    (await requireHelpCenter()) ?? requireScope(auth, 'write:help-center') ?? requireTeamRole(auth)
+    (await requireHelpCenter()) ?? requireScope(auth, 'write:help-center') ?? requireAdminRole(auth)
   )
 }
 

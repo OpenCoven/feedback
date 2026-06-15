@@ -14,6 +14,7 @@ import {
   isNull,
   isNotNull,
   sql,
+  eq,
 } from '@/lib/server/db'
 import { generateKbEmbedding } from './help-center-embedding.service'
 
@@ -103,6 +104,7 @@ async function hybridQuery(
       and(
         isNotNull(helpCenterArticles.publishedAt),
         isNull(helpCenterArticles.deletedAt),
+        eq(helpCenterCategories.isPublic, true),
         isNull(helpCenterCategories.deletedAt),
         sql`(
           ${helpCenterArticles.searchVector} @@ ${tsQuery}
@@ -156,6 +158,7 @@ async function keywordOnlyQuery(query: string, limit: number): Promise<HybridSea
       and(
         isNotNull(helpCenterArticles.publishedAt),
         isNull(helpCenterArticles.deletedAt),
+        eq(helpCenterCategories.isPublic, true),
         isNull(helpCenterCategories.deletedAt),
         sql`${helpCenterArticles.searchVector} @@ ${tsQuery}`
       )

@@ -51,6 +51,7 @@ vi.mock('@/lib/server/domains/settings/settings.service', () => ({
     .fn()
     .mockResolvedValue({ mcpEnabled: true, mcpPortalAccessEnabled: false }),
   getTenantSettings: vi.fn().mockResolvedValue(null),
+  isFeatureEnabled: vi.fn().mockResolvedValue(true),
 }))
 
 // Mock config so baseUrl is available (used in WWW-Authenticate header)
@@ -210,6 +211,128 @@ vi.mock('@/lib/server/domains/changelog/changelog.query', () => ({
     nextCursor: null,
     hasMore: false,
   }),
+}))
+
+vi.mock('@/lib/server/domains/help-center/help-center.service', () => ({
+  listArticles: vi.fn().mockResolvedValue({ items: [], nextCursor: null, hasMore: false }),
+  getArticleById: vi.fn().mockResolvedValue({
+    id: 'article_test',
+    slug: 'getting-started',
+    title: 'Getting Started',
+    content: 'Welcome',
+    description: null,
+    position: 1,
+    category: { id: 'category_test', slug: 'guides', name: 'Guides' },
+    author: { id: 'principal_test', name: 'Jane Admin', avatarUrl: null },
+    publishedAt: null,
+    viewCount: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+  }),
+  getCategoryById: vi.fn().mockResolvedValue({
+    id: 'category_test',
+    slug: 'guides',
+    name: 'Guides',
+    description: null,
+    icon: '📚',
+    parentId: null,
+    isPublic: true,
+    position: 1,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+  }),
+  createArticle: vi.fn().mockResolvedValue({
+    id: 'article_test',
+    slug: 'getting-started',
+    title: 'Getting Started',
+    content: 'Welcome',
+    description: null,
+    position: 1,
+    category: { id: 'category_test', slug: 'guides', name: 'Guides' },
+    author: { id: 'principal_test', name: 'Jane Admin', avatarUrl: null },
+    publishedAt: null,
+    viewCount: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+  }),
+  updateArticle: vi.fn().mockResolvedValue({
+    id: 'article_test',
+    slug: 'getting-started',
+    title: 'Updated',
+    content: 'Updated content',
+    description: null,
+    position: 1,
+    category: { id: 'category_test', slug: 'guides', name: 'Guides' },
+    author: { id: 'principal_test', name: 'Jane Admin', avatarUrl: null },
+    publishedAt: null,
+    viewCount: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-02'),
+  }),
+  publishArticle: vi.fn().mockResolvedValue({
+    id: 'article_test',
+    slug: 'getting-started',
+    title: 'Getting Started',
+    content: 'Welcome',
+    description: null,
+    position: 1,
+    category: { id: 'category_test', slug: 'guides', name: 'Guides' },
+    author: { id: 'principal_test', name: 'Jane Admin', avatarUrl: null },
+    publishedAt: new Date('2026-01-02'),
+    viewCount: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-02'),
+  }),
+  unpublishArticle: vi.fn().mockResolvedValue({
+    id: 'article_test',
+    slug: 'getting-started',
+    title: 'Getting Started',
+    content: 'Welcome',
+    description: null,
+    position: 1,
+    category: { id: 'category_test', slug: 'guides', name: 'Guides' },
+    author: { id: 'principal_test', name: 'Jane Admin', avatarUrl: null },
+    publishedAt: null,
+    viewCount: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-02'),
+  }),
+  deleteArticle: vi.fn().mockResolvedValue(undefined),
+  createCategory: vi.fn().mockResolvedValue({
+    id: 'category_test',
+    slug: 'guides',
+    name: 'Guides',
+    description: null,
+    icon: '📚',
+    parentId: null,
+    isPublic: true,
+    position: 1,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+  }),
+  updateCategory: vi.fn().mockResolvedValue({
+    id: 'category_test',
+    slug: 'guides',
+    name: 'Updated Guides',
+    description: null,
+    icon: '📚',
+    parentId: null,
+    isPublic: true,
+    position: 1,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-02'),
+  }),
+  deleteCategory: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/lib/server/domains/changelog/changelog.service', () => ({
@@ -1628,6 +1751,83 @@ describe('MCP HTTP Handler', () => {
       }
       expect(body.result.isError).toBe(true)
       expect(body.result.content[0].text).toContain('team member')
+    })
+
+    it('should deny help center write tools for non-admin OAuth user with write:help-center', async () => {
+      const handleMcpRequest = await initializeOAuthSession(['write:help-center'])
+      await setupValidOAuth({
+        role: 'member',
+        scopes: ['write:help-center'],
+      })
+
+      const requests = [
+        {
+          name: 'create_article',
+          arguments: { categoryId: 'category_test', title: 'Getting Started', content: 'Welcome' },
+        },
+        {
+          name: 'update_article',
+          arguments: { articleId: 'article_test', title: 'Updated' },
+        },
+        {
+          name: 'manage_category',
+          arguments: { action: 'create', name: 'Guides' },
+        },
+      ] as const
+
+      for (const request of requests) {
+        const response = await handleMcpRequest(
+          oauthRequest(
+            jsonRpcRequest('tools/call', {
+              name: request.name,
+              arguments: request.arguments,
+            })
+          )
+        )
+
+        expect(response.status).toBe(200)
+        const body = (await response.json()) as {
+          result: { isError: boolean; content: Array<{ text: string }> }
+        }
+        expect(body.result.isError).toBe(true)
+        expect(body.result.content[0].text).toContain('admin role')
+      }
+    })
+
+    it('should allow help center write tools for admin OAuth user with write:help-center', async () => {
+      const handleMcpRequest = await initializeOAuthSession(['write:help-center'])
+
+      const requests = [
+        {
+          name: 'create_article',
+          arguments: { categoryId: 'category_test', title: 'Getting Started', content: 'Welcome' },
+        },
+        {
+          name: 'update_article',
+          arguments: { articleId: 'article_test', title: 'Updated' },
+        },
+        {
+          name: 'manage_category',
+          arguments: { action: 'create', name: 'Guides' },
+        },
+      ] as const
+
+      for (const request of requests) {
+        const response = await handleMcpRequest(
+          oauthRequest(
+            jsonRpcRequest('tools/call', {
+              name: request.name,
+              arguments: request.arguments,
+            })
+          )
+        )
+
+        expect(response.status).toBe(200)
+        const body = (await response.json()) as {
+          result: { isError?: boolean; content: Array<{ text: string }> }
+        }
+        expect(body.result.isError).toBeUndefined()
+      }
     })
 
     it('should deny delete_post when write:feedback scope missing', async () => {
