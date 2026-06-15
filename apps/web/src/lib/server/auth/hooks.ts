@@ -309,24 +309,12 @@ export async function handleSignInPreCheck(ctx: {
     : null
   const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
 
-  // Pre-compute "is SSO actually viable right now?" so `isHardBound`
-  // can fail open on tier-downgrade / missing-secret states (else team
-  // admins lock themselves out the moment an upstream condition flips).
-  const { isSsoActuallyRegistered } = await import('./sso-secret')
-  const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
-  const ssoRegistered = await isSsoActuallyRegistered(
-    tenant?.authConfig?.ssoOidc,
-    await getTierLimits()
-  )
-
   // Hard-binding: refuses password / magic-link / email-OTP for
   // emails at a verified-domain row marked enforced (per-domain).
   // The verified-domain branch fires before user lookup matters —
   // inbox control at the verified domain shouldn't bypass the IdP's
   // attestations even for brand-new sign-ups.
-  if (
-    isHardBound(provider, email, role, tenant?.authConfig, tenant?.verifiedDomains, ssoRegistered)
-  ) {
+  if (isHardBound(provider, email, role, tenant?.authConfig, tenant?.verifiedDomains)) {
     throw ctx.redirect('/admin/login?error=verified_domain_requires_sso')
   }
 
@@ -658,16 +646,6 @@ export async function handleCallbackPolicyCleanup(
     await db.delete(userTable).where(eq(userTable.id, userId as UserId))
   }
 
-  // Pre-compute viability so `isHardBound` fails open on runtime
-  // unavailability (tier downgrade, secret missing). See the
-  // `isHardBound` docstring for the self-lockout rationale.
-  const { isSsoActuallyRegistered } = await import('./sso-secret')
-  const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
-  const ssoRegistered = await isSsoActuallyRegistered(
-    tenant?.authConfig?.ssoOidc,
-    await getTierLimits()
-  )
-
   // Hard-binding for non-SSO callbacks: per-domain enforcement only
   // (verified-domain row with enforced=true). `isHardBound` treats
   // every provider except `sso` as hard-bindable, so this is the gate
@@ -677,7 +655,7 @@ export async function handleCallbackPolicyCleanup(
   if (
     provider !== 'sso' &&
     typeof userEmail === 'string' &&
-    isHardBound(provider, userEmail, role, tenant?.authConfig, verifiedDomains, ssoRegistered)
+    isHardBound(provider, userEmail, role, tenant?.authConfig, verifiedDomains)
   ) {
     if (typeof token === 'string') await revokeSession(ctx as SessionCtx, token)
     await wipeBrandNewShellsIfFresh()

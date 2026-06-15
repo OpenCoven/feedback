@@ -239,26 +239,18 @@ export const fetchUserProfile = createServerFn({ method: 'GET' })
         ])
 
       const { isHardBound } = await import('@/lib/server/auth/auth-restrictions')
-      const { isSsoActuallyRegistered } = await import('@/lib/server/auth/sso-secret')
-      const { getTierLimits } = await import('@/lib/server/domains/settings/tier-limits.service')
       const tenant = await getTenantSettings()
-      const ssoRegistered = await isSsoActuallyRegistered(
-        tenant?.authConfig?.ssoOidc,
-        await getTierLimits()
-      )
       const role = (principalRow?.role ?? 'user') as 'admin' | 'member' | 'user'
       // Use the full predicate so the profile page hides the password
-      // section for users at an enforced verified domain. When SSO isn't
-      // actually viable (tier downgrade, missing secret) the predicate
-      // fails open — the UI then surfaces the password section as a
-      // fallback, mirroring the sign-in flow.
+      // section for users at an enforced verified domain. Enforcement
+      // follows admin intent and does not fail open when SSO registration
+      // is temporarily unavailable (tier downgrade, missing secret).
       const ssoEnforced = isHardBound(
         'credential',
         userRecord?.email ?? null,
         role,
         tenant?.authConfig,
-        tenant?.verifiedDomains,
-        ssoRegistered
+        tenant?.verifiedDomains
       )
 
       const hasCustomAvatar = !!userRecord?.imageKey
