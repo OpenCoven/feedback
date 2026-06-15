@@ -61,9 +61,8 @@ vi.mock('@tanstack/react-start/server', () => ({
   getRequestHeaders: () => new Headers(),
 }))
 
-// Default mirrors the production conditions: registered iff the admin
-// has SSO enabled (so existing enforcement tests see the same blocking
-// behavior). Tests for tier-downgrade / missing-secret override this.
+// Retained for UI/registration code paths; hard-binding itself should
+// not depend on runtime registration.
 const mockIsSsoActuallyRegistered = vi.fn(
   async (sso: { enabled?: boolean } | undefined, _tier: unknown) => sso?.enabled === true
 )
@@ -118,7 +117,6 @@ beforeEach(() => {
     oauth: { password: true, magicLink: false },
   })
   // Default mock returns true when sso.enabled is true (mirrors prod).
-  // Tier-downgrade / missing-secret tests override with mockResolvedValue.
   mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
   mockCheckSignInRateLimit.mockResolvedValue({ allowed: true })
   mockCheckMagicLinkRateLimit.mockResolvedValue({ allowed: true })
@@ -366,17 +364,14 @@ describe('handleSignInPreCheck — ssoOidc.enabled=false (workspace SSO disabled
 })
 
 // ============================================================
-// Runtime fail-open — SSO is admin-configured but not viable
+// Runtime registration failures — SSO is admin-configured but not viable
 // ============================================================
 
-describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-open', () => {
-  // Admin has SSO enabled and an enforced verified-domain row, but the
-  // runtime can't actually use it: tier was downgraded or the secret got
-  // rotated and cleared. Layer A has already unregistered the SSO provider,
-  // so there's no SSO button. Without fail-open, password sign-in would
-  // also be blocked → total lockout. The runtime check undoes the
-  // enforcement until the operator fixes things.
-  it('allows admin password sign-in at enforced verified domain when SSO not registered (tier downgrade)', async () => {
+describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-closed', () => {
+  // Admin has SSO enabled and an enforced verified-domain row. Even if
+  // runtime registration fails (tier downgrade, missing secret), direct
+  // credential and magic-link endpoints must not become SSO bypasses.
+  it('blocks admin password sign-in at enforced verified domain when SSO not registered (tier downgrade)', async () => {
     mockGetTenantSettings.mockResolvedValue(
       tenant({ ssoEnabled: true, verifiedDomains: [makeVerifiedDomain('acme.com', true)] })
     )
@@ -385,11 +380,10 @@ describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-open', (
     mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
     const ctx = ctxFor('/sign-in/email', { email: 'a@acme.com' })
 
-    await handleSignInPreCheck(ctx)
-    expect(ctx.redirect).not.toHaveBeenCalled()
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/verified_domain_requires_sso/)
   })
 
-  it('allows admin magic-link too when SSO not registered', async () => {
+  it('blocks admin magic-link too when SSO not registered', async () => {
     mockGetTenantSettings.mockResolvedValue(
       tenant({
         ssoEnabled: true,
@@ -401,14 +395,10 @@ describe('handleSignInPreCheck — tier-downgrade / missing-secret fail-open', (
     mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
     const ctx = ctxFor('/sign-in/magic-link', { email: 'a@acme.com' })
 
-    await handleSignInPreCheck(ctx)
-    expect(ctx.redirect).not.toHaveBeenCalled()
+    await expect(handleSignInPreCheck(ctx)).rejects.toThrow(/verified_domain_requires_sso/)
   })
 
-  it('still blocks when ssoRegistered=true and enforcement says so (regression)', async () => {
-    // Sanity: the fail-open must not invert. Same input as the
-    // "blocks password sign-in for admin at enforced verified domain"
-    // test in the per-domain suite — should still block.
+  it('still blocks when SSO is registered and enforcement says so (regression)', async () => {
     mockGetTenantSettings.mockResolvedValue(
       tenant({
         ssoEnabled: true,

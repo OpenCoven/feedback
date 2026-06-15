@@ -180,11 +180,10 @@ const SSO_PROVIDER_ID: AuthProvider = 'sso'
  * Layer-1 predicate: did the admin configure SSO to be on?
  *
  * Pure check of admin intent. Use when you need to know whether
- * downstream SSO state (`required`, verified-domain `enforced`) is in
- * play at all. Does NOT verify that SSO is actually viable right now —
- * use {@link isHardBound} for enforcement (which fails open on runtime
- * unavailability) or `isSsoActuallyRegistered` for the full viability
- * check (admin intent + tier + secret).
+ * downstream SSO state (verified-domain `enforced`) is in play at
+ * all. Does NOT verify that SSO is actually viable right now —
+ * `isSsoActuallyRegistered` is only for provider registration/UI
+ * availability, not for server-side enforcement.
  *
  * Type predicate: narrows `sso` to non-undefined inside the guarded
  * branch so callers don't need to re-check.
@@ -198,19 +197,12 @@ export function isSsoConfigured(
 /**
  * Unified hard-binding predicate. Returns true when the sign-in attempt
  * must be rejected because the candidate email is at a verified domain
- * whose `sso_verified_domain.enforced` flag is on.
+ * whose `sso_verified_domain.enforced` flag is on. Enforcement follows
+ * admin intent (`ssoOidc.enabled=true`) and deliberately does not depend
+ * on runtime provider registration; missing secrets or tier downgrades
+ * must not turn enforced domains into password/magic-link fallbacks.
  *
- * **Fails open when SSO isn't viable at runtime.** Callers pass
- * `ssoActuallyRegistered` (computed via `isSsoActuallyRegistered`) so
- * tier downgrades, missing secrets, or stale config can never cause a
- * self-lockout — a team where the IdP isn't reachable should still let
- * admins sign in via password/magic-link until the operator fixes it.
- * Recovery codes remain available as the documented break-glass either
- * way; the fail-open here covers the case where the admin doesn't know
- * about recovery codes yet.
- *
- * @param authConfig - Reserved; kept for callsite stability. Currently
- *   unused — enforcement is per-verified-domain only.
+ * @param authConfig - Tenant auth config used for the SSO master switch.
  * @param role - Reserved; kept for callsite stability. Currently unused.
  */
 export function isHardBound(
@@ -218,12 +210,10 @@ export function isHardBound(
   email: string | null | undefined,
   role: Role,
   authConfig: AuthConfig | undefined,
-  verifiedDomains: readonly VerifiedDomain[] | undefined,
-  ssoActuallyRegistered: boolean
+  verifiedDomains: readonly VerifiedDomain[] | undefined
 ): boolean {
   if (provider === SSO_PROVIDER_ID) return false
-  if (!ssoActuallyRegistered) return false
-  void authConfig
+  if (!isSsoConfigured(authConfig?.ssoOidc)) return false
   void role
 
   const match = findVerifiedDomainForEmail(email, verifiedDomains)

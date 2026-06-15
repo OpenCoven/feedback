@@ -31,6 +31,9 @@ const mockPrincipalDeleteWhere = vi.fn(async () => undefined)
 const mockDeleteSessionCookie = vi.fn()
 const mockGetPublicPortalConfig = vi.fn()
 const mockHasPlatformCredentials = vi.fn()
+const mockGetSignedCookie = vi.fn()
+const mockSetSignedCookie = vi.fn()
+const mockSetCookie = vi.fn()
 
 vi.mock('@/lib/server/db', () => ({
   db: {
@@ -65,8 +68,8 @@ vi.mock('@/lib/server/domains/platform-credentials/platform-credential.service',
   hasPlatformCredentials: (...a: unknown[]) => mockHasPlatformCredentials(...a),
 }))
 
-// Default mirrors production: registered iff admin enabled SSO. Tests
-// for tier-downgrade / missing-secret override.
+// Retained for UI/registration code paths; hard-binding itself should
+// not depend on runtime registration.
 const mockIsSsoActuallyRegistered = vi.fn(
   async (sso: { enabled?: boolean } | undefined, _tier: unknown) => sso?.enabled === true
 )
@@ -103,6 +106,7 @@ function ctxFor(opts: {
   userId?: string
   email?: string
   token?: string
+  secret?: string
 }) {
   return {
     path: opts.path,
@@ -113,7 +117,11 @@ function ctxFor(opts: {
         user: opts.userId ? { id: opts.userId, email: opts.email } : undefined,
         session: opts.token ? { token: opts.token } : undefined,
       },
+      secret: opts.secret,
     },
+    getSignedCookie: mockGetSignedCookie,
+    setSignedCookie: mockSetSignedCookie,
+    setCookie: mockSetCookie,
     redirect: vi.fn((url: string) => new Error(`REDIRECT:${url}`)),
   }
 }
@@ -127,6 +135,8 @@ beforeEach(() => {
   })
   mockHasPlatformCredentials.mockResolvedValue(true)
   mockIsSsoActuallyRegistered.mockImplementation(async (sso) => sso?.enabled === true)
+  mockGetSignedCookie.mockResolvedValue(undefined)
+  mockSetSignedCookie.mockResolvedValue(undefined)
 })
 
 // ============================================================
@@ -184,6 +194,67 @@ describe('handleCallbackPolicyCleanup — guards', () => {
     // 'a@external.com' is not at an enforced domain (none configured)
     // and no principal exists → return without running the
     // method-allowed gate.
+    expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
+    expect(ctx.redirect).not.toHaveBeenCalled()
+  })
+})
+
+describe('handleCallbackPolicyCleanup — two-factor deferred OAuth policy', () => {
+  it('remembers the first-factor provider when an OAuth callback defers final session issuance to 2FA', async () => {
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    const ctx = ctxFor({
+      path: '/oauth2/callback/:providerId',
+      providerParam: 'google',
+      userId: 'user_1',
+      email: 'a@external.com',
+      secret: 'test-secret',
+    })
+
+    await handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: true }))
+
+    expect(mockSetSignedCookie).toHaveBeenCalledWith(
+      'quackback.2fa_policy_provider',
+      'user_1:google',
+      'test-secret',
+      expect.objectContaining({ httpOnly: true, maxAge: 600 })
+    )
+  })
+
+  it('applies the remembered OAuth provider policy on /two-factor/verify-totp session creation', async () => {
+    mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
+    mockUserFindFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 60 * 60_000) })
+    mockGetSignedCookie.mockResolvedValue('user_1:google')
+    const ctx = ctxFor({
+      path: '/two-factor/verify-totp',
+      userId: 'user_1',
+      email: 'a@external.com',
+      token: 'tok',
+      secret: 'test-secret',
+    })
+
+    await expect(
+      handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: false }))
+    ).rejects.toThrow(/\/admin\/login\?error=oauth_method_not_allowed/)
+
+    expect(mockSetCookie).toHaveBeenCalledWith('quackback.2fa_policy_provider', '', {
+      path: '/',
+      maxAge: 0,
+    })
+    expect(mockSessionDeleteWhere).toHaveBeenCalled()
+    expect(mockDeleteSessionCookie).toHaveBeenCalled()
+  })
+
+  it('skips two-factor verification without a remembered first-factor provider', async () => {
+    const ctx = ctxFor({
+      path: '/two-factor/verify-totp',
+      userId: 'user_1',
+      email: 'a@external.com',
+      token: 'tok',
+      secret: 'test-secret',
+    })
+
+    await handleCallbackPolicyCleanup(ctx, tenantSettings({ googleEnabled: false }))
+
     expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
     expect(ctx.redirect).not.toHaveBeenCalled()
   })
@@ -506,7 +577,7 @@ describe('handleCallbackPolicyCleanup — hard-binding branch (enforced verified
     expect(ctx.redirect).not.toHaveBeenCalled()
   })
 
-  it('fails open: google at an enforced domain passes through when SSO is not actually registered', async () => {
+  it('fails closed: google at an enforced domain is blocked when SSO is not actually registered', async () => {
     mockPrincipalFindFirst.mockResolvedValue({ role: 'admin' })
     mockIsSsoActuallyRegistered.mockResolvedValue(false)
     const ctx = ctxFor({
@@ -516,18 +587,16 @@ describe('handleCallbackPolicyCleanup — hard-binding branch (enforced verified
       email: 'a@acme.com',
       token: 'tok',
     })
-    // googleEnabled so the method-allowed fall-through also passes —
-    // the point is the hard-binding branch must NOT fire when SSO
-    // isn't viable (self-lockout guard).
-    await handleCallbackPolicyCleanup(
-      ctx,
-      tenantSettings({
-        googleEnabled: true,
-        verifiedDomains: [makeVerifiedDomain('acme.com', true)],
-      })
-    )
-    expect(mockSessionDeleteWhere).not.toHaveBeenCalled()
-    expect(ctx.redirect).not.toHaveBeenCalled()
+    await expect(
+      handleCallbackPolicyCleanup(
+        ctx,
+        tenantSettings({
+          googleEnabled: true,
+          verifiedDomains: [makeVerifiedDomain('acme.com', true)],
+        })
+      )
+    ).rejects.toThrow(/verified_domain_requires_sso/)
+    expect(mockSessionDeleteWhere).toHaveBeenCalled()
   })
 
   it('revokes + wipes shells when brand-new user lands via /sign-in/social with credential at enforced domain', async () => {
