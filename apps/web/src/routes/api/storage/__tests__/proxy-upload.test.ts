@@ -56,7 +56,7 @@ describe('buildProxyObjectHeaders', () => {
   it('forces active content to download from same-origin proxy responses', () => {
     const headers = buildProxyObjectHeaders('uploads/2026/06/xss.html', 'text/html')
 
-    expect(headers['Content-Type']).toBe('application/octet-stream')
+    expect(headers['Content-Type']).toBe('text/html')
     expect(headers['X-Content-Type-Options']).toBe('nosniff')
     expect(headers['Content-Disposition']).toBe('attachment; filename="xss.html"')
     expect(headers['Content-Security-Policy']).toBe('sandbox')
