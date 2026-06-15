@@ -36,6 +36,15 @@ describe('parseQuackbackConfig', () => {
     expect(result.success).toBe(true)
   })
 
+  it('accepts the rebranded config kind', () => {
+    const result = parseQuackbackConfig({
+      apiVersion: 'quackback.io/v1',
+      kind: 'quackbackConfig',
+      spec: {},
+    })
+    expect(result.success).toBe(true)
+  })
+
   it('rejects a missing apiVersion', () => {
     const result = parseQuackbackConfig({ kind: 'QuackbackConfig', spec: {} })
     expect(result.success).toBe(false)

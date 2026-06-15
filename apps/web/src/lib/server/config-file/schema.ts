@@ -126,7 +126,9 @@ const authSchema = z
 export const quackbackConfigSchema = z
   .object({
     apiVersion: z.literal('quackback.io/v1'),
-    kind: z.literal('QuackbackConfig'),
+    // Accept both the original public discriminator and the rebranded
+    // spelling so existing managed deployments continue to reconcile.
+    kind: z.enum(['QuackbackConfig', 'quackbackConfig']),
     metadata: z.object({ source: z.string().optional() }).strict().optional(),
     spec: z
       .object({
