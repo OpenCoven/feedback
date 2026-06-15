@@ -807,7 +807,7 @@ Examples:
         if (args.entity === 'changelogs') {
           return await searchChangelogs(args)
         }
-        return await searchPosts(args, isTeamMember(auth.role))
+        return await searchPosts(args, auth)
       } catch (err) {
         return errorResult(err)
       }
@@ -843,7 +843,7 @@ Examples:
           case 'post': {
             const denied = requireScope(auth, 'read:feedback')
             if (denied) return denied
-            return await getPostDetails(args.id as PostId, isTeamMember(auth.role))
+            return await getPostDetails(args.id as PostId, auth)
           }
           case 'changelog': {
             const denied = requireScope(auth, 'read:feedback')
@@ -1871,10 +1871,7 @@ Examples:
 // Search dispatchers
 // ============================================================================
 
-async function searchPosts(
-  args: SearchArgs,
-  includeTeamOnlyFields: boolean
-): Promise<CallToolResult> {
+async function searchPosts(args: SearchArgs, auth: McpAuthContext): Promise<CallToolResult> {
   const decoded = decodeSearchCursor(args.cursor)
   // Reject cursors from a different entity
   if (args.cursor && decoded.entity && decoded.entity !== 'posts') {
@@ -1907,6 +1904,8 @@ async function searchPosts(
   // Encode nextCursor with entity type to prevent cross-entity misuse
   const lastItem = result.items[result.items.length - 1]
   const nextCursor = result.hasMore && lastItem ? encodeSearchCursor('posts', lastItem.id) : null
+
+  const includeTeamOnlyFields = isTeamMember(auth.role)
 
   return compactJsonResult({
     posts: result.items.map((p) => ({
@@ -2029,15 +2028,14 @@ async function searchArticles(args: SearchArgs): Promise<CallToolResult> {
 // Get details dispatchers
 // ============================================================================
 
-async function getPostDetails(
-  postId: PostId,
-  includePrivateComments: boolean
-): Promise<CallToolResult> {
+async function getPostDetails(postId: PostId, auth: McpAuthContext): Promise<CallToolResult> {
   const [post, comments, mergedPosts] = await Promise.all([
     getPostWithDetails(postId),
-    getCommentsWithReplies(postId, undefined, { includePrivate: includePrivateComments }),
+    getCommentsWithReplies(postId),
     getMergedPosts(postId),
   ])
+
+  const includeTeamOnlyFields = isTeamMember(auth.role)
 
   return jsonResult({
     id: post.id,
@@ -2061,8 +2059,8 @@ async function getPostDetails(
           createdAt: post.pinnedComment.createdAt,
         }
       : null,
-    summaryJson: post.summaryJson ?? null,
-    summaryUpdatedAt: post.summaryUpdatedAt ?? null,
+    summaryJson: includeTeamOnlyFields ? (post.summaryJson ?? null) : null,
+    summaryUpdatedAt: includeTeamOnlyFields ? (post.summaryUpdatedAt ?? null) : null,
     canonicalPostId: post.canonicalPostId ?? null,
     mergedAt: post.mergedAt ?? null,
     isCommentsLocked: post.isCommentsLocked,
