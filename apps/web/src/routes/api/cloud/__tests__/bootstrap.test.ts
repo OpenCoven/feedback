@@ -179,7 +179,7 @@ describe('POST /api/cloud/bootstrap', () => {
 
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toMatchObject({ userId: 'user_existing' })
-    expect(vi.mocked(getAuth)).not.toHaveBeenCalled()
+    expect(vi.mocked(getAuth)).toHaveBeenCalledOnce()
     expect(vi.mocked(mintMagicLinkUrl)).toHaveBeenCalledOnce()
   })
 })
