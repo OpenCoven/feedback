@@ -904,6 +904,66 @@ describe('MCP HTTP Handler', () => {
       expect(text.comments).toEqual([])
     })
 
+    it('should exclude private comments from OAuth portal user post details', async () => {
+      const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      vi.mocked(getDeveloperConfig)
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+        .mockResolvedValueOnce({
+          mcpEnabled: true,
+          mcpPortalAccessEnabled: true,
+        })
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+
+      const { handleMcpRequest } = await import('../handler')
+      await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('initialize', {
+            protocolVersion: '2025-03-26',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '1.0' },
+          })
+        )
+      )
+      await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+
+      const response = await handleMcpRequest(
+        oauthRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'get_details',
+            arguments: { id: 'post_test' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: false,
+      })
+    })
+
+    it('should include private comments in team member post details', async () => {
+      const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
+      const handleMcpRequest = await initializeSession()
+
+      const response = await handleMcpRequest(
+        mcpRequest(
+          jsonRpcRequest('tools/call', {
+            name: 'get_details',
+            arguments: { id: 'post_test' },
+          })
+        )
+      )
+
+      expect(response.status).toBe(200)
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+        includePrivate: true,
+      })
+    })
+
     // ── get_details tool (changelog) ────────────────────────────────────────
 
     it('should handle tools/call for get_details with changelog TypeID', async () => {
