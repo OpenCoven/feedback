@@ -907,15 +907,10 @@ describe('MCP HTTP Handler', () => {
     it('should exclude private comments from OAuth portal user post details', async () => {
       const { getDeveloperConfig } = await import('@/lib/server/domains/settings/settings.service')
       const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
-      vi.mocked(getDeveloperConfig)
-        .mockResolvedValueOnce({
-          mcpEnabled: true,
-          mcpPortalAccessEnabled: true,
-        })
-        .mockResolvedValueOnce({
-          mcpEnabled: true,
-          mcpPortalAccessEnabled: true,
-        })
+      vi.mocked(getDeveloperConfig).mockResolvedValue({
+        mcpEnabled: true,
+        mcpPortalAccessEnabled: true,
+      })
       await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
 
       const { handleMcpRequest } = await import('../handler')
@@ -929,6 +924,7 @@ describe('MCP HTTP Handler', () => {
         )
       )
       await setupValidOAuth({ role: 'user', scopes: ['read:feedback'] })
+      vi.mocked(getCommentsWithReplies).mockClear()
 
       const response = await handleMcpRequest(
         oauthRequest(
@@ -940,7 +936,8 @@ describe('MCP HTTP Handler', () => {
       )
 
       expect(response.status).toBe(200)
-      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenLastCalledWith('post_test', undefined, {
         includePrivate: false,
       })
     })
@@ -948,6 +945,7 @@ describe('MCP HTTP Handler', () => {
     it('should include private comments in team member post details', async () => {
       const { getCommentsWithReplies } = await import('@/lib/server/domains/posts/post.query')
       const handleMcpRequest = await initializeSession()
+      vi.mocked(getCommentsWithReplies).mockClear()
 
       const response = await handleMcpRequest(
         mcpRequest(
@@ -959,7 +957,8 @@ describe('MCP HTTP Handler', () => {
       )
 
       expect(response.status).toBe(200)
-      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledWith('post_test', undefined, {
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(getCommentsWithReplies)).toHaveBeenLastCalledWith('post_test', undefined, {
         includePrivate: true,
       })
     })
