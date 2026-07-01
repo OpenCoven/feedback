@@ -2043,13 +2043,13 @@ async function searchArticles(args: SearchArgs): Promise<CallToolResult> {
 // ============================================================================
 
 async function getPostDetails(postId: PostId, auth: McpAuthContext): Promise<CallToolResult> {
+  const includeTeamOnlyFields = isTeamMember(auth.role)
+
   const [post, comments, mergedPosts] = await Promise.all([
     getPostWithDetails(postId),
-    getCommentsWithReplies(postId),
+    getCommentsWithReplies(postId, undefined, { includePrivate: includeTeamOnlyFields }),
     getMergedPosts(postId),
   ])
-
-  const includeTeamOnlyFields = isTeamMember(auth.role)
 
   return jsonResult({
     id: post.id,
