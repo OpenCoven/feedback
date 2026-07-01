@@ -251,7 +251,9 @@ async function createAuth() {
         ...(creds.tokenUrl && { tokenUrl: creds.tokenUrl }),
         scopes: scopeStr.split(/\s+/).filter(Boolean),
       })
-      trustedProviders.push(provider.id)
+      // Do not trust arbitrary custom OIDC providers for automatic
+      // account linking. Built-in providers and dedicated workspace
+      // SSO are trusted separately.
     } else {
       // Built-in social providers
       const providerConfig: Record<string, string> = {
